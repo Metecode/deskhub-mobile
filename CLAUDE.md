@@ -59,7 +59,7 @@ Phase 0, branch `phase-0`.
 - [x] Plan approved and written down
 - [x] Protocol package
 - [x] Bridge: companion endpoint
-- [ ] Bridge: client endpoint and HTTP
+- [x] Bridge: client endpoint and HTTP
 - [ ] Bridge: mock mode
 - [ ] Web: connection and theme
 - [ ] Web: PC Stats page

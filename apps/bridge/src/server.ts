@@ -1,31 +1,43 @@
 // The bridge: one HTTP server for the companion, phones and the web app.
-import { createServer, type Server } from 'node:http';
+import { createServer, type IncomingMessage, type Server } from 'node:http';
 import type { AddressInfo } from 'node:net';
+import type { Duplex } from 'node:stream';
+import { ClientEndpoint } from './clientEndpoint.js';
 import { CompanionEndpoint } from './companionEndpoint.js';
+import { createHttpHandler } from './http.js';
 import { Hub } from './hub.js';
 import type { Logger } from './log.js';
+import { allowedOrigins } from './origins.js';
+import { parseTarget } from './target.js';
 
 export interface BridgeOptions {
   hubToken: string;
+  clientToken: string;
+  /** Origins allowed on /client besides this PC's own. */
+  clientOrigins: readonly string[];
+  /** The built web app. */
+  webRoot: string;
   log: Logger;
 }
 
 export class Bridge {
   readonly hub = new Hub();
   readonly companion: CompanionEndpoint;
+  readonly clients: ClientEndpoint;
   readonly #server: Server;
 
   constructor(options: BridgeOptions) {
-    this.companion = new CompanionEndpoint(this.hub, options.hubToken, options.log);
-    this.#server = createServer((_req, res) => {
-      res.writeHead(404).end();
+    const { hubToken, clientToken, clientOrigins, webRoot, log } = options;
+    this.companion = new CompanionEndpoint(this.hub, hubToken, log);
+    this.clients = new ClientEndpoint({
+      hub: this.hub,
+      token: clientToken,
+      originAllowed: (origin) => allowedOrigins(this.port, clientOrigins).has(origin),
+      sendCommand: (command) => this.companion.send(command),
+      log,
     });
-    this.#server.on('upgrade', (req, socket, head) => {
-      socket.on('error', () => socket.destroy());
-      const { pathname } = new URL(req.url ?? '/', 'http://bridge');
-      if (pathname === '/ws') this.companion.upgrade(req, socket, head);
-      else socket.end('HTTP/1.1 404 Not Found\r\nConnection: close\r\nContent-Length: 0\r\n\r\n');
-    });
+    this.#server = createServer(createHttpHandler({ hubToken, webRoot }));
+    this.#server.on('upgrade', (req, socket, head) => this.#onUpgrade(req, socket, head));
   }
 
   /** The port it listens on, which is only known after listen(). */
@@ -45,8 +57,17 @@ export class Bridge {
 
   close(): Promise<void> {
     this.companion.close();
+    this.clients.close();
     this.hub.disconnected();
     this.#server.closeAllConnections();
     return new Promise((resolve) => this.#server.close(() => resolve()));
+  }
+
+  #onUpgrade(req: IncomingMessage, socket: Duplex, head: Buffer): void {
+    socket.on('error', () => socket.destroy());
+    const { pathname } = parseTarget(req.url);
+    if (pathname === '/ws') this.companion.upgrade(req, socket, head);
+    else if (pathname === '/client') this.clients.upgrade(req, socket, head);
+    else socket.end('HTTP/1.1 404 Not Found\r\nConnection: close\r\nContent-Length: 0\r\n\r\n');
   }
 }

@@ -5,6 +5,7 @@ import { silentLogger } from './log.js';
 import { Bridge, type BridgeOptions } from './server.js';
 
 export const HUB_TOKEN = 'hub-secret';
+export const CLIENT_TOKEN = 'client-secret';
 
 /** Fakes timers and Date only, so sockets keep working. */
 export function useFakeTimers(): void {
@@ -12,7 +13,14 @@ export function useFakeTimers(): void {
 }
 
 export async function startBridge(options: Partial<BridgeOptions> = {}): Promise<Bridge> {
-  const bridge = new Bridge({ hubToken: HUB_TOKEN, log: silentLogger, ...options });
+  const bridge = new Bridge({
+    hubToken: HUB_TOKEN,
+    clientToken: CLIENT_TOKEN,
+    clientOrigins: [],
+    webRoot: 'no-such-folder',
+    log: silentLogger,
+    ...options,
+  });
   await bridge.listen(0, '127.0.0.1');
   return bridge;
 }
@@ -81,6 +89,11 @@ export async function connectCompanion(bridge: Bridge): Promise<TestSocket> {
   socket.send({ type: 'hello', token: HUB_TOKEN });
   await socket.next();
   return socket;
+}
+
+/** A phone with the right token. */
+export function connectClient(bridge: Bridge, options?: ClientOptions): Promise<TestSocket> {
+  return new TestSocket(bridge.port, `/client?token=${CLIENT_TOKEN}`, options).open();
 }
 
 /** A text message of exactly `bytes` bytes. */
