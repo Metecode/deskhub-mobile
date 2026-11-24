@@ -58,7 +58,7 @@ Phase 0, branch `phase-0`.
 - [x] Workspace scaffold
 - [x] Plan approved and written down
 - [x] Protocol package
-- [ ] Bridge: companion endpoint
+- [x] Bridge: companion endpoint
 - [ ] Bridge: client endpoint and HTTP
 - [ ] Bridge: mock mode
 - [ ] Web: connection and theme
