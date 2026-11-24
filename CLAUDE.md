@@ -63,8 +63,13 @@ Phase 0, branch `phase-0`.
 - [x] Bridge: mock mode
 - [x] Web: connection and theme
 - [x] Web: PC Stats page
-- [ ] README, NOTICE, LICENSE, docs/protocol.md
-- [ ] Verified with the real companion
+- [x] README, NOTICE, LICENSE, docs/protocol.md
+- [x] Verified with the real companion (stats, connect, disconnect; media covers not, see below)
 - [ ] Verified on the phone (by the user)
 
 Update this list with every step.
+
+Next: the user tries it on the phone, then phase 1.
+
+Not verified yet: binary frames from a real companion (the test install had no Windows media
+session support, so it sent none; they are covered by unit tests only).
