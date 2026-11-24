@@ -61,7 +61,7 @@ Phase 0, branch `phase-0`.
 - [x] Bridge: companion endpoint
 - [x] Bridge: client endpoint and HTTP
 - [x] Bridge: mock mode
-- [ ] Web: connection and theme
+- [x] Web: connection and theme
 - [ ] Web: PC Stats page
 - [ ] README, NOTICE, LICENSE, docs/protocol.md
 - [ ] Verified with the real companion

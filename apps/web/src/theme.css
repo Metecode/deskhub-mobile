@@ -1,0 +1,55 @@
+/* Desk Hub's Graphite theme: the COL_* values of firmware/main/ui_internal.h. */
+:root {
+  --bg: #0d0e11;
+  --card: #16181d;
+  --card-hi: #262a32; /* gauge and bar tracks, chart lines */
+  --border: #262a32;
+  --text: #f3f4f6;
+  --muted: #9aa0aa;
+  --dim: #6b717c;
+  --accent: #ffb224;
+  --on-accent: #16181d;
+  --good: #3dd68c;
+  --bad: #ff6b6b;
+
+  /* Data series, in the order ui_stats.c gives them to the gauges. */
+  --cpu: #6cb4ff;
+  --gpu: #5ed3c6;
+  --ram: #b49cff;
+  --vram: #f79ad3;
+
+  /* One board pixel: the board's page (about 712x440 without its rail) scaled to the screen. */
+  --u: min(100vw / 760, 100dvh / 440);
+
+  color-scheme: dark;
+}
+
+@media (orientation: portrait) {
+  :root {
+    --u: min(100vw / 400, 100dvh / 700);
+  }
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+}
+
+html,
+body,
+#root {
+  height: 100%;
+}
+
+body {
+  overflow: hidden;
+  background: var(--bg);
+  color: var(--text);
+  font-family: 'Inter', system-ui, sans-serif;
+  font-weight: 500;
+  font-size: calc(14 * var(--u));
+  line-height: 1.2;
+  -webkit-tap-highlight-color: transparent;
+  -webkit-text-size-adjust: none;
+  user-select: none;
+}

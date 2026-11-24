@@ -1,0 +1,21 @@
+.app {
+  display: flex;
+  flex-direction: column;
+  gap: calc(12 * var(--u));
+  height: 100dvh;
+  padding: max(calc(14 * var(--u)), env(safe-area-inset-top)) max(calc(20 * var(--u)), env(safe-area-inset-right))
+    max(calc(16 * var(--u)), env(safe-area-inset-bottom)) max(calc(20 * var(--u)), env(safe-area-inset-left));
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.caption {
+  color: var(--muted);
+  font-size: inherit;
+  font-weight: 500;
+  letter-spacing: calc(2 * var(--u));
+}

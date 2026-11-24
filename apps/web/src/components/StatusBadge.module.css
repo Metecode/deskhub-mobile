@@ -1,0 +1,26 @@
+.badge {
+  display: flex;
+  align-items: center;
+  gap: calc(8 * var(--u));
+}
+
+.icon {
+  width: calc(20 * var(--u));
+  height: calc(20 * var(--u));
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2;
+  stroke-linecap: round;
+}
+
+.online {
+  color: var(--good);
+}
+
+.offline {
+  color: var(--dim);
+}
+
+.lost {
+  color: var(--bad);
+}

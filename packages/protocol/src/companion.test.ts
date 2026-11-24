@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import { normalizeStats, parseCompanionMessage, parseMessage, TYPES_WITHOUT_SCHEMA } from './companion.js';
+import { parseCompanionMessage, parseMessage, TYPES_WITHOUT_SCHEMA } from './companion.js';
+import { normalizeStats } from './stats.js';
 
 // The message Stats.sample() builds on a PC with an NVIDIA GPU.
 const SAMPLE = {
