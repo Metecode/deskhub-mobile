@@ -2,7 +2,8 @@ import { fileURLToPath } from 'node:url';
 import { TOKEN_PARAM } from '@deskhub-mobile/protocol';
 import { readConfig, type Config } from './config.js';
 import { consoleLogger as log } from './log.js';
-import { lanAddresses } from './origins.js';
+import { startMockCompanion } from './mockCompanion.js';
+import { DEV_PORT, lanAddresses } from './origins.js';
 import { Bridge } from './server.js';
 
 // Both src/ and dist/ are three levels below the repository root.
@@ -26,9 +27,20 @@ async function main(): Promise<void> {
   await bridge.listen(config.port, '0.0.0.0');
 
   log.info(`listening on port ${config.port}${config.mock ? ', mock mode' : ''}`);
-  log.info('open one of these on the phone:');
-  for (const address of lanAddresses())
-    log.info(`  http://${address}:${config.port}/?${TOKEN_PARAM}=${encodeURIComponent(config.clientToken)}`);
+  // In mock mode the web app comes from the Vite dev server.
+  const webPort = config.mock ? DEV_PORT : config.port;
+  log.info('open one of these (localhost is this PC, or a phone with adb reverse):');
+  for (const address of ['localhost', ...lanAddresses()])
+    log.info(`  http://${address}:${webPort}/?${TOKEN_PARAM}=${encodeURIComponent(config.clientToken)}`);
+
+  if (config.mock) {
+    startMockCompanion({
+      url: `ws://127.0.0.1:${config.port}/ws`,
+      token: config.hubToken,
+      companionConnected: () => bridge.companion.connected,
+      log,
+    });
+  }
 }
 
 main().catch((e: NodeJS.ErrnoException) => {

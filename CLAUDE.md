@@ -60,7 +60,7 @@ Phase 0, branch `phase-0`.
 - [x] Protocol package
 - [x] Bridge: companion endpoint
 - [x] Bridge: client endpoint and HTTP
-- [ ] Bridge: mock mode
+- [x] Bridge: mock mode
 - [ ] Web: connection and theme
 - [ ] Web: PC Stats page
 - [ ] README, NOTICE, LICENSE, docs/protocol.md
