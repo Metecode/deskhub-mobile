@@ -62,7 +62,7 @@ Phase 0, branch `phase-0`.
 - [x] Bridge: client endpoint and HTTP
 - [x] Bridge: mock mode
 - [x] Web: connection and theme
-- [ ] Web: PC Stats page
+- [x] Web: PC Stats page
 - [ ] README, NOTICE, LICENSE, docs/protocol.md
 - [ ] Verified with the real companion
 - [ ] Verified on the phone (by the user)

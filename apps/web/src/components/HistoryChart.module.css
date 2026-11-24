@@ -1,0 +1,23 @@
+.chart {
+  display: block;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+}
+
+.division,
+.line {
+  fill: none;
+  vector-effect: non-scaling-stroke;
+}
+
+.division {
+  stroke: var(--card-hi);
+  stroke-width: 1px;
+}
+
+.line {
+  stroke-width: calc(3 * var(--u));
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
