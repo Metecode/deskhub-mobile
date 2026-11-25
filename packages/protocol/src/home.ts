@@ -23,7 +23,7 @@ export const WIDGETS = [
 ] as const;
 export type Widget = (typeof WIDGETS)[number];
 
-/** The page a widget opens, and is hidden with (W_PAGE in ui_home.c). */
+/** The page a widget opens, and is hidden with (W_PAGE in ui_home.c). The GitHub one shows without its page. */
 export const WIDGET_PAGES: Readonly<Record<Widget, Page | null>> = {
   clock: null,
   claude: 'ai',
@@ -34,7 +34,7 @@ export const WIDGET_PAGES: Readonly<Record<Widget, Page | null>> = {
   printer: 'printer',
   game: 'games',
   net: 'network',
-  github: 'github',
+  github: null,
 };
 
 export interface GridItem {

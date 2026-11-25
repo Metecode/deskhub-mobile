@@ -295,10 +295,10 @@ describe('home', () => {
   });
 
   it('hides widgets whose page is off, and the clock next to the top bar', () => {
-    const grid = columnsToGrid(['clock', 'claude'], ['net', 'stats']);
+    const grid = columnsToGrid(['clock', 'claude'], ['net', 'stats', 'github']);
     const shown = (header: boolean, ...pages: ('ai' | 'network' | 'stats')[]) =>
       visibleWidgets({ header, grid }, ['home', ...pages]).map((g) => g.widget);
-    expect(shown(false, 'ai', 'network', 'stats')).toEqual(['clock', 'claude', 'net', 'stats']);
-    expect(shown(true, 'stats')).toEqual(['stats']);
+    expect(shown(false, 'ai', 'network', 'stats')).toEqual(['clock', 'claude', 'net', 'stats', 'github']);
+    expect(shown(true, 'stats')).toEqual(['stats', 'github']);
   });
 });
