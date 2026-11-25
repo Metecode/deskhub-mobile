@@ -1,5 +1,6 @@
 import { linePath } from '../chart.js';
 import { HISTORY_MS, type HistoryPoint } from '../connection.js';
+import { T } from '../text.js';
 import styles from './HistoryChart.module.css';
 
 // Four division lines, edges included, like the board's chart.
@@ -12,7 +13,7 @@ export function HistoryChart({ history }: { history: readonly HistoryPoint[] }) 
       preserveAspectRatio="none"
       className={styles.chart}
       role="img"
-      aria-label="CPU and GPU load over the last minute"
+      aria-label={T.stats.chart}
     >
       {DIVISIONS.map((y) => (
         <path key={y} className={styles.division} d={`M0 ${y}H${HISTORY_MS}`} />

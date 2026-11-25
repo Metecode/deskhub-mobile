@@ -2,94 +2,113 @@
   display: flex;
   flex: 1;
   flex-direction: column;
-  gap: calc(12 * var(--u));
+  gap: calc(8 * var(--u));
   min-height: 0;
 }
 
 .switch {
   display: flex;
   flex: none;
+  gap: calc(4 * var(--u));
   align-self: flex-start;
   padding: calc(3 * var(--u));
-  border: 1px solid var(--border);
-  border-radius: calc(20 * var(--u));
+  border-radius: calc(22 * var(--u));
   background: var(--card);
 }
 
+/* 44 px to touch, less to see. */
 .switch button {
   position: relative;
-  width: calc(128 * var(--u));
-  height: calc(32 * var(--u));
-  border-radius: calc(16 * var(--u));
+  min-width: calc(96 * var(--u));
+  height: calc(34 * var(--u));
+  padding: 0 calc(16 * var(--u));
+  border-radius: calc(17 * var(--u));
   color: var(--muted);
-  font-size: calc(16 * var(--u));
+  font-weight: 600;
 }
 
-/* A larger touch area. */
 .switch button::after {
   position: absolute;
-  inset: calc(-8 * var(--u)) 0;
+  inset: min(0px, (100% - 44px) / 2) 0;
   content: '';
 }
 
 .switch button[aria-pressed='true'] {
-  background: var(--accent);
-  color: var(--on-accent);
+  background: var(--card-hi);
+  color: var(--text);
+}
+
+.view {
+  display: grid;
+  flex: 1;
+  grid-template-rows: minmax(0, 150fr) minmax(0, 130fr);
+  gap: calc(8 * var(--u));
+  min-height: 0;
 }
 
 .gauges {
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: calc(12 * var(--u));
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: calc(8 * var(--u));
+  min-height: 0;
+}
+
+.gauge {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: calc(6 * var(--u));
+}
+
+.name {
+  max-width: 100%;
+  overflow: hidden;
+  font-size: calc(16 * var(--u));
+  font-weight: 600;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.sub {
+  min-height: 1.2em;
+  color: var(--muted);
+  font-size: max(12px, calc(14 * var(--u)));
+  white-space: nowrap;
 }
 
 .history {
   display: flex;
-  flex: 1;
   flex-direction: column;
-  gap: calc(10 * var(--u));
-  min-height: 0;
-  padding: calc(14 * var(--u)) calc(16 * var(--u));
-  border: 1px solid var(--border);
-  border-radius: calc(16 * var(--u));
-  background: var(--card);
+  gap: calc(6 * var(--u));
+  padding-top: calc(10 * var(--u));
+  padding-bottom: calc(10 * var(--u));
+  font-size: max(12px, calc(14 * var(--u)));
 }
 
 .row {
   display: flex;
-  align-items: baseline;
-  gap: calc(20 * var(--u));
-  min-height: calc(20 * var(--u));
+  flex: none;
+  gap: calc(16 * var(--u));
 }
 
-.caption {
+.muted {
   color: var(--muted);
   font-size: inherit;
   font-weight: 500;
-  letter-spacing: calc(2 * var(--u));
-  white-space: nowrap;
-}
-
-.cpuKey::before,
-.gpuKey::before {
-  content: '• ';
-}
-
-.cpuKey {
-  color: var(--cpu);
-}
-
-.gpuKey {
-  color: var(--gpu);
 }
 
 .network {
   display: flex;
   gap: calc(16 * var(--u));
   margin-left: auto;
-  font-size: calc(16 * var(--u));
   font-variant-numeric: tabular-nums;
-  white-space: nowrap;
+}
+
+.disk {
+  flex: none;
+  margin-left: auto;
+  color: var(--muted);
 }
 
 .chart {
@@ -101,45 +120,30 @@
 .hint {
   position: absolute;
   inset: 0;
-  width: max-content;
-  max-width: 100%;
-  height: max-content;
-  margin: auto;
-  padding: 0 calc(12 * var(--u));
-  background: var(--card);
+  display: grid;
+  place-items: center;
   color: var(--muted);
-  font-size: calc(20 * var(--u));
+  font-size: calc(16 * var(--u));
   text-align: center;
 }
 
-.names {
-  flex: 1;
-  min-width: 0;
-  overflow: hidden;
-  color: var(--dim);
-  text-overflow: ellipsis;
-  white-space: pre;
-}
-
-.disk {
-  color: var(--muted);
-  font-variant-numeric: tabular-nums;
-  white-space: nowrap;
-}
-
 @media (orientation: portrait) {
-  .gauges {
-    grid-template-columns: repeat(2, 1fr);
+  .view {
+    grid-template-rows: minmax(0, 330fr) minmax(0, 240fr);
   }
 
-  /* Not enough room for the legend and the network rates on one line. */
-  .history .row {
+  .gauges {
+    grid-template-rows: repeat(2, minmax(0, 1fr));
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .history .row:first-child {
     flex-wrap: wrap;
-    row-gap: calc(6 * var(--u));
+    gap: calc(2 * var(--u)) calc(14 * var(--u));
   }
 
   .network {
     width: 100%;
-    margin-left: 0;
+    margin: 0;
   }
 }

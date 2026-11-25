@@ -6,7 +6,7 @@ import { Icon } from './Icon.js';
 export function Empty({ icon, title, hint }: { icon?: IconName; title: string; hint: string }) {
   return (
     <div className={styles.empty}>
-      {icon && <Icon name={icon} size={80} color="var(--dim)" />}
+      {icon && <Icon name={icon} size={64} color="var(--dim)" />}
       <p className={styles.title}>{title}</p>
       <p className={styles.hint}>{hint}</p>
     </div>

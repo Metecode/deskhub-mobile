@@ -2,6 +2,7 @@
 import { useState } from 'react';
 import { TIMES_UP_DIM_MS } from '../burnIn.js';
 import type { Sound } from '../sound.js';
+import { T } from '../text.js';
 import { timerName, type TimerStore } from '../timer.js';
 import { Icon } from './Icon.js';
 import styles from './TimesUp.module.css';
@@ -23,7 +24,7 @@ export function TimesUp({ timer, total, sound, now, onTouch }: TimesUpProps) {
     <div
       className={styles.layer}
       role="alertdialog"
-      aria-label="Time's up"
+      aria-label={T.timer.up}
       data-dim={now * 1000 - since >= TIMES_UP_DIM_MS || undefined}
       onPointerDown={() => {
         setSince(Date.now());
@@ -32,7 +33,7 @@ export function TimesUp({ timer, total, sound, now, onTouch }: TimesUpProps) {
     >
       <section className={styles.card}>
         <Icon name="timer" size={80} color="var(--good)" />
-        <h2 className={styles.title}>Time's up</h2>
+        <h2 className={styles.title}>{T.timer.up}</h2>
         <p className={styles.name}>{timerName(total)}</p>
         <div className={styles.buttons}>
           <button
@@ -42,10 +43,10 @@ export function TimesUp({ timer, total, sound, now, onTouch }: TimesUpProps) {
               timer.again();
             }}
           >
-            Again
+            {T.timer.again}
           </button>
           <button type="button" className={styles.done} onClick={timer.dismiss}>
-            Done
+            {T.timer.done}
           </button>
         </div>
       </section>

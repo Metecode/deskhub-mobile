@@ -1,3 +1,4 @@
+﻿# What the user reads is Turkish; Windows PowerShell 5.1 needs the byte order mark for that.
 # What deskhub-mobile.cmd runs: sets everything up the first time, and starts what isn't running.
 # It never changes the companion's files; its folder is remembered in
 # %LOCALAPPDATA%\deskhub-mobile\launch.json.
@@ -22,7 +23,7 @@ Set-Location -LiteralPath $root
 function Say([string]$Text, [string]$Color = 'Gray') { Write-Host $Text -ForegroundColor $Color }
 
 function Confirm-Yes([string]$Question) {
-    $answer = Read-Host "$Question [Y/n]"
+    $answer = Read-Host "$Question [E/h]"
     return ($answer -eq '' -or $answer -match '^\s*[yYeE]')
 }
 
@@ -32,7 +33,7 @@ $memory = @{}
 if (Test-Path -LiteralPath $memoryFile) {
     try {
         (Get-Content -Raw -LiteralPath $memoryFile | ConvertFrom-Json).PSObject.Properties | ForEach-Object { $memory[$_.Name] = $_.Value }
-    } catch { Say 'What was remembered could not be read, so it is asked again.' Yellow }
+    } catch { Say 'Hatırlanan ayarlar okunamadı, yeniden soruluyor.' Yellow }
 }
 
 function Save-Memory {
@@ -81,20 +82,20 @@ function Get-CompanionFolder {
     if ($memory.ContainsKey('companion')) {
         $known = [string]$memory.companion
         if ($known -eq '' -or (Test-CompanionFolder $known)) { return $known }
-        Say "The companion is no longer in $known." Yellow
+        Say "Companion artık $known klasöründe değil." Yellow
     }
     $parent = Split-Path -Parent $root
     $found = @('deskhub-companion', 'deskhub\companion') | ForEach-Object { Join-Path $parent $_ } |
         Where-Object { Test-CompanionFolder $_ } | Select-Object -First 1
     Say ''
-    Say 'Where is the Desk Hub companion? (the folder with its config.toml and .venv)' White
+    Say 'Desk Hub companion nerede? (config.toml ve .venv bulunan klasör)' White
     while ($true) {
-        $hint = if ($found) { "Enter for $found, or - for none" } else { 'or - to go on without it' }
-        $answer = (Read-Host "Folder ($hint)").Trim().Trim('"')
+        $hint = if ($found) { "$found için Enter, companion yoksa -" } else { 'companion yoksa -' }
+        $answer = (Read-Host "Klasör ($hint)").Trim().Trim('"')
         if ($answer -eq '-') { $folder = ''; break }
         if ($answer -eq '' -and $found) { $folder = $found; break }
         if (Test-CompanionFolder $answer) { $folder = (Resolve-Path -LiteralPath $answer).Path; break }
-        Say 'There is no config.toml with a .venv in there. Install the companion as its README says.' Yellow
+        Say 'O klasörde config.toml ve .venv yok. Companion''ı kendi README''sine göre kur.' Yellow
     }
     $memory.companion = $folder
     Save-Memory
@@ -105,14 +106,14 @@ function Get-CompanionFolder {
 
 function Test-Tools {
     $node = Get-Command node -ErrorAction SilentlyContinue
-    if (-not $node) { throw 'Node.js is not installed. Get it from https://nodejs.org (LTS), then start this again.' }
+    if (-not $node) { throw 'Node.js kurulu değil. https://nodejs.org adresinden LTS sürümünü kur, sonra yeniden başlat.' }
     $version = (& node -p 'process.versions.node').Split('.') | ForEach-Object { [int]$_ }
     $major, $minor = $version[0], $version[1]
     if (-not (($major -eq 20 -and $minor -ge 19) -or ($major -eq 22 -and $minor -ge 12) -or $major -ge 23)) {
-        throw "Node.js $($version -join '.') is too old. Get the LTS from https://nodejs.org, then start this again."
+        throw "Node.js $($version -join '.') çok eski. https://nodejs.org adresinden LTS sürümünü kur, sonra yeniden başlat."
     }
     if (-not (Get-Command pnpm -ErrorAction SilentlyContinue)) {
-        throw 'pnpm is not installed. Run "npm install -g pnpm@10", then start this again.'
+        throw 'pnpm kurulu değil. "npm install -g pnpm@10" çalıştır, sonra yeniden başlat.'
     }
 }
 
@@ -138,10 +139,10 @@ function Get-BridgeHash {
 function Update-Build {
     $before = Get-BridgeHash
     if ((Get-Time 'pnpm-lock.yaml') -gt (Get-Time 'node_modules\.modules.yaml')) {
-        Say 'Installing packages...' White
+        Say 'Paketler kuruluyor...' White
         # Not part of what this function returns.
         & pnpm install --frozen-lockfile | Out-Host
-        if ($LASTEXITCODE -ne 0) { throw 'The packages could not be installed.' }
+        if ($LASTEXITCODE -ne 0) { throw 'Paketler kurulamadı.' }
         # pnpm leaves the file alone when there was nothing to do.
         (Get-Item -LiteralPath 'node_modules\.modules.yaml').LastWriteTimeUtc = [DateTime]::UtcNow
     }
@@ -149,9 +150,9 @@ function Update-Build {
         'apps\web\package.json', 'apps\web\vite.config.ts', 'packages\protocol\src', 'pnpm-lock.yaml')
     $built = @((Get-Time 'apps\bridge\dist\index.js'), (Get-Time 'apps\web\dist\build.json')) | Sort-Object | Select-Object -First 1
     if ($sources -gt $built) {
-        Say 'Building...' White
+        Say 'Derleniyor...' White
         & pnpm build | Out-Host
-        if ($LASTEXITCODE -ne 0) { throw 'The build failed.' }
+        if ($LASTEXITCODE -ne 0) { throw 'Derleme başarısız oldu.' }
     }
     return ($before -ne '' -and $before -ne (Get-BridgeHash))
 }
@@ -163,7 +164,7 @@ function Get-BridgeProcess {
     if (-not $listener) { return $null }
     $process = Get-CimInstance Win32_Process -Filter "ProcessId = $($listener.OwningProcess)"
     if ($process -and $process.Name -eq 'node.exe') { return $process }
-    throw "Port $port is taken by $($process.Name). Set another HUB_PORT in .env, or end it."
+    throw "$port portunu $($process.Name) kullanıyor. .env içinde başka bir HUB_PORT ver ya da onu kapat."
 }
 
 function Start-Bridge {
@@ -173,7 +174,7 @@ function Start-Bridge {
         Start-Sleep -Milliseconds 250
         if (Get-BridgeProcess) { return }
     }
-    throw "The bridge did not start. See $(Join-Path $data 'bridge.log')."
+    throw "Bridge başlamadı. Nedeni: $(Join-Path $data 'bridge.log')"
 }
 
 function Stop-Bridge {
@@ -199,7 +200,7 @@ function Start-Companion {
         Start-Sleep -Milliseconds 250
         if (Test-Companion) { return }
     }
-    Say 'The companion did not start. See ~\.deskhub\companion.log.' Yellow
+    Say 'Companion başlamadı. Nedeni: ~\.deskhub\companion.log' Yellow
 }
 
 # Only one that was started through run-companion.py.
@@ -208,7 +209,7 @@ function Stop-Companion {
         Where-Object { $_.CommandLine -like '*run-companion.py*' } |
         ForEach-Object { Stop-Process -Id $_.ProcessId -Force -Confirm:$false -ErrorAction SilentlyContinue }
     for ($i = 0; $i -lt 20 -and (Test-Companion); $i++) { Start-Sleep -Milliseconds 250 }
-    if (Test-Companion) { Say 'The companion was started in another way. Quit it with its tray icon.' Yellow }
+    if (Test-Companion) { Say 'Companion başka bir yolla başlatılmış. Saatin yanındaki simgesinden kapat.' Yellow }
 }
 
 # ---- the PC
@@ -223,7 +224,7 @@ function Add-FirewallRule {
     $command = "New-NetFirewallRule -DisplayName 'deskhub-mobile' -Direction Inbound -Protocol TCP -LocalPort $port -Action Allow -Profile Private -RemoteAddress LocalSubnet"
     try {
         Start-Process powershell -Verb RunAs -Wait -WindowStyle Hidden -ArgumentList "-NoProfile -Command `"$command`""
-    } catch { Say 'Windows did not allow it.' Yellow }
+    } catch { Say 'Windows izin vermedi.' Yellow }
 }
 
 # The address on the network with the way out; a VPN's or a virtual machine's comes after it. (Get-NetIPConfiguration
@@ -253,23 +254,23 @@ function Set-Autostart([bool]$On) {
 
 function Show-Link {
     $address = Get-Address
-    if (-not $address) { return Say 'This PC is on no network.' Yellow }
+    if (-not $address) { return Say 'Bu PC bir ağa bağlı değil.' Yellow }
     New-Item -ItemType Directory -Force -Path $data | Out-Null
     & node (Join-Path $PSScriptRoot 'link-page.mjs') $page $port $address
-    if ($LASTEXITCODE -ne 0) { return Say 'The QR code could not be made.' Yellow }
-    if ($NoBrowser) { return Say "The page is $page" }
+    if ($LASTEXITCODE -ne 0) { return Say 'QR kod oluşturulamadı.' Yellow }
+    if ($NoBrowser) { return Say "Sayfa: $page" }
     Start-Process $page
-    Say 'A page with a QR code is open in your browser.'
+    Say 'QR kodlu sayfa tarayıcıda açıldı.'
 }
 
 function Show-Status {
-    $bridge = if (Get-BridgeProcess) { 'running' } else { 'stopped' }
-    $state = if (Test-Companion) { 'running' } elseif ($companion) { 'stopped' } else { 'not set up here' }
-    $sign = if (Test-Autostart) { 'starts by itself' } else { 'does not start by itself' }
+    $bridge = if (Get-BridgeProcess) { 'çalışıyor' } else { 'durdu' }
+    $state = if (Test-Companion) { 'çalışıyor' } elseif ($companion) { 'durdu' } else { 'ayarlanmadı' }
+    $sign = if (Test-Autostart) { 'kendiliğinden başlar' } else { 'kendiliğinden başlamaz' }
     Say ''
-    Say "  Bridge      $bridge (http://$(Get-Address):$port)" White
-    Say "  Companion   $state" White
-    Say "  At sign-in  $sign" White
+    Say "  Bridge       $bridge (http://$(Get-Address):$port)" White
+    Say "  Companion    $state" White
+    Say "  Oturum açma  $sign" White
     Say ''
 }
 
@@ -288,7 +289,7 @@ try {
         $text = [IO.File]::ReadAllText((Join-Path $root '.env.example'))
         $text = $text -replace '(?m)^HUB_TOKEN=.*$', "HUB_TOKEN=$hubToken" -replace '(?m)^CLIENT_TOKEN=.*$', "CLIENT_TOKEN=$(New-Token)"
         [IO.File]::WriteAllText($envFile, $text)
-        Say 'Made .env with new tokens. The place for the weather goes in there (WEATHER_...).'
+        Say '.env yeni anahtarlarla oluşturuldu. Hava için konum da oraya yazılır (WEATHER_...).'
     }
     $settings = Read-Env
     $port = if ($settings.HUB_PORT) { [int]$settings.HUB_PORT } else { 8765 }
@@ -297,19 +298,19 @@ try {
         $hub = Read-Hub $companion
         if ($hub.host -ne "127.0.0.1:$port" -or $hub.token -ne $settings.HUB_TOKEN) {
             Say ''
-            Say "The companion does not know this bridge yet. Under [hub] in its config.toml, set:" Yellow
+            Say "Companion bu bridge'i henüz tanımıyor. config.toml içinde [hub] altına şunları yaz:" Yellow
             Say "  host = `"127.0.0.1:$port`"" White
-            Say '  token = "..."   (the HUB_TOKEN in .env)' White
-            if (Confirm-Yes 'Open both files now?') {
+            Say '  token = "..."   (.env içindeki HUB_TOKEN)' White
+            if (Confirm-Yes 'İki dosya şimdi açılsın mı?') {
                 Start-Process notepad $envFile
                 Start-Process notepad (Join-Path $companion 'config.toml')
-                Read-Host 'Save config.toml, then press Enter' | Out-Null
+                Read-Host 'config.toml dosyasını kaydet, sonra Enter''a bas' | Out-Null
             }
         }
     }
 
     if (Update-Build) {
-        Say 'The bridge is a new one, so it is restarted.'
+        Say 'Bridge yenilendi, yeniden başlatılıyor.'
         Stop-Bridge
     }
     if (-not (Get-BridgeProcess)) { Start-Bridge }
@@ -317,12 +318,12 @@ try {
 
     # Looking through the rules takes seconds, so it is done once.
     if (-not $memory.ContainsKey('askedFirewall')) {
-        if (-not (Test-Firewall) -and (Confirm-Yes 'The phone must get through the firewall. Add a rule? (asks for administrator rights)')) { Add-FirewallRule }
+        if (-not (Test-Firewall) -and (Confirm-Yes 'Telefonun bağlanması için güvenlik duvarına kural eklensin mi? (yönetici izni ister)')) { Add-FirewallRule }
         $memory.askedFirewall = $true
         Save-Memory
     }
     if (-not $memory.ContainsKey('askedAutostart') -and -not (Test-Autostart)) {
-        if (Confirm-Yes 'Start by itself when you sign in to Windows?') { Set-Autostart $true }
+        if (Confirm-Yes 'Windows oturumu açılınca kendiliğinden başlasın mı?') { Set-Autostart $true }
         $memory.askedAutostart = $true
         Save-Memory
     }
@@ -334,10 +335,10 @@ try {
 
     while ($true) {
         Show-Status
-        $choice = (Read-Host 'Q: QR code for a phone   R: restart   S: stop   A: sign-in on/off   Enter: close').Trim().ToUpperInvariant()
+        $choice = (Read-Host 'Q: telefon için QR kod   Y: yeniden başlat   D: durdur   O: oturumla başlama aç/kapat   Enter: kapat').Trim().ToUpperInvariant()
         switch ($choice) {
             'Q' { Show-Link }
-            'R' {
+            'Y' {
                 Stop-Bridge
                 Start-Bridge
                 if ($companion) {
@@ -345,16 +346,16 @@ try {
                     if (-not (Test-Companion)) { Start-Companion }
                 }
             }
-            'S' {
+            'D' {
                 Stop-Bridge
                 if ($companion) { Stop-Companion }
             }
-            'A' { Set-Autostart (-not (Test-Autostart)) }
+            'O' { Set-Autostart (-not (Test-Autostart)) }
         }
         if ($choice -eq '') { break }
     }
 } catch {
-    Say "Error: $($_.Exception.Message)" Red
+    Say "Hata: $($_.Exception.Message)" Red
     exit 1
 } finally {
     # It has the token in it.

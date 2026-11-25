@@ -1,0 +1,30 @@
+.ring {
+  position: relative;
+  flex: none;
+}
+
+.ring svg {
+  display: block;
+  width: 100%;
+  fill: none;
+  stroke-width: 11;
+  stroke-linecap: round;
+}
+
+.track {
+  stroke: var(--card-hi);
+}
+
+.value {
+  transition: stroke-dasharray 300ms ease-out;
+}
+
+.percent {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  padding-top: 8%;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}

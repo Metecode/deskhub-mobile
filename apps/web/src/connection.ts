@@ -37,6 +37,7 @@ import {
   type MediaServer,
   type MediaTarget,
   type Net,
+  type BridgePing,
   type Printer,
   type RawMessage,
   type Stats,
@@ -208,6 +209,8 @@ export class Connection {
   #state: BridgeState;
   readonly #listeners = new Set<() => void>();
   readonly #url: string;
+  /** Called with the id of a ping that was answered. */
+  onPong: ((id: number) => void) | null = null;
   #token: string | null;
   #socket: WebSocket | null = null;
   #attempt = 0;
@@ -280,6 +283,13 @@ export class Connection {
     if (isOnline(this.#state)) this.#socket?.send(JSON.stringify(command));
   }
 
+  /** False: there is no connection. */
+  ping(id: number): boolean {
+    if (this.#state.link !== 'open' || !this.#socket) return false;
+    this.#socket.send(JSON.stringify({ type: 'bridge.ping', id } satisfies BridgePing));
+    return true;
+  }
+
   /** What the media buttons send (ui_send_media and ui_send_server in ui.c). */
   sendMedia(type: MediaTarget, cmd: 'toggle' | 'next' | 'prev' | 'seek', value = 0): void {
     this.send({ type, cmd, value });
@@ -299,6 +309,10 @@ export class Connection {
     }
     if (typeof message?.type !== 'string') return;
 
+    if (message.type === 'bridge.pong') {
+      if (typeof message.id === 'number') this.onPong?.(message.id);
+      return;
+    }
     if (message.type === 'bridge.snapshot' || message.type === 'bridge.status') {
       this.#onBridgeMessage(message as unknown as BridgeMessage);
       return;

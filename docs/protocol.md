@@ -1,6 +1,6 @@
 # Protocol
 
-What the bridge speaks, as of phase 4. Upstream references are to commit
+What the bridge speaks, as of phase 5. Upstream references are to commit
 `b78c505279a50f80cd40bfc86f0d9de9ac79437c`. The schemas are in `packages/protocol`.
 
 ## Companion <-> bridge: `/ws`
@@ -298,6 +298,12 @@ On every change and every 5 s, online or not. A phone that hears nothing for 15 
 | --- | --- | --- |
 | `pc_online` | boolean | |
 | `build` | string, optional | As in the snapshot; changes after `pnpm build` |
+
+### `bridge.ping` (phone -> bridge), `bridge.pong`
+
+`{"type":"bridge.ping","id":7}`, every 5 s while the page is visible; the bridge answers with `bridge.pong` and the
+same `id`, to that phone alone. It is no command and never reaches the companion. With other or more fields it
+is refused like any unknown command.
 
 ## HTTP
 

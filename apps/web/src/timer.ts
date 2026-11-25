@@ -3,6 +3,7 @@
 import { fields } from '@deskhub-mobile/protocol';
 import { loadJson, saveJson } from './saved.js';
 import { Store } from './store.js';
+import { T } from './text.js';
 
 /** Minutes. */
 export const PRESETS = [1, 5, 10, 15, 25, 45] as const;
@@ -110,4 +111,4 @@ export class TimerStore extends Store<TimerState> {
 
 /** Under "Time's up" (show_done). */
 export const timerName = (total: number) =>
-  total % 60 === 0 ? `${total / 60}-minute timer` : `${total}-second timer`;
+  total % 60 === 0 ? T.timer.nameMinutes(total / 60) : T.timer.nameSeconds(total);

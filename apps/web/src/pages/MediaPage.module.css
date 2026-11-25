@@ -1,145 +1,155 @@
+/* ---- one player ---- */
+
 .full {
   display: flex;
   flex: 1;
+  gap: calc(26 * var(--u));
   align-items: center;
-  gap: calc(28 * var(--u));
   min-height: 0;
 }
 
 .bigCover {
-  width: calc(300 * var(--u));
-  height: calc(300 * var(--u));
-  border-radius: calc(22 * var(--u));
-  background: var(--card);
+  flex: none;
+  height: 100%;
+  max-width: 48%;
+  border-radius: calc(20 * var(--u));
+  aspect-ratio: 1;
 }
 
 .column {
   display: flex;
   flex: 1;
   flex-direction: column;
-  gap: calc(6 * var(--u));
   min-width: 0;
 }
 
-.column > *,
-.lines > * {
+.source {
+  overflow: hidden;
+  color: var(--vram);
+  font-weight: 600;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.title {
+  display: -webkit-box;
+  margin-top: calc(6 * var(--u));
+  overflow: hidden;
+  font-size: calc(28 * var(--u));
+  font-weight: 600;
+  line-height: 1.15;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+}
+
+.artist,
+.album {
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 
-.source {
-  color: var(--accent);
-}
-
-.title {
-  font-size: calc(32 * var(--u));
-  font-weight: 600;
-}
-
 .artist {
-  font-size: calc(24 * var(--u));
+  margin-top: calc(5 * var(--u));
+  font-size: calc(19 * var(--u));
 }
 
 .album {
   min-height: 1.2em;
+  margin-bottom: calc(10 * var(--u));
   color: var(--muted);
   font-size: calc(16 * var(--u));
 }
 
-.column > :last-child {
-  margin-top: calc(8 * var(--u));
-  overflow: visible;
-}
+/* ---- the PC and a media server ---- */
 
 .split {
   display: grid;
   flex: 1;
-  grid-template-columns: 1fr 1fr;
-  gap: calc(12 * var(--u));
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: calc(8 * var(--u));
   min-height: 0;
 }
 
-.card {
+.player {
   display: flex;
   flex-direction: column;
-  justify-content: center;
-  gap: calc(14 * var(--u));
-  min-width: 0;
-  min-height: 0;
-  padding: calc(16 * var(--u));
-  border: 1px solid var(--border);
-  border-radius: calc(16 * var(--u));
-  background: var(--card);
+  gap: calc(8 * var(--u));
 }
 
 .top {
   display: flex;
-  align-items: center;
+  flex: 1;
   gap: calc(14 * var(--u));
-  min-width: 0;
+  align-items: center;
+  min-height: 0;
 }
 
 .smallCover {
-  width: calc(140 * var(--u));
-  height: calc(140 * var(--u));
+  width: calc(104 * var(--u));
+  height: calc(104 * var(--u));
 }
 
 .poster {
-  width: calc(93 * var(--u));
-  height: calc(140 * var(--u));
+  width: calc(84 * var(--u));
+  height: calc(126 * var(--u));
 }
 
 .lines {
-  display: flex;
   flex: 1;
-  flex-direction: column;
-  gap: calc(4 * var(--u));
   min-width: 0;
 }
 
 .lines h1 {
-  font-size: calc(24 * var(--u));
-  font-weight: 500;
+  display: -webkit-box;
+  margin-top: calc(4 * var(--u));
+  overflow: hidden;
+  font-size: calc(20 * var(--u));
+  font-weight: 600;
+  line-height: 1.2;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 3;
+}
+
+.player[data-idle] h1 {
+  color: var(--muted);
+}
+
+.cardArtist,
+.cardAlbum {
+  overflow: hidden;
+  color: var(--muted);
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .cardArtist {
-  font-size: calc(16 * var(--u));
-}
-
-.cardAlbum {
-  min-height: 1.2em;
-  color: var(--muted);
-}
-
-.idle .top {
-  flex-direction: column;
-}
-
-.idle .lines {
-  flex: none;
-  max-width: 100%;
-  text-align: center;
-}
-
-.idle h1,
-.idle .cardArtist {
-  color: var(--muted);
+  margin-top: calc(4 * var(--u));
 }
 
 @media (orientation: portrait) {
   .full {
     flex-direction: column;
+    gap: calc(18 * var(--u));
+    align-items: stretch;
     justify-content: center;
+  }
+
+  .bigCover {
+    flex: 0 1 auto;
+    align-self: center;
+    width: min(100%, calc(330 * var(--u)));
+    height: auto;
+    min-height: 0;
+    max-width: none;
   }
 
   .column {
     flex: none;
-    width: 100%;
   }
 
   .split {
-    grid-template-rows: 1fr 1fr;
+    grid-template-rows: repeat(2, minmax(0, 1fr));
     grid-template-columns: minmax(0, 1fr);
   }
 }

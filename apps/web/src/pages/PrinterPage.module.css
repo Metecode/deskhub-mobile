@@ -2,290 +2,237 @@
   display: flex;
   flex: 1;
   flex-direction: column;
-  gap: calc(10 * var(--u));
+  gap: calc(8 * var(--u));
   min-height: 0;
 }
 
 .head {
   display: flex;
   flex: none;
+  gap: calc(12 * var(--u));
   align-items: center;
-  gap: calc(14 * var(--u));
-  height: max(44px, calc(44 * var(--u)));
+  height: calc(40 * var(--u));
+  padding: 0 calc(6 * var(--u));
 }
 
 .name {
+  position: relative;
   min-width: 0;
-  height: 100%;
   overflow: hidden;
-  font-size: calc(32 * var(--u));
+  color: inherit;
+  font-size: calc(21 * var(--u));
+  font-weight: 600;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 
-.name:active:enabled {
-  color: var(--muted);
+/* With several printers the whole row can be touched. */
+.head:has(.name:enabled) {
+  position: relative;
+}
+
+.name:enabled::after {
+  position: fixed;
+  content: '';
+}
+
+.name:enabled {
+  position: static;
+}
+
+.name:enabled::after {
+  position: absolute;
+  inset: min(0px, (100% - 44px) / 2) 0;
 }
 
 .chip {
   flex: none;
-  padding: calc(5 * var(--u)) calc(12 * var(--u));
+  padding: calc(3 * var(--u)) calc(12 * var(--u));
   border-radius: calc(14 * var(--u));
-  background: color-mix(in srgb, var(--state) 30%, transparent);
-  color: color-mix(in srgb, var(--state) 53%, white);
-  font-size: calc(16 * var(--u));
-  line-height: 1.1;
+  background: color-mix(in srgb, var(--state) 22%, var(--card));
+  color: var(--text);
+  font-size: max(12px, calc(14 * var(--u)));
+  font-weight: 600;
 }
 
 .count {
   flex: none;
   margin-left: auto;
   color: var(--muted);
-  font-size: calc(16 * var(--u));
-  white-space: pre;
 }
 
 .body {
   display: grid;
   flex: 1;
-  grid-template-rows: minmax(0, 112fr) minmax(0, 120fr) minmax(0, 118fr);
-  grid-template-columns: minmax(0, 300fr) minmax(0, 360fr);
-  gap: calc(12 * var(--u));
+  grid-template-areas: 'progress job' 'progress temperatures' 'progress filament';
+  grid-template-rows: minmax(0, 88fr) minmax(0, 90fr) minmax(0, 88fr);
+  grid-template-columns: minmax(0, 220fr) minmax(0, 427fr);
+  gap: calc(8 * var(--u));
   min-height: 0;
 }
 
-.card {
-  min-width: 0;
-  min-height: 0;
-  padding: calc(12 * var(--u)) calc(16 * var(--u));
+.progress {
+  display: flex;
+  flex-direction: column;
+  grid-area: progress;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+}
+
+.progress > p {
+  max-width: 100%;
   overflow: hidden;
-  border: 1px solid var(--border);
-  border-radius: calc(16 * var(--u));
-  background: var(--card);
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
-.caption {
+.state {
+  margin-bottom: calc(8 * var(--u));
+  font-size: calc(26 * var(--u));
+  font-weight: 600;
+}
+
+.remaining {
+  font-size: calc(18 * var(--u));
+  font-weight: 600;
+}
+
+.done,
+.layer {
   color: var(--muted);
-  font-size: inherit;
+}
+
+.progress > .error {
+  color: var(--bad);
+  white-space: normal;
+}
+
+.job {
+  display: flex;
+  flex-direction: column;
+  grid-area: job;
+  justify-content: center;
+  padding-top: calc(6 * var(--u));
+  padding-bottom: calc(6 * var(--u));
+}
+
+.muted {
+  flex: none;
+  color: var(--muted);
+  font-size: max(12px, calc(14 * var(--u)));
   font-weight: 500;
-  letter-spacing: calc(2 * var(--u));
+}
+
+.file {
+  overflow: hidden;
+  font-size: calc(19 * var(--u));
+  font-weight: 600;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .small {
   min-height: 1.2em;
   overflow: hidden;
   color: var(--muted);
+  font-size: max(12px, calc(13 * var(--u)));
   text-overflow: ellipsis;
   white-space: nowrap;
 }
-
-/* ---- progress ---- */
-
-.progress {
-  display: flex;
-  flex-direction: column;
-  grid-row: 1 / -1;
-  align-items: center;
-  text-align: center;
-}
-
-.progress > p {
-  flex: none;
-  max-width: 100%;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.dial {
-  position: relative;
-  flex: 1;
-  min-height: 0;
-  max-width: 100%;
-  max-height: calc(220 * var(--u));
-  aspect-ratio: 1;
-  margin: auto;
-}
-
-.dial svg {
-  display: block;
-  width: 100%;
-  height: 100%;
-}
-
-.track,
-.arc {
-  fill: none;
-  stroke-width: 16;
-  stroke-linecap: round;
-}
-
-.track {
-  stroke: var(--card-hi);
-}
-
-.pct,
-.remaining {
-  position: absolute;
-  width: 100%;
-}
-
-.pct {
-  top: calc(50% - 38 * var(--u));
-  font-size: calc(46 * var(--u));
-  font-weight: 600;
-  font-variant-numeric: tabular-nums;
-}
-
-.pct[data-text] {
-  top: calc(50% - 22 * var(--u));
-  font-size: calc(32 * var(--u));
-}
-
-.remaining {
-  top: calc(50% + 22 * var(--u));
-  color: var(--muted);
-  font-size: calc(16 * var(--u));
-}
-
-.done {
-  min-height: 1.2em;
-  font-size: calc(20 * var(--u));
-}
-
-.layer {
-  min-height: 1.2em;
-  margin-top: calc(4 * var(--u));
-  color: var(--muted);
-  font-size: calc(16 * var(--u));
-}
-
-.error {
-  min-height: 1.2em;
-  margin-top: calc(4 * var(--u));
-  color: var(--bad);
-}
-
-/* ---- job ---- */
-
-.job {
-  display: flex;
-  flex-direction: column;
-  justify-content: space-between;
-}
-
-.file {
-  overflow: hidden;
-  font-size: calc(24 * var(--u));
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-/* ---- temperatures ---- */
 
 .temperatures {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
-}
-
-.temperatures > div {
-  display: flex;
-  flex-direction: column;
-  justify-content: space-between;
+  grid-area: temperatures;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  align-items: center;
+  padding-top: calc(6 * var(--u));
+  padding-bottom: calc(6 * var(--u));
 }
 
 .tempName {
   display: flex;
-  align-items: center;
   gap: calc(6 * var(--u));
+  align-items: center;
   color: var(--muted);
+  font-size: max(12px, calc(14 * var(--u)));
 }
 
 .temp {
-  font-size: calc(32 * var(--u));
+  font-size: calc(24 * var(--u));
+  font-weight: 600;
   font-variant-numeric: tabular-nums;
-  line-height: 1.1;
+  line-height: 1.15;
 }
-
-/* ---- filament ---- */
 
 .filament {
   display: flex;
-  flex-direction: column;
+  gap: calc(16 * var(--u));
+  grid-area: filament;
+  align-items: center;
+  padding-top: calc(6 * var(--u));
+  padding-bottom: calc(6 * var(--u));
+}
+
+.none {
+  color: var(--muted);
 }
 
 .slots {
   display: flex;
   flex: 1;
-  min-height: 0;
+  gap: calc(8 * var(--u));
+  justify-content: flex-end;
+  min-width: 0;
+}
+
+.slots:empty {
+  display: none;
 }
 
 .slot {
   display: flex;
-  flex: 1;
+  flex: 0 1 calc(56 * var(--u));
   flex-direction: column;
-  gap: calc(6 * var(--u));
+  gap: calc(3 * var(--u));
   align-items: center;
-  justify-content: center;
   min-width: 0;
-  color: var(--muted);
-}
-
-.slot[data-active] {
-  color: var(--text);
 }
 
 .swatch {
-  flex: none;
-  width: calc(30 * var(--u));
-  height: calc(30 * var(--u));
-  border-radius: 50%;
+  width: 100%;
+  max-width: calc(44 * var(--u));
+  height: calc(34 * var(--u));
+  border: calc(2 * var(--u)) solid transparent;
+  border-radius: calc(10 * var(--u));
 }
 
 .swatch[data-dark] {
-  border: 1px solid var(--text);
+  border-color: var(--track);
 }
 
 .slot[data-active] .swatch {
-  outline: calc(2 * var(--u)) solid var(--accent);
-  outline-offset: calc(3 * var(--u));
+  border-color: var(--text);
 }
 
 .slotType {
   max-width: 100%;
   overflow: hidden;
+  color: var(--muted);
+  font-size: max(12px, calc(13 * var(--u)));
+  text-overflow: ellipsis;
   white-space: nowrap;
 }
 
-.none {
-  margin-top: calc(10 * var(--u));
-  color: var(--dim);
-  font-size: calc(16 * var(--u));
-}
-
-:global([data-nav='bottom']) .card {
-  padding-top: calc(8 * var(--u));
-  padding-bottom: calc(8 * var(--u));
-}
-
-:global([data-nav='bottom']) .body {
-  grid-template-rows: minmax(0, 92fr) minmax(0, 100fr) minmax(0, 100fr);
-  gap: calc(8 * var(--u));
-}
-
-:global([data-nav='bottom']) .swatch {
-  width: calc(26 * var(--u));
-  height: calc(26 * var(--u));
+.slot[data-active] .slotType {
+  color: var(--text);
+  font-weight: 600;
 }
 
 @media (orientation: portrait) {
-  :global([data-nav='bottom']) .body {
-    grid-template-rows: minmax(0, 300fr) minmax(0, 100fr) minmax(0, 110fr) minmax(0, 110fr);
+  .body {
+    grid-template-areas: 'progress' 'job' 'temperatures' 'filament';
+    grid-template-rows: minmax(0, 240fr) minmax(0, 100fr) minmax(0, 100fr) minmax(0, 100fr);
     grid-template-columns: minmax(0, 1fr);
-    gap: calc(12 * var(--u));
-  }
-
-  .progress {
-    grid-row: auto;
   }
 }

@@ -3,18 +3,13 @@ import { useSyncExternalStore, type ReactNode } from 'react';
 import { isOnline, type BridgeState } from '../connection.js';
 import { browserName, type ErrorStore } from '../diagnostics.js';
 import type { OfflineState, OfflineStore } from '../offline.js';
+import type { LinkState } from '../linkQuality.js';
+import { formatNumber, T } from '../text.js';
 import { formatClock, formatDuration } from '../time.js';
 import type { WakeLockState, WakeLockStore } from '../wakeLock.js';
 import styles from './InfoPage.module.css';
 
 const FLAG = 'chrome://flags/#unsafely-treat-insecure-origin-as-secure';
-
-const LINKS: Readonly<Record<BridgeState['link'], string>> = {
-  connecting: 'connecting',
-  open: 'connected',
-  bad_token: 'token missing or refused',
-  bad_origin: 'this address is not allowed',
-};
 
 type Mark = 'good' | 'bad' | undefined;
 
@@ -30,13 +25,13 @@ function Row({ label, mark, children }: { label: string; mark?: Mark; children: 
 function wakeLockText(state: WakeLockState, now: number): [string, Mark] {
   switch (state.status) {
     case 'unavailable':
-      return ['not available', 'bad'];
+      return [T.info.unavailable, 'bad'];
     case 'off':
-      return ['available, off', undefined];
+      return [T.info.off, undefined];
     case 'waiting':
-      return ['waiting', undefined];
+      return [T.info.waiting, undefined];
     case 'held':
-      return [`on for ${formatDuration(Math.max(0, now - Math.floor(state.since / 1000)))}`, 'good'];
+      return [T.info.held(formatDuration(Math.max(0, now - Math.floor(state.since / 1000)))), 'good'];
     case 'refused':
       return [state.reason, 'bad'];
   }
@@ -45,13 +40,13 @@ function wakeLockText(state: WakeLockState, now: number): [string, Mark] {
 function offlineText(state: OfflineState): [string, Mark] {
   switch (state.status) {
     case 'unavailable':
-      return ['not available', 'bad'];
+      return [T.info.unavailable, 'bad'];
     case 'off':
-      return ['off', undefined];
+      return [T.info.off, undefined];
     case 'starting':
-      return ['starting', undefined];
+      return [T.info.starting, undefined];
     case 'active':
-      return ['active', 'good'];
+      return [T.info.active, 'good'];
     case 'failed':
       return [state.reason, 'bad'];
   }
@@ -59,15 +54,17 @@ function offlineText(state: OfflineState): [string, Mark] {
 
 interface InfoPageProps {
   state: BridgeState;
+  link: LinkState;
   wakeLock: WakeLockStore;
   offline: OfflineStore;
   errors: ErrorStore;
   /** Epoch seconds. */
   now: number;
+  onTabs: () => void;
   onClose: () => void;
 }
 
-export function InfoPage({ state, wakeLock, offline, errors, now, onClose }: InfoPageProps) {
+export function InfoPage({ state, link, wakeLock, offline, errors, now, onTabs, onClose }: InfoPageProps) {
   const lock = useSyncExternalStore(wakeLock.subscribe, wakeLock.getState);
   const error = useSyncExternalStore(errors.subscribe, errors.getState);
   const worker = useSyncExternalStore(offline.subscribe, offline.getState);
@@ -77,48 +74,57 @@ export function InfoPage({ state, wakeLock, offline, errors, now, onClose }: Inf
   return (
     <main className={styles.page}>
       <header className={styles.header}>
-        <h1>Diagnostics</h1>
+        <h1>{T.info.title}</h1>
+        <button type="button" className={styles.button} onClick={onTabs}>
+          {T.tabs.open}
+        </button>
         <button type="button" className={styles.button} onClick={() => location.reload()}>
-          Reload
+          {T.info.reload}
         </button>
         <button type="button" className={styles.button} onClick={onClose}>
-          Close
+          {T.info.close}
         </button>
       </header>
       {!isSecureContext && (
         <p className={styles.hint}>
-          Without a secure context the screen can&apos;t be kept on and the page doesn&apos;t open without the PC. In
-          Chrome, open <code>{FLAG}</code>, enter <code>{location.origin}</code>, choose Enabled and relaunch.
+          {T.info.hint[0]}
+          <code>{FLAG}</code>
+          {T.info.hint[1]}
+          <code>{location.origin}</code>
+          {T.info.hint[2]}
         </p>
       )}
       <dl className={styles.rows}>
-        <Row label="Address">{location.origin}</Row>
-        <Row label="Secure context" mark={isSecureContext ? 'good' : 'bad'}>
-          {isSecureContext ? 'yes' : 'no'}
+        <Row label={T.info.address}>{location.origin}</Row>
+        <Row label={T.info.secure} mark={isSecureContext ? 'good' : 'bad'}>
+          {isSecureContext ? T.info.yes : T.info.no}
         </Row>
-        <Row label="Wake lock" mark={lockMark}>
+        <Row label={T.info.wakeLock} mark={lockMark}>
           {lockText}
         </Row>
-        <Row label="Service worker" mark={workerMark}>
+        <Row label={T.info.worker} mark={workerMark}>
           {workerText}
         </Row>
-        <Row label="Bridge" mark={state.link === 'open' ? 'good' : 'bad'}>
-          {LINKS[state.link]}
+        <Row label={T.info.bridge} mark={state.link === 'open' ? 'good' : 'bad'}>
+          {T.info.links[state.link]}
         </Row>
-        <Row label="PC" mark={online ? 'good' : undefined}>
-          {online ? 'online' : 'offline'}
+        <Row label={T.info.answer} mark={link.ms === null ? undefined : link.level === 'good' ? 'good' : 'bad'}>
+          {link.ms === null ? T.none : T.info.answerTime(Math.round(link.ms), link.lost)}
         </Row>
-        <Row label="Browser">{browserName(navigator.userAgent)}</Row>
-        <Row label="Screen">
-          {innerWidth} x {innerHeight}, {Math.round(devicePixelRatio * 100) / 100} pixels each
-          {document.fullscreenElement ? ', fullscreen' : ''}
+        <Row label={T.info.pc} mark={online ? 'good' : undefined}>
+          {online ? T.info.online : T.info.offline}
         </Row>
-        <Row label="Build">
+        <Row label={T.info.browser}>{browserName(navigator.userAgent)}</Row>
+        <Row label={T.info.screen}>
+          {T.info.screenSize(innerWidth, innerHeight, formatNumber(devicePixelRatio, 2))}
+          {document.fullscreenElement ? `, ${T.info.fullscreen}` : ''}
+        </Row>
+        <Row label={T.info.build}>
           {__BUILD__}
-          {state.build && state.build !== __BUILD__ && `, the bridge has ${state.build}`}
+          {state.build && state.build !== __BUILD__ && `, ${T.info.bridgeBuild(state.build)}`}
         </Row>
-        <Row label="Last error" mark={error ? 'bad' : undefined}>
-          {error ? `${formatClock(Math.floor(error.at / 1000))}  ${error.text}` : 'none'}
+        <Row label={T.info.lastError} mark={error ? 'bad' : undefined}>
+          {error ? `${formatClock(Math.floor(error.at / 1000))}  ${error.text}` : T.info.noError}
         </Row>
       </dl>
     </main>

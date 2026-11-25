@@ -2,13 +2,13 @@
   "id": "/",
   "name": "deskhub-mobile",
   "short_name": "deskhub",
-  "description": "An unofficial screen for Desk Hub.",
+  "description": "Desk Hub için resmî olmayan bir ekran.",
   "start_url": "/",
   "scope": "/",
   "display": "fullscreen",
   "orientation": "landscape",
-  "background_color": "#0d0e11",
-  "theme_color": "#0d0e11",
+  "background_color": "#000000",
+  "theme_color": "#000000",
   "icons": [
     {
       "src": "/icon-192.png",

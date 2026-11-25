@@ -1,5 +1,5 @@
 import { readdirSync, writeFileSync } from 'node:fs';
-import { join } from 'node:path';
+import { join, resolve } from 'node:path';
 import react from '@vitejs/plugin-react';
 import { defineConfig, loadEnv, type Plugin } from 'vite';
 
@@ -13,7 +13,7 @@ function buildJson(build: string): Plugin {
     name: 'build-json',
     apply: 'build',
     configResolved: (config) => {
-      outDir = join(config.root, config.build.outDir);
+      outDir = resolve(config.root, config.build.outDir);
     },
     closeBundle: () => {
       const files = readdirSync(join(outDir, 'assets'))

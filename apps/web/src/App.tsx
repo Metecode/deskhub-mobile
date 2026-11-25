@@ -1,22 +1,27 @@
-import { visibleWidgets, type Page } from '@deskhub-mobile/protocol';
+import type { Page } from '@deskhub-mobile/protocol';
 import { useState, useSyncExternalStore, type CSSProperties, type ReactNode } from 'react';
 import { calendarBadge } from './agenda.js';
 import type { AlertStore } from './alerts.js';
 import styles from './App.module.css';
 import type { BurnInStore } from './burnIn.js';
 import { DarkLayer } from './components/DarkLayer.js';
+import { Dock } from './components/Dock.js';
 import { ErrorBoundary } from './components/ErrorNote.js';
-import { Rail } from './components/Rail.js';
+import { Panel } from './components/Panel.js';
+import { SwipeStage } from './components/SwipeStage.js';
 import { TimesUp } from './components/TimesUp.js';
 import { TokenForm } from './components/TokenForm.js';
-import { isOnline, type Connection } from './connection.js';
+import type { Connection } from './connection.js';
 import type { DarkStore } from './dark.js';
 import type { ErrorStore, InfoRoute } from './diagnostics.js';
 import type { LaunchStore } from './games.js';
+import { homeGrid } from './homeLayout.js';
 import { useNow, usePortrait } from './hooks.js';
-import { pageToShow, tabsOf } from './nav.js';
+import type { LinkStore } from './linkQuality.js';
+import { dockOf, viewToShow, type View } from './nav.js';
 import type { OfflineStore } from './offline.js';
 import { AiPage } from './pages/AiPage.js';
+import { AllPage } from './pages/AllPage.js';
 import { CalendarPage } from './pages/CalendarPage.js';
 import { GamesPage } from './pages/GamesPage.js';
 import { GitHubPage } from './pages/GitHubPage.js';
@@ -27,11 +32,12 @@ import { MediaPage } from './pages/MediaPage.js';
 import { PrinterPage } from './pages/PrinterPage.js';
 import { ShortcutsPage } from './pages/ShortcutsPage.js';
 import { StatsPage, type StatsView } from './pages/StatsPage.js';
+import { TabsPage } from './pages/TabsPage.js';
 import { TimerPage } from './pages/TimerPage.js';
 import { WeatherPage } from './pages/WeatherPage.js';
 import type { Sound } from './sound.js';
 import type { SpeedTestStore } from './speedTest.js';
-import { formatDuration } from './time.js';
+import { orderTabs, type TabOrderStore } from './tabOrder.js';
 import type { TimerStore } from './timer.js';
 import { saveToken } from './token.js';
 import type { WakeLockStore } from './wakeLock.js';
@@ -51,6 +57,8 @@ export interface Stores {
   errors: ErrorStore;
   info: InfoRoute;
   burnIn: BurnInStore;
+  link: LinkStore;
+  tabOrder: TabOrderStore;
   /** Whether a reload would disturb nothing. */
   calm: () => boolean;
 }
@@ -60,20 +68,30 @@ const Show = ({ render }: { render: () => ReactNode }) => render();
 
 export function App(stores: Stores) {
   const { connection, weather, alerts, timer, dark, speedTest, launches, sound, wakeLock, offline, errors, info } = stores;
-  const { burnIn, calm } = stores;
+  const { burnIn, calm, link, tabOrder } = stores;
   const state = useSyncExternalStore(connection.subscribe, connection.getState);
   const forecast = useSyncExternalStore(weather.subscribe, weather.getState);
   const alert = useSyncExternalStore(alerts.subscribe, alerts.getState);
   const timerState = useSyncExternalStore(timer.subscribe, timer.getState);
   const darkStyle = useSyncExternalStore(dark.subscribe, dark.getState);
-  const [page, setPage] = useState<Page>('home');
+  const linkState = useSyncExternalStore(link.subscribe, link.getState);
+  const error = useSyncExternalStore(errors.subscribe, errors.getState);
+  const order = useSyncExternalStore(tabOrder.subscribe, tabOrder.getState);
+  const [page, setPage] = useState<Page | 'all' | 'tabs'>('home');
   const [statsView, setStatsView] = useState<StatsView>('pc');
   const now = Math.floor(useNow(1000) / 1000);
   const portrait = usePortrait();
   const { shift, dim } = useSyncExternalStore(burnIn.subscribe, burnIn.getState);
   const infoOpen = useSyncExternalStore(info.subscribe, info.getState);
+  // The Internet is a view of the stats page (ui_show_page in ui.c).
+  const open = (target: Page | 'all' | 'tabs') => {
+    info.close();
+    if (target === 'network') setStatsView('net');
+    if (target === 'stats') setStatsView('pc');
+    setPage(target === 'network' ? 'stats' : target);
+  };
   const infoPage = infoOpen && (
-    <InfoPage state={state} wakeLock={wakeLock} offline={offline} errors={errors} now={now} onClose={info.close} />
+    <InfoPage state={state} link={linkState} wakeLock={wakeLock} offline={offline} errors={errors} now={now} onTabs={() => open('tabs')} onClose={info.close} />
   );
 
   if (state.link === 'bad_token') {
@@ -88,30 +106,42 @@ export function App(stores: Stores) {
     );
   }
 
-  // The Internet is a view of the stats page (ui_show_page in ui.c).
-  const open = (target: Page) => {
-    info.close();
-    if (target === 'network') setStatsView('net');
-    setPage(target === 'network' ? 'stats' : target);
-  };
   const alertAction = (action: 'focus' | 'dismiss') => {
     if (alert) connection.send({ type: 'alert_action', id: alert.id, action });
     alerts.hide();
   };
 
   const { pages, nav } = state.layout;
-  const current = pageToShow(page, pages);
-  // Not needed when Home shows the events already (ui_calendar_badge in ui.c).
-  const homeHasEvents = visibleWidgets(state.home, pages).some((g) => g.widget === 'events');
-  const show = () => {
-    switch (current) {
+  const tabs = orderTabs(pages, order);
+  const dock = dockOf(tabs);
+  const current = viewToShow(page, tabs);
+  const openable = (target: 'weather' | 'calendar' | 'timer') => (tabs.includes(target) ? () => open(target) : null);
+  const show = (view: View) => {
+    switch (view) {
+      case 'all':
+        return (
+          <AllPage
+            tabs={dock.rest ?? []}
+            state={state}
+            weather={forecast}
+            timer={timerState}
+            error={error}
+            now={now}
+            onOpen={open}
+            onTabs={() => open('tabs')}
+            onInfo={info.open}
+          />
+        );
+      case 'tabs':
+        return (
+          <TabsPage tabs={tabs} usage={state.usage} onChange={tabOrder.set} onClose={() => open(dock.rest ? 'all' : 'home')} />
+        );
       case 'home':
         return (
           <HomePage
             state={state}
+            grid={homeGrid(state.home, pages)}
             weather={forecast}
-            alert={alert}
-            onAlertAction={alertAction}
             now={now}
             connection={connection}
             launches={launches}
@@ -130,7 +160,7 @@ export function App(stores: Stores) {
           />
         );
       case 'ai':
-        return <AiPage state={state} alert={alert} onAlertAction={alertAction} now={now} />;
+        return <AiPage state={state} now={now} />;
       case 'printer':
         return <PrinterPage state={state} />;
       case 'games':
@@ -153,30 +183,46 @@ export function App(stores: Stores) {
   return (
     <div
       className={styles.app}
-      data-nav={portrait ? 'bottom' : nav}
+      data-layout={portrait ? 'upright' : nav === 'bottom' ? 'top' : nav}
       data-dim={dim || undefined}
       style={{ '--shift-x': `${shift.x}px`, '--shift-y': `${shift.y}px` } as CSSProperties}
     >
-      <Rail
-        tabs={tabsOf(pages)}
-        current={current}
-        onSelect={(tab) => {
-          info.close();
-          setPage(tab);
-        }}
-        badges={{
-          calendar: homeHasEvents ? null : calendarBadge(state.events.events, now),
-          ai: alert && 'var(--accent)',
-        }}
-        texts={{ timer: timerState.status === 'idle' ? null : formatDuration(timerState.left) }}
-        link={state.link}
-        online={isOnline(state)}
-        onStatus={infoOpen ? info.close : info.open}
+      <Panel
+        state={state}
+        weather={forecast}
+        alert={alert}
+        onAlertAction={alertAction}
+        timer={timerState}
+        link={linkState}
+        now={now}
+        onWeather={openable('weather')}
+        onCalendar={openable('calendar')}
+        onTimer={openable('timer')}
+        onLink={infoOpen ? info.close : info.open}
       />
-      <div className={styles.page}>
-        <ErrorBoundary key={infoOpen ? 'info' : current} calm={calm} onError={errors.add}>
-          {infoPage || <Show render={show} />}
-        </ErrorBoundary>
+      <div className={styles.body}>
+        <SwipeStage
+          // The diagnostics lie over the page: there is nothing next to them.
+          views={infoOpen ? [] : dock.rest ? [...dock.tabs, 'all'] : dock.tabs}
+          view={current}
+          onChange={open}
+          render={(view) => (
+            <ErrorBoundary key={infoOpen ? 'info' : view} calm={calm} onError={errors.add}>
+              {infoPage || <Show render={() => show(view)} />}
+            </ErrorBoundary>
+          )}
+        />
+        <Dock
+          dock={dock}
+          view={current}
+          onSelect={open}
+          badges={{
+            calendar: calendarBadge(state.events.events, now),
+            ai: alert && 'var(--accent)',
+            timer: timerState.status === 'idle' ? null : 'var(--good)',
+          }}
+          usage={state.usage}
+        />
       </div>
       {darkStyle && <DarkLayer style={darkStyle} now={now} onWake={dark.wake} />}
       {timerState.done && <TimesUp timer={timer} total={timerState.total} sound={sound} now={now} onTouch={dark.wake} />}

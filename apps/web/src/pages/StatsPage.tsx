@@ -1,12 +1,13 @@
 // PC stats: four gauges and a one-minute CPU/GPU history (firmware/main/ui_stats.c). The
 // Internet view is here too, while the "network" page is on.
 import type { Stats } from '@deskhub-mobile/protocol';
-import { Gauge } from '../components/Gauge.js';
 import { HistoryChart } from '../components/HistoryChart.js';
+import { Ring } from '../components/Ring.js';
 import { isOnline, type BridgeState, type Connection } from '../connection.js';
 import { formatMemory, formatRate, formatTemperature } from '../format.js';
 import type { SpeedTestStore } from '../speedTest.js';
 import { statusHint } from '../status.js';
+import { PAGE_NAMES, T } from '../text.js';
 import { InternetView } from './InternetView.js';
 import styles from './StatsPage.module.css';
 
@@ -26,8 +27,8 @@ interface StatsProps {
 }
 
 const VIEWS = [
-  ['pc', 'PC'],
-  ['net', 'Internet'],
+  ['pc', T.stats.pc],
+  ['net', PAGE_NAMES.network],
 ] as const;
 
 export function StatsPage({ state, connection, speedTest, view, onView, now }: StatsProps) {
@@ -52,6 +53,22 @@ export function StatsPage({ state, connection, speedTest, view, onView, now }: S
   );
 }
 
+interface GaugeProps {
+  name: string;
+  color: string;
+  /** null: nothing to show. */
+  percent: number | null;
+  sub: string;
+}
+
+const Gauge = ({ name, color, percent, sub }: GaugeProps) => (
+  <section className={`${styles.gauge} card`}>
+    <Ring percent={percent} color={color} size={96} />
+    <h2 className={styles.name}>{name}</h2>
+    <p className={styles.sub}>{sub}</p>
+  </section>
+);
+
 function PcView({ state }: { state: BridgeState }) {
   // Like the board, show no old numbers while the PC is offline.
   const s: Stats | null = isOnline(state) ? state.stats : null;
@@ -59,34 +76,34 @@ function PcView({ state }: { state: BridgeState }) {
   const message = statusHint(state);
 
   return (
-    <>
+    <div className={styles.view}>
       <div className={styles.gauges}>
-        <Gauge name="CPU" color="var(--cpu)" percent={s?.cpu ?? null} sub={formatTemperature(s?.cpuTemp ?? null)} />
+        <Gauge name={T.stats.cpu} color="var(--cpu)" percent={s?.cpu ?? null} sub={formatTemperature(s?.cpuTemp ?? null)} />
         <Gauge
-          name="GPU"
+          name={T.stats.gpu}
           color="var(--gpu)"
           percent={s?.gpu ?? null}
-          sub={s && !hasGpu ? 'No GPU data' : formatTemperature(hasGpu ? s.gpuTemp : null)}
+          sub={s && !hasGpu ? T.stats.noGpu : formatTemperature(hasGpu ? s.gpuTemp : null)}
         />
         <Gauge
-          name="RAM"
+          name={T.stats.ram}
           color="var(--ram)"
           percent={s && share(s.ramUsed, s.ramTotal)}
           sub={s ? memory(s.ramUsed, s.ramTotal) : ''}
         />
         <Gauge
-          name="VRAM"
+          name={T.stats.vram}
           color="var(--vram)"
           percent={hasGpu ? share(s.vramUsed, s.vramTotal) : null}
           sub={hasGpu ? memory(s.vramUsed, s.vramTotal) : ''}
         />
       </div>
 
-      <section className={styles.history}>
+      <section className={`${styles.history} card`}>
         <div className={styles.row}>
-          <h2 className={styles.caption}>LAST MINUTE</h2>
-          <span className={styles.cpuKey}>CPU</span>
-          <span className={styles.gpuKey}>GPU</span>
+          <h2 className={styles.muted}>{T.stats.lastMinute}</h2>
+          <span style={{ color: 'var(--cpu)' }}>{T.stats.cpu}</span>
+          <span style={{ color: 'var(--gpu)' }}>{T.stats.gpu}</span>
           {s && (
             <p className={styles.network}>
               <span>↓ {formatRate(s.netDown)}</span>
@@ -99,10 +116,10 @@ function PcView({ state }: { state: BridgeState }) {
           {message && <p className={styles.hint}>{message}</p>}
         </div>
         <div className={styles.row}>
-          <p className={styles.names}>{s && [s.cpuName, s.gpuName].filter(Boolean).join('  /  ')}</p>
-          <p className={styles.disk}>{s && `Disk ${Math.trunc(s.disk)}% used`}</p>
+          <p className={`${styles.muted} ellipsis`}>{s && [s.cpuName, s.gpuName].filter(Boolean).join(', ')}</p>
+          <p className={styles.disk}>{s && T.stats.disk(Math.trunc(s.disk))}</p>
         </div>
       </section>
-    </>
+    </div>
   );
 }

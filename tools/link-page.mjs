@@ -28,12 +28,12 @@ const flag = 'chrome://flags/#unsafely-treat-insecure-origin-as-secure';
 writeFileSync(
   out,
   `<!doctype html>
-<html lang="en">
+<html lang="tr">
 <meta charset="utf-8">
 <meta name="referrer" content="no-referrer">
-<title>deskhub-mobile: connect a phone</title>
+<title>deskhub-mobile: telefonu bağla</title>
 <style>
-  body { max-width: 900px; margin: 40px auto; padding: 0 20px; background: #0d0e11; color: #f3f4f6; font: 17px/1.5 system-ui, sans-serif; }
+  body { max-width: 900px; margin: 40px auto; padding: 0 20px; background: #000; color: #f3f4f6; font: 17px/1.5 system-ui, sans-serif; }
   main { display: flex; flex-wrap: wrap; gap: 40px; align-items: flex-start; }
   figure { margin: 0; padding: 12px; border-radius: 16px; background: #fff; }
   svg { display: block; width: 300px; height: 300px; }
@@ -42,19 +42,19 @@ writeFileSync(
   code { padding: 1px 6px; border-radius: 6px; background: #262a32; font-size: 15px; overflow-wrap: anywhere; user-select: all; }
   .note { color: #9aa0aa; }
 </style>
-<h1>Connect a phone</h1>
+<h1>Telefonu bağla</h1>
 <main>
   <figure>${renderSVG(link, { border: 2 })}</figure>
   <ol>
-    <li>On the phone, on the same network as this PC, scan the code and open it in <b>Chrome</b>.</li>
-    <li>So that the screen stays on and the app opens without the PC, open <code>${flag}</code> in Chrome, enter
-      <code>${escape(origin)}</code>, choose <b>Enabled</b> and tap <b>Relaunch</b>. Once per phone.</li>
-    <li>In Chrome's menu, choose <b>Add to home screen</b>.</li>
+    <li>Bu PC ile aynı ağdaki telefonda kodu okut ve <b>Chrome</b> ile aç.</li>
+    <li>Ekran açık kalsın ve uygulama PC olmadan açılsın diye Chrome’da <code>${flag}</code> adresini aç,
+      <code>${escape(origin)}</code> yaz, <b>Enabled</b> seç ve <b>Relaunch</b>’a bas. Her telefonda bir kez.</li>
+    <li>Chrome menüsünden <b>Ana ekrana ekle</b>’yi seç.</li>
   </ol>
 </main>
-<p class="note">The code has your token in it: whoever scans it can see your data and run your shortcuts. This page is
-deleted when you close the window it came from. Give this PC a DHCP reservation in your router, so that
-${escape(address)} stays its address.</p>
+<p class="note">Kodda bağlantı anahtarın var: okutan kişi verilerini görebilir ve kısayollarını çalıştırabilir. Bu sayfa,
+açıldığı pencere Enter ile kapatılınca silinir. Modemde bu PC için DHCP rezervasyonu yap ki adresi
+${escape(address)} olarak kalsın.</p>
 </html>
 `,
 );

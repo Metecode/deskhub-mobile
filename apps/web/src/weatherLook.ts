@@ -1,6 +1,7 @@
 // How weather is shown (weather_icon, weather_text and weather_color in
 // firmware/main/weather.c). `code` is a WMO weather code.
 import type { IconName } from './icons.js';
+import { percent, T, WEATHER_TEXTS } from './text.js';
 
 export function weatherIcon(code: number, isDay: boolean): IconName {
   if (code === 0) return isDay ? 'wb_sunny' : 'nights_stay';
@@ -23,38 +24,7 @@ export function weatherColor(code: number, isDay: boolean): string {
   return '#67e8f9'; // drizzle and rain
 }
 
-const TEXTS: Readonly<Record<number, string>> = {
-  0: 'Clear',
-  1: 'Mostly clear',
-  2: 'Partly cloudy',
-  3: 'Overcast',
-  45: 'Fog',
-  48: 'Fog',
-  51: 'Drizzle',
-  53: 'Drizzle',
-  55: 'Drizzle',
-  56: 'Freezing drizzle',
-  57: 'Freezing drizzle',
-  61: 'Light rain',
-  63: 'Rain',
-  65: 'Heavy rain',
-  66: 'Freezing rain',
-  67: 'Freezing rain',
-  71: 'Light snow',
-  73: 'Snow',
-  75: 'Heavy snow',
-  77: 'Snow grains',
-  80: 'Showers',
-  81: 'Showers',
-  82: 'Heavy showers',
-  85: 'Snow showers',
-  86: 'Snow showers',
-  95: 'Thunderstorm',
-  96: 'Storm with hail',
-  99: 'Storm with hail',
-};
-
-export const weatherText = (code: number): string => TEXTS[code] ?? 'Unknown';
+export const weatherText = (code: number): string => WEATHER_TEXTS[code] ?? T.weather.unknown;
 
 /** "72°", rounded away from zero like ui_fmt_temp. */
 export function formatTemp(t: number): string {
@@ -62,8 +32,8 @@ export function formatTemp(t: number): string {
   return `${Math.trunc(t < 0 ? t - 0.5 : t + 0.5) + 0}°`;
 }
 
-/** "40%"; little chance of rain isn't worth showing. */
-export const formatPrecip = (pct: number): string => (pct >= 10 ? `${Math.trunc(pct)}%` : '');
+/** "%40"; little chance of rain isn't worth showing. */
+export const formatPrecip = (pct: number): string => (pct >= 10 ? percent(Math.trunc(pct)) : '');
 
 /** The hourly forecast has no is_day (ui_weather.c). */
 export function isDaytime(t: number): boolean {

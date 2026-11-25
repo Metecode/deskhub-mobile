@@ -25,7 +25,7 @@ Companion (upstream, Windows, Python) --ws /ws--> Bridge (Node, on the PC) --ws 
   see `docs/plan-phase0.md`.)
 - Board behaviour: `firmware/main/hub_server.c`, `firmware/main/hub_model.h`.
 - Companion side: `companion/deskhub/__main__.py` (`session()`, `handle()`).
-- Look: `firmware/main/ui_internal.h`, `firmware/main/ui_*.c`, `docs/screenshots/`.
+- What the pages show: `firmware/main/ui_*.c`, `docs/screenshots/`. How they look is our own since phase 5.
 
 ## Rules
 
@@ -35,7 +35,7 @@ Companion (upstream, Windows, Python) --ws /ws--> Bridge (Node, on the PC) --ws 
   use CSS ellipsis.
 - A companion message that fails its schema is still relayed as it is. Commands from phones are
   strict: only the whitelist reaches the companion.
-- Code, comments and docs in English.
+- Code, comments and docs in English. What the user reads is Turkish and only in `apps/web/src/text.ts`.
 - Small conventional commits. Don't push.
 
 ## Commands
@@ -52,7 +52,26 @@ Companion (upstream, Windows, Python) --ws /ws--> Bridge (Node, on the PC) --ws 
 - **4:** Kiosk, finishing touches. Plan: `docs/plan-phase4.md`. OLED burn-in (the phone is a Galaxy A52, Super AMOLED): shift the
   pixels now and then, dim static elements such as the navigation bar and the clock.
 
+- **5:** A layout of its own (panel, stage, dock), Turkish, Claude's logo. Plan: `docs/plan-phase5.md`.
+
 ## Where we are
+
+Phases 0 to 4 are in `main`, tag `v0.2.0`. Phase 5, branch `phase-5` (from `main`):
+
+- [x] Plan approved and written down
+- [x] Web: Turkish
+- [x] Web: panel, stage, dock, All; tokens
+- [x] Web and bridge: the connection's icon
+- [x] Web: Home and its widgets
+- [x] Web: the pages
+- [x] Claude's logo
+- [x] Launcher and QR page in Turkish (the bridge's log stays English)
+- [x] README, docs/protocol.md
+- [x] Tabs can be swapped on the phone (`tabOrder.ts`, asked for by the user)
+- [x] Swiping between the dock's pages (`swipe.ts`, asked for by the user)
+- [x] Verified with the mock and the real companion, at all sizes
+- [x] Verified on the phone (by the user)
+- [ ] Pull request into `main`, tag `v0.3.0` (the user opens and merges it)
 
 Phases 0 to 2 are done and verified on the phone by the user (branches `phase-0` to `phase-2`).
 Phase 3, branch `phase-3`:
@@ -87,9 +106,9 @@ Phase 4, branch `phase-4` (from `phase-3`):
 - [x] README, docs/protocol.md
 - [x] Verified in a desktop browser
 - [ ] Verified on the phone (by the user)
-- [ ] One pull request into `main`, tag `v0.2.0` (only when the user says so, after phase 3 on the phone)
+- [x] One pull request into `main`, tag `v0.2.0`
 
-Next: the user tries the rest of phase 4 on the phone (overnight, home screen, opening without the PC).
+Next: the limits of `linkQuality.ts` (`GOOD_MS`, `FAIR_MS`), near the router and far from it; from phase 4 the night, the home screen and opening without the PC.
 
 Not verified yet:
 

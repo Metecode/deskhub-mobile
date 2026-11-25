@@ -155,6 +155,37 @@ describe('snapshot', () => {
   });
 });
 
+describe('ping', () => {
+  it('is answered to the one who asked, and goes no further', async () => {
+    const companion = await connectCompanion(bridge);
+    const [asking, other] = [await connectClient(bridge), await connectClient(bridge)];
+    asking.send('{"type":"bridge.ping","id":7}');
+    expect(await asking.until((m) => m.type === 'bridge.pong')).toEqual({ type: 'bridge.pong', id: 7 });
+    await asking.flush();
+    await companion.flush();
+    await other.flush();
+    expect(other.received.some((text) => text.includes('pong'))).toBe(false);
+    expect(companion.received.some((text) => text.includes('ping'))).toBe(false);
+  });
+
+  it.each([
+    '{"type":"bridge.ping"}',
+    '{"type":"bridge.ping","id":"7"}',
+    '{"type":"bridge.ping","id":-1}',
+    '{"type":"bridge.ping","id":7,"more":1}',
+    '{"type":"bridge.pong","id":7}',
+    '{"type":"bridge.snapshot"}',
+  ])('is refused as %s', async (text) => {
+    const companion = await connectCompanion(bridge);
+    const client = await connectClient(bridge);
+    client.send(text);
+    await client.flush();
+    await companion.flush();
+    expect(client.received.some((m) => m.includes('pong'))).toBe(false);
+    expect(companion.received).toEqual([]);
+  });
+});
+
 describe('covers', () => {
   it('are relayed unchanged', async () => {
     const companion = await connectCompanion(bridge);

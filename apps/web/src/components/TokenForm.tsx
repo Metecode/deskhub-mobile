@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { T } from '../text.js';
 import styles from './TokenForm.module.css';
 
 export function TokenForm({ onSubmit }: { onSubmit: (token: string) => void }) {
@@ -11,12 +12,12 @@ export function TokenForm({ onSubmit }: { onSubmit: (token: string) => void }) {
         if (token.trim()) onSubmit(token.trim());
       }}
     >
-      <h1 className={styles.title}>Connect this screen</h1>
-      <p className={styles.hint}>Open the link the bridge prints on your PC, or type CLIENT_TOKEN from its .env file.</p>
+      <h1 className={styles.title}>{T.token.title}</h1>
+      <p className={styles.hint}>{T.token.hint}</p>
       <div className={styles.row}>
         <input
           className={styles.input}
-          aria-label="Client token"
+          aria-label={T.token.label}
           value={token}
           onChange={(e) => setToken(e.target.value)}
           autoCapitalize="none"
@@ -24,7 +25,7 @@ export function TokenForm({ onSubmit }: { onSubmit: (token: string) => void }) {
           autoCorrect="off"
           spellCheck={false}
         />
-        <button className={styles.button}>Connect</button>
+        <button className={styles.button}>{T.token.connect}</button>
       </div>
     </form>
   );

@@ -5,6 +5,7 @@ import { CoverArt } from '../components/CoverArt.js';
 import { Icon } from '../components/Icon.js';
 import { isOnline, type BridgeState, type Connection } from '../connection.js';
 import { formatPlaytime, idleText, playingText, sessionSeconds, type LaunchStore } from '../games.js';
+import { T } from '../text.js';
 import styles from './GamesPage.module.css';
 
 interface GamesProps {
@@ -25,12 +26,12 @@ export function GamesPage({ state, connection, launches, now }: GamesProps) {
 
   return (
     <main className={styles.page}>
-      <section className={styles.top}>
+      <section className={`${styles.top} card`}>
         {playing && texts ? (
           <>
             <CoverArt cover={header} icon="sports_esports" iconSize={48} className={styles.header} />
             <div className={styles.now}>
-              <h2 className={styles.playing}>NOW PLAYING</h2>
+              <h2 className={styles.playing}>{T.games.nowPlaying}</h2>
               <p className={styles.name}>{playing.name}</p>
               <p className={styles.time}>{texts.time}</p>
               <p className={styles.total}>{texts.total}</p>
@@ -39,15 +40,15 @@ export function GamesPage({ state, connection, launches, now }: GamesProps) {
         ) : (
           <>
             <div className={styles.idle}>
-              <Icon name="sports_esports" size={80} color="var(--dim)" />
+              <Icon name="sports_esports" size={48} color="var(--dim)" />
               <div>
-                <p className={styles.name}>No game running</p>
+                <p className={styles.name}>{T.games.none}</p>
                 <p className={styles.total}>{idleText(steam, online)}</p>
               </div>
             </div>
             {steam && steam.friends.length > 0 && (
               <div className={styles.friends}>
-                <h2 className={styles.caption}>FRIENDS IN GAME</h2>
+                <h2 className={styles.muted}>{T.games.friends}</h2>
                 {steam.friends.map(({ name, game }, i) => (
                   <p key={i} className={styles.friend}>
                     <span>{name}</span>
@@ -61,7 +62,7 @@ export function GamesPage({ state, connection, launches, now }: GamesProps) {
       </section>
 
       <section className={styles.recent}>
-        <h2 className={styles.caption}>RECENT{'  •  '}TAP TO PLAY</h2>
+        <h2 className={styles.muted}>{T.games.recent}</h2>
         <div className={styles.tiles}>
           {steam?.recent.map(({ appid, name, total }) => (
             <button
@@ -81,11 +82,11 @@ export function GamesPage({ state, connection, launches, now }: GamesProps) {
                 />
                 {total > 0 && <span className={styles.hours}>{formatPlaytime(total)}</span>}
               </span>
-              <span className={styles.tileName}>{launching === appid ? 'Starting...' : name}</span>
+              <span className={styles.tileName}>{launching === appid ? T.games.starting : name}</span>
             </button>
           ))}
         </div>
-        {steam?.found && steam.recent.length === 0 && <p className={styles.empty}>No recent games</p>}
+        {steam?.found && steam.recent.length === 0 && <p className={styles.empty}>{T.games.noRecent}</p>}
       </section>
     </main>
   );

@@ -1,3 +1,5 @@
+﻿# What the user reads is Turkish; Windows PowerShell 5.1 needs the byte order mark for that.
+#
 # Starts the bridge, and on request the companion, when you sign in to Windows.
 #
 #   powershell -ExecutionPolicy Bypass -File tools\autostart.ps1 install
@@ -40,30 +42,30 @@ function Save-Shortcut([string]$Path, [string]$Target, [string]$Arguments, [stri
 
 function Show-Status {
     foreach ($entry in @(@('bridge', $bridgeLink), @('companion', $companionLink))) {
-        $state = if (Test-Path -LiteralPath $entry[1]) { 'starts when you sign in' } else { 'not set up' }
+        $state = if (Test-Path -LiteralPath $entry[1]) { 'oturum açılınca başlar' } else { 'ayarlanmadı' }
         Write-Output ('{0,-10} {1}' -f $entry[0], $state)
     }
     if (Test-Path -LiteralPath $upstreamLink) {
-        Write-Output "deskhub-install's shortcut for the companion is there as well (it brings the ASCII folding back)."
+        Write-Output "deskhub-install kısayolu da duruyor (Türkçe harfleri yine siler)."
     }
 }
 
 function Install-Autostart {
     if (-not (Test-Path -LiteralPath (Join-Path $root 'apps\bridge\dist\index.js'))) {
-        throw 'The bridge is not built. Run "pnpm build" first.'
+        throw 'Bridge derlenmemiş. Önce "pnpm build" çalıştır.'
     }
-    if (-not (Get-Command node -ErrorAction SilentlyContinue)) { throw 'node was not found.' }
+    if (-not (Get-Command node -ErrorAction SilentlyContinue)) { throw 'node bulunamadı.' }
 
     # Everything is checked before anything is written.
     if ($Companion) {
         if (Test-Path -LiteralPath $upstreamLink) {
-            throw "deskhub-install's shortcut already starts the companion. Remove it first: uv run deskhub-install --remove"
+            throw "Companion'ı deskhub-install kısayolu zaten başlatıyor. Önce onu kaldır: uv run deskhub-install --remove"
         }
         $folder = (Resolve-Path -LiteralPath $Companion).Path
         $python = Join-Path $folder '.venv\Scripts\pythonw.exe'
         $config = Join-Path $folder 'config.toml'
         foreach ($file in $python, $config) {
-            if (-not (Test-Path -LiteralPath $file)) { throw "$file was not found." }
+            if (-not (Test-Path -LiteralPath $file)) { throw "$file bulunamadı." }
         }
     }
 
@@ -87,6 +89,6 @@ try {
     if ($Action -eq 'remove') { Remove-Autostart }
     Show-Status
 } catch {
-    Write-Output "Error: $($_.Exception.Message)"
+    Write-Output "Hata: $($_.Exception.Message)"
     exit 1
 }

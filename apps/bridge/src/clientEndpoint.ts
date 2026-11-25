@@ -6,10 +6,12 @@ import {
   CLOSE_BAD_ORIGIN,
   CLOSE_BAD_TOKEN,
   parseCommand,
+  parsePing,
   STATUS_INTERVAL_MS,
   TOKEN_PARAM,
   type BridgeMessage,
   type Command,
+  type BridgePong,
   type StatusMessage,
   type WeatherSettings,
 } from '@deskhub-mobile/protocol';
@@ -91,7 +93,12 @@ export class ClientEndpoint {
       log.info(`client disconnected (${this.#clients.size} now)`);
     });
     ws.on('message', (data: Buffer, isBinary) => {
-      if (ws.readyState === ws.OPEN && !isBinary) this.#onCommand(data.toString('utf8'));
+      if (ws.readyState !== ws.OPEN || isBinary) return;
+      const text = data.toString('utf8');
+      const ping = parsePing(text);
+      // Not a command: it goes no further.
+      if (ping) ws.send(JSON.stringify({ type: 'bridge.pong', id: ping.id } satisfies BridgePong));
+      else this.#onCommand(text);
     });
     // The messages are JSON texts already.
     const build = this.#build();

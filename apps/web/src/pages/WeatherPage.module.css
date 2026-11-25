@@ -1,26 +1,17 @@
 .page {
-  display: flex;
+  display: grid;
   flex: 1;
-  flex-direction: column;
-  gap: calc(10 * var(--u));
+  grid-template-rows: minmax(0, 106fr) minmax(0, 100fr) minmax(0, 108fr);
+  gap: calc(8 * var(--u));
   min-height: 0;
-}
-
-.now,
-.hours,
-.days {
-  padding: calc(10 * var(--u)) calc(16 * var(--u));
-  border: 1px solid var(--border);
-  border-radius: calc(16 * var(--u));
-  background: var(--card);
 }
 
 .now {
   display: flex;
-  flex: 1.1;
+  gap: calc(18 * var(--u));
   align-items: center;
-  gap: calc(20 * var(--u));
-  min-height: 0;
+  padding-top: 0;
+  padding-bottom: 0;
 }
 
 .current {
@@ -29,110 +20,155 @@
 }
 
 .temp {
-  font-size: calc(44 * var(--u));
+  float: left;
+  margin-right: calc(14 * var(--u));
+  font-size: calc(54 * var(--u));
   font-weight: 600;
-  line-height: 1.05;
+  line-height: 1.1;
 }
 
-.condition,
-.city {
+.condition {
+  padding-top: calc(8 * var(--u));
   overflow: hidden;
+  font-size: calc(18 * var(--u));
+  font-weight: 600;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 
-.condition {
-  font-size: calc(20 * var(--u));
-}
-
 .city {
+  overflow: hidden;
   color: var(--muted);
-  font-size: calc(16 * var(--u));
-}
-
-.details {
-  display: flex;
-  flex-direction: column;
-  gap: calc(5 * var(--u));
-  font-size: calc(16 * var(--u));
-  text-align: right;
+  text-overflow: ellipsis;
   white-space: nowrap;
 }
 
-.updated {
+.details {
+  flex: none;
   color: var(--muted);
-  font-size: calc(13 * var(--u));
+  line-height: 1.35;
+  text-align: right;
+}
+
+.updated {
+  color: var(--dim);
+  font-size: max(12px, calc(13 * var(--u)));
 }
 
 .hours {
   display: flex;
-  flex: 1;
-  min-height: 0;
+  gap: calc(4 * var(--u));
+  align-items: center;
+  padding: calc(8 * var(--u)) calc(12 * var(--u));
   overflow-x: auto;
   overscroll-behavior: contain;
   scrollbar-width: none;
 }
 
-.days {
-  display: grid;
-  flex: 1;
-  grid-auto-columns: 1fr;
-  grid-auto-flow: column;
-  min-height: 0;
-}
-
-.hour,
-.day {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: calc(4 * var(--u));
-  white-space: nowrap;
-}
-
 .hour {
+  display: flex;
   flex: none;
-  width: calc(72 * var(--u));
+  flex-direction: column;
+  gap: calc(2 * var(--u));
+  align-items: center;
+  width: calc(58 * var(--u));
 }
 
 .label {
   color: var(--muted);
+  font-size: max(12px, calc(14 * var(--u)));
 }
 
 .hourTemp {
-  font-size: calc(20 * var(--u));
-}
-
-.dayName {
-  color: var(--muted);
-  font-size: calc(16 * var(--u));
-}
-
-.range {
-  font-size: calc(16 * var(--u));
+  font-size: calc(17 * var(--u));
+  font-weight: 600;
 }
 
 .rain {
   min-height: 1.2em;
-  color: var(--cpu);
+  color: #67e8f9;
+  font-size: max(12px, calc(13 * var(--u)));
+}
+
+.days {
+  display: grid;
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+  gap: calc(8 * var(--u));
+  min-height: 0;
+}
+
+.day {
+  display: flex;
+  flex-direction: column;
+  gap: calc(1 * var(--u));
+  align-items: center;
+  justify-content: center;
+  padding: calc(6 * var(--u)) calc(4 * var(--u));
+}
+
+.dayName {
+  font-weight: 600;
+}
+
+.range {
+  color: var(--muted);
+  font-size: calc(16 * var(--u));
+  font-variant-numeric: tabular-nums;
+}
+
+.range span {
+  color: var(--text);
+  font-weight: 600;
 }
 
 @media (orientation: portrait) {
+  .page {
+    grid-template-rows: minmax(0, 170fr) minmax(0, 120fr) minmax(0, 310fr);
+  }
+
   .now {
     flex-wrap: wrap;
+    gap: 0 calc(18 * var(--u));
+    align-content: center;
   }
 
   .details {
+    display: grid;
+    grid-template-columns: auto auto;
+    gap: 0 calc(18 * var(--u));
     width: 100%;
+    margin-top: calc(8 * var(--u));
     text-align: left;
   }
 
-  .day {
-    font-size: calc(13 * var(--u));
+  .days {
+    grid-template-rows: repeat(6, minmax(0, 1fr));
+    grid-template-columns: minmax(0, 1fr);
+    gap: 0;
+    border-radius: calc(20 * var(--u));
+    background: var(--card);
   }
 
-  .range {
-    font-size: inherit;
+  .day {
+    flex-direction: row;
+    gap: calc(16 * var(--u));
+    justify-content: flex-start;
+    padding: 0 calc(18 * var(--u));
+    border-radius: 0;
+    background: none;
+  }
+
+  .day + .day {
+    border-top: 1px solid var(--border);
+  }
+
+  .dayName {
+    width: calc(70 * var(--u));
+  }
+
+  .day .rain {
+    margin-left: auto;
+    min-height: 0;
+    font-size: calc(15 * var(--u));
   }
 }

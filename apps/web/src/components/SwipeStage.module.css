@@ -1,0 +1,32 @@
+.stage {
+  position: relative;
+  flex: 1;
+  min-height: 0;
+  overflow: clip;
+  container-type: size;
+}
+
+/* Pages are drawn for 655 x 330, or 388 x 620 upright, and scale with the stage. */
+.unit {
+  --u: min(100cqw / 655, 100cqh / 330);
+
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  font-size: calc(15 * var(--u));
+}
+
+:global([data-layout='upright']) .unit {
+  --u: min(100cqw / 388, 100cqh / 620);
+}
+
+/* The browser scrolls up and down, the rest is for swiping. Every scroller has to say so itself. */
+.stage,
+.stage :global(*:not(input, [data-no-swipe], [data-no-swipe] *)) {
+  touch-action: pan-y;
+}
+
+.stage :global([data-no-swipe]) {
+  touch-action: pan-x pan-y;
+}
