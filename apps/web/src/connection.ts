@@ -6,15 +6,20 @@ import {
   DEFAULT_HOME,
   DEFAULT_LAYOUT,
   NO_MEDIA,
+  normalizeAlert,
   normalizeEvents,
   normalizeHome,
   normalizeMedia,
   normalizeMediaServer,
+  normalizeNet,
+  normalizePcPower,
   normalizeStats,
   normalizeTiles,
   normalizeTileState,
+  normalizeUsage,
   SILENCE_TIMEOUT_MS,
   TOKEN_PARAM,
+  type Alert,
   type BridgeMessage,
   type Command,
   type Events,
@@ -23,9 +28,11 @@ import {
   type Media,
   type MediaServer,
   type MediaTarget,
+  type Net,
   type RawMessage,
   type Stats,
   type Tile,
+  type Usage,
   type WeatherSettings,
 } from '@deskhub-mobile/protocol';
 import { readCover, type Cover } from './cover.js';
@@ -66,6 +73,15 @@ export interface HubData {
   lit: ReadonlySet<number>;
   layout: Layout;
   home: Home;
+  /** Of the AI agent. */
+  usage: Usage | null;
+  /** null: nothing is waiting. undefined: no message about it. */
+  alert: Alert | null | undefined;
+  net: Net | null;
+  /** When `net` arrived, ms. */
+  netAt: number;
+  /** The PC's display sleeps. Stays when the link drops: a PC that sleeps takes the bridge along. */
+  asleep: boolean;
 }
 
 export interface BridgeState extends HubData {
@@ -91,6 +107,11 @@ const NO_DATA: Omit<HubData, 'layout' | 'home'> = {
   events: normalizeEvents({ type: 'events' }),
   tiles: [],
   lit: new Set(),
+  usage: null,
+  alert: undefined,
+  net: null,
+  netAt: 0,
+  asleep: false,
 };
 
 /** What a companion message changes. */
@@ -112,6 +133,15 @@ function read(message: RawMessage, layout: Layout): Partial<HubData> {
       return { layout: applyLayout(layout, message) };
     case 'home':
       return { home: normalizeHome(message) };
+    case 'ai':
+    case 'claude':
+      return { usage: normalizeUsage(message) };
+    case 'alert':
+      return { alert: normalizeAlert(message) };
+    case 'net':
+      return { net: normalizeNet(message), netAt: Date.now() };
+    case 'pc_power':
+      return { asleep: normalizePcPower(message) };
     default:
       return {};
   }

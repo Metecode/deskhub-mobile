@@ -271,6 +271,73 @@ describe('pages', () => {
   });
 });
 
+describe('sleep of the PC', () => {
+  const asleep = { type: 'pc_power', asleep: true };
+  const awake = { type: 'pc_power', asleep: false };
+
+  it('lasts while the bridge is out of reach, and ends with the companion\'s next session', () => {
+    const connection = connect();
+    last().snapshot(true, [awake]);
+    last().receive(asleep);
+    expect(connection.getState().asleep).toBe(true);
+    // The PC suspends: everything goes silent.
+    vi.advanceTimersByTime(SILENCE_TIMEOUT_MS + 60_000);
+    expect(connection.getState()).toMatchObject({ link: 'connecting', asleep: true });
+    // It wakes. The bridge is first, with what it knew.
+    last().snapshot(false, [asleep]);
+    expect(connection.getState().asleep).toBe(true);
+    last().receive(awake);
+    expect(connection.getState().asleep).toBe(false);
+  });
+
+  it('is over when the companion was faster than the phone', () => {
+    const connection = connect();
+    last().snapshot(true, [asleep]);
+    last().onclose!({ code: 1006 });
+    vi.advanceTimersByTime(60_000);
+    last().snapshot(true, [awake]);
+    expect(connection.getState().asleep).toBe(false);
+  });
+
+  it('is over when the bridge was restarted, as the PC must be on then', () => {
+    const connection = connect();
+    last().snapshot(true, [asleep]);
+    last().snapshot(false);
+    expect(connection.getState().asleep).toBe(false);
+  });
+
+  it('outlasts a companion that stops, as on the board', () => {
+    const connection = connect();
+    last().snapshot(true, [asleep]);
+    last().receive({ type: 'bridge.status', pc_online: false });
+    expect(connection.getState().asleep).toBe(true);
+  });
+});
+
+describe('AI, alerts and the internet', () => {
+  it('have their data', () => {
+    vi.setSystemTime(5000);
+    const connection = connect();
+    expect(connection.getState()).toMatchObject({ usage: null, alert: undefined, net: null });
+    last().snapshot(true, [
+      { type: 'ai', provider: 'codex' },
+      { type: 'alert', id: 'a', kind: 'permission' },
+      { type: 'net', online: true },
+    ]);
+    expect(connection.getState()).toMatchObject({
+      usage: { provider: 'codex' },
+      alert: { id: 'a', permission: true },
+      net: { online: true },
+      netAt: 5000,
+    });
+    last().receive({ type: 'claude' });
+    last().receive({ type: 'alert', clear: true });
+    expect(connection.getState()).toMatchObject({ usage: { provider: 'claude' }, alert: null });
+    last().snapshot(false);
+    expect(connection.getState().alert).toBeUndefined();
+  });
+});
+
 describe('commands', () => {
   it('are sent while the PC is online, and dropped otherwise', () => {
     const connection = connect();

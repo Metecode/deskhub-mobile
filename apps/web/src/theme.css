@@ -10,8 +10,10 @@
   --muted: #9aa0aa;
   --dim: #6b717c;
   --accent: #ffb224;
+  --accent-pressed: #d9931a;
   --on-accent: #16181d;
   --good: #3dd68c;
+  --warn: #ffb224;
   --bad: #ff6b6b;
   --track: #3a3f49; /* a progress track on a card (ui_media.c) */
 
