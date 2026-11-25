@@ -206,8 +206,17 @@ describe('icons', () => {
 
 describe('navigation', () => {
   it('has tabs for the pages there are, in the companion order', () => {
-    expect(tabsOf(DEFAULT_LAYOUT.pages)).toEqual(['home', 'stats', 'calendar', 'weather', 'media', 'shortcuts']);
-    expect(tabsOf(['home', 'media', 'ai', 'stats', 'network', 'github'])).toEqual(['home', 'media', 'stats']);
+    expect(tabsOf(DEFAULT_LAYOUT.pages)).toEqual([
+      'home',
+      'stats',
+      'ai',
+      'calendar',
+      'weather',
+      'media',
+      'timer',
+      'shortcuts',
+    ]);
+    expect(tabsOf(['home', 'media', 'ai', 'stats', 'network', 'github'])).toEqual(['home', 'media', 'ai', 'stats']);
   });
 
   it('goes Home when a page is off or missing', () => {

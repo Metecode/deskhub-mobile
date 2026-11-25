@@ -8,13 +8,15 @@ interface RailProps {
   tabs: readonly Tab[];
   current: Tab;
   onSelect: (tab: Tab) => void;
-  /** The colour of the dot on the Calendar tab, or null. */
-  calendarBadge: string | null;
+  /** The colours of the dots on tabs. */
+  badges: Readonly<Partial<Record<Tab, string | null>>>;
+  /** Shown instead of a tab's icon. */
+  texts: Readonly<Partial<Record<Tab, string | null>>>;
   link: Link;
   online: boolean;
 }
 
-export function Rail({ tabs, current, onSelect, calendarBadge, link, online }: RailProps) {
+export function Rail({ tabs, current, onSelect, badges, texts, link, online }: RailProps) {
   return (
     <nav className={styles.rail}>
       {tabs.map((tab) => (
@@ -26,10 +28,8 @@ export function Rail({ tabs, current, onSelect, calendarBadge, link, online }: R
           aria-current={tab === current ? 'page' : undefined}
           onClick={() => onSelect(tab)}
         >
-          <Icon name={TABS[tab].icon} size={32} />
-          {tab === 'calendar' && calendarBadge && (
-            <span className={styles.badge} style={{ background: calendarBadge }} />
-          )}
+          {texts[tab] ? <span className={styles.text}>{texts[tab]}</span> : <Icon name={TABS[tab].icon} size={32} />}
+          {badges[tab] && <span className={styles.badge} style={{ background: badges[tab] }} />}
         </button>
       ))}
       <div className={styles.status}>

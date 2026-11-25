@@ -107,6 +107,105 @@
   white-space: nowrap;
 }
 
+/* ---- AI usage ---- */
+
+.claude {
+  display: flex;
+  align-items: center;
+  gap: calc(14 * var(--u));
+  height: 100%;
+}
+
+.agent {
+  position: relative;
+  display: grid;
+  flex: none;
+  place-items: center;
+  width: calc(40 * var(--u));
+  height: calc(40 * var(--u));
+  margin-right: calc(-2 * var(--u));
+}
+
+.agent[data-narrow] {
+  width: calc(24 * var(--u));
+  margin-right: calc(-6 * var(--u));
+}
+
+.agentTint {
+  position: absolute;
+  inset: 0;
+  border-radius: calc(12 * var(--u));
+  opacity: 0.2;
+}
+
+.limit {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  justify-content: space-between;
+  min-width: 0;
+  height: 100%;
+}
+
+.limitHead {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  color: var(--muted);
+  white-space: nowrap;
+}
+
+.limitValue {
+  font-size: calc(20 * var(--u));
+  font-variant-numeric: tabular-nums;
+}
+
+.limitSub {
+  overflow: hidden;
+  color: var(--muted);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.strip {
+  z-index: 1;
+}
+
+/* ---- internet ---- */
+
+.net {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  height: 100%;
+}
+
+.netHead {
+  display: flex;
+  justify-content: space-between;
+  white-space: nowrap;
+}
+
+.netCaption {
+  color: var(--muted);
+  letter-spacing: calc(2 * var(--u));
+}
+
+.netLatency {
+  font-size: calc(32 * var(--u));
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  line-height: 1;
+  white-space: nowrap;
+}
+
+.netSub {
+  overflow: hidden;
+  color: var(--muted);
+  text-overflow: ellipsis;
+  white-space: pre;
+}
+
 /* ---- events ---- */
 
 .events {

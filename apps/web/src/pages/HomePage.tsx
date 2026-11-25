@@ -1,7 +1,9 @@
 // Home: the companion's widgets on a 5 x 3 grid (firmware/main/ui_home.c).
-import { visibleWidgets, WIDGET_PAGES, type GridItem, type Page } from '@deskhub-mobile/protocol';
+import { GRID_COLS, visibleWidgets, WIDGET_PAGES, type Alert, type GridItem, type Page } from '@deskhub-mobile/protocol';
 import { useRef, type CSSProperties, type ReactNode } from 'react';
 import { eventsSummary, eventWhen, notOver } from '../agenda.js';
+import { AlertStrip } from '../components/Alert.js';
+import { Bar } from '../components/Bar.js';
 import { CoverArt } from '../components/CoverArt.js';
 import { Icon } from '../components/Icon.js';
 import { isOnline, pcMedia, type BridgeState, type Connection } from '../connection.js';
@@ -9,8 +11,10 @@ import { coverOf } from '../cover.js';
 import { formatPercent } from '../format.js';
 import { useInnerHeight } from '../hooks.js';
 import type { IconName } from '../icons.js';
+import { formatLatency, homeText, latencyColor } from '../internet.js';
 import { statusHint } from '../status.js';
 import { amPm, formatDate, formatDigits, HOUR12 } from '../time.js';
+import { agentColor, homeLimits } from '../usage.js';
 import { daysFrom, type WeatherState } from '../weather.js';
 import { formatTemp, weatherColor, weatherIcon, weatherText } from '../weatherLook.js';
 import styles from './HomePage.module.css';
@@ -18,6 +22,8 @@ import styles from './HomePage.module.css';
 interface HomeProps {
   state: BridgeState;
   weather: WeatherState;
+  alert: Alert | null;
+  onAlertAction: (action: 'focus' | 'dismiss') => void;
   /** Epoch seconds. */
   now: number;
   connection: Connection;
@@ -42,6 +48,63 @@ function ClockWidget({ now }: { now: number }) {
         {HOUR12 && <span className={styles.clockAmPm}>{amPm(now)}</span>}
       </p>
       <p className={styles.clockDate}>{formatDate(now)}</p>
+    </div>
+  );
+}
+
+// Captions short enough for the column (layout_claude).
+const LIMIT_CAPTIONS = (cells: number): readonly [string, string] =>
+  cells >= 4 ? ['5-HOUR LIMIT', 'WEEKLY LIMIT'] : cells === 3 ? ['5-HOUR', 'WEEKLY'] : ['5 HR', 'WEEK'];
+
+function ClaudeWidget({ state, now, cells }: { state: BridgeState; now: number; cells: number }) {
+  const { usage } = state;
+  const tiny = cells === 1;
+  const color = agentColor(usage);
+  const captions = LIMIT_CAPTIONS(cells);
+  const limits = homeLimits(usage, isOnline(state), now);
+  return (
+    <div className={styles.claude}>
+      {!tiny && (
+        <span className={styles.agent} data-narrow={cells < 3 || undefined}>
+          {cells >= 3 && <span className={styles.agentTint} style={{ background: color }} />}
+          <Icon name="auto_awesome" size={24} color={color} />
+        </span>
+      )}
+      {/* One cell wide: just the 5-hour limit. */}
+      {(tiny ? limits.slice(0, 1) : limits).map(({ pct, color: level, sub }, i) => (
+        <div key={i} className={styles.limit}>
+          <p className={styles.limitHead}>
+            <span>{captions[i]}</span>
+            <span className={styles.limitValue} style={{ color: level }}>
+              {pct === null ? '--' : formatPercent(pct)}
+            </span>
+          </p>
+          <Bar value={pct ?? 0} color={level} height={10} />
+          <p className={styles.limitSub}>{sub}</p>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+function NetWidget({ state, now, tiny }: { state: BridgeState; now: number; tiny: boolean }) {
+  const { net } = state;
+  return (
+    <div className={styles.net}>
+      <p className={styles.netHead}>
+        <span className={styles.netCaption}>INTERNET</span>
+        {net && !tiny && (
+          <span style={{ color: net.online ? 'var(--good)' : 'var(--bad)' }}>{net.online ? 'Online' : 'Offline'}</span>
+        )}
+      </p>
+      <p className={styles.netLatency} style={{ color: net ? latencyColor(net.latency) : undefined }}>
+        {formatLatency(net && net.latency)}
+      </p>
+      {!tiny && (
+        <p className={styles.netSub}>
+          {net ? homeText(net, now) : isOnline(state) ? 'Waiting for the PC' : 'PC offline'}
+        </p>
+      )}
     </div>
   );
 }
@@ -166,10 +229,8 @@ function StatsWidget({ state, tiny }: { state: BridgeState; tiny: boolean }) {
 
 // Their pages come later. Labels from HOME_WIDGETS in pages.py.
 const LATER: Readonly<Partial<Record<GridItem['widget'], readonly [IconName, string]>>> = {
-  claude: ['auto_awesome', 'Claude limits'],
   printer: ['view_in_ar', '3D print progress'],
   game: ['sports_esports', 'Steam game'],
-  net: ['public', 'Internet'],
   github: ['commit', 'GitHub contributions'],
 };
 
@@ -184,7 +245,13 @@ function Placeholder({ widget }: { widget: GridItem['widget'] }) {
   );
 }
 
-export function HomePage({ state, weather, now, connection, onOpen }: HomeProps) {
+/** The alert's strip needs 320 board pixels. Over a smaller card it spreads over the neighbours (fit). */
+const STRIP_CELLS = 3;
+
+const place = ({ x, y, w, h }: Pick<GridItem, 'x' | 'y' | 'w' | 'h'>) =>
+  ({ '--x': x + 1, '--y': y + 1, '--w': w, '--h': h }) as CSSProperties;
+
+export function HomePage({ state, weather, alert, onAlertAction, now, connection, onOpen }: HomeProps) {
   const { home, layout } = state;
   const hint = state.link === 'bad_origin' ? statusHint(state) : '';
 
@@ -192,6 +259,8 @@ export function HomePage({ state, weather, now, connection, onOpen }: HomeProps)
     switch (widget) {
       case 'clock':
         return <ClockWidget now={now} />;
+      case 'claude':
+        return <ClaudeWidget state={state} now={now} cells={w} />;
       case 'events':
         return <EventsWidget state={state} now={now} />;
       case 'weather':
@@ -200,6 +269,8 @@ export function HomePage({ state, weather, now, connection, onOpen }: HomeProps)
         return <MediaWidget state={state} connection={connection} />;
       case 'stats':
         return <StatsWidget state={state} tiny={w === 1} />;
+      case 'net':
+        return <NetWidget state={state} now={now} tiny={w === 1} />;
       default:
         return <Placeholder widget={widget} />;
     }
@@ -213,18 +284,20 @@ export function HomePage({ state, weather, now, connection, onOpen }: HomeProps)
         {visibleWidgets(home, layout.pages).map((item) => {
           const page = WIDGET_PAGES[item.widget];
           const opens = page && !LATER[item.widget] ? page : null;
+          if (alert && item.widget === 'claude') {
+            const w = Math.max(item.w, STRIP_CELLS);
+            const strip = { ...item, w, x: Math.min(item.x, GRID_COLS - w) };
+            return (
+              <section key={item.widget} className={`${styles.cell} ${styles.strip}`} style={place(strip)}>
+                <AlertStrip alert={alert} color={agentColor(state.usage)} onAction={onAlertAction} />
+              </section>
+            );
+          }
           return (
             <section
               key={item.widget}
               className={`${styles.cell} ${item.widget === 'clock' ? '' : styles.card} ${opens ? styles.opens : ''}`}
-              style={
-                {
-                  '--x': item.x + 1,
-                  '--y': item.y + 1,
-                  '--w': item.w,
-                  '--h': item.h,
-                } as CSSProperties
-              }
+              style={place(item)}
               onClick={opens ? () => onOpen(opens) : undefined}
             >
               {content(item)}

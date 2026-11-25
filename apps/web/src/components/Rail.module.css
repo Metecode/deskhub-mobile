@@ -31,6 +31,11 @@
   background: var(--pressed);
 }
 
+.text {
+  font-size: calc(16 * var(--u));
+  font-variant-numeric: tabular-nums;
+}
+
 .badge {
   position: absolute;
   top: calc(5 * var(--u));

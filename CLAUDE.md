@@ -59,12 +59,12 @@ Phase 2, branch `phase-2`:
 
 - [x] Plan approved and written down
 - [x] Protocol: schemas and normalizers
-- [ ] Bridge: `pc_power` test, mock mode
-- [ ] Web: AI page and Home widget
-- [ ] Web: sound, alerts
-- [ ] Web: timer
-- [ ] Web: Internet view and Home widget
-- [ ] Web: dark layer
+- [x] Bridge: `pc_power` test, mock mode
+- [x] Web: AI page and Home widget
+- [x] Web: sound, alerts
+- [x] Web: timer
+- [x] Web: Internet view and Home widget
+- [x] Web: dark layer
 - [ ] README, docs/protocol.md
 - [ ] Verified with the real companion
 - [ ] Verified on the phone (by the user)

@@ -6,9 +6,11 @@ import type { IconName } from './icons.js';
 export const TABS = {
   home: { icon: 'home', label: 'Home' },
   stats: { icon: 'insights', label: 'PC stats' },
+  ai: { icon: 'auto_awesome', label: 'AI usage' },
   calendar: { icon: 'event', label: 'Calendar' },
   weather: { icon: 'wb_sunny', label: 'Weather' },
   media: { icon: 'music_note', label: 'Now playing' },
+  timer: { icon: 'timer', label: 'Timer' },
   shortcuts: { icon: 'grid_view', label: 'Shortcuts' },
 } as const satisfies Partial<Record<Page, { icon: IconName; label: string }>>;
 
