@@ -1,6 +1,6 @@
 // A stand-in for the companion: connects to /ws the way the real one does, sends made-up
-// data and obeys media and shortcut commands. Now and then it goes away for a while, so
-// the offline state gets exercised too.
+// data and obeys commands. Now and then an alert comes up, its display goes to sleep, and
+// it goes away for a while, so that the phone's states get exercised too.
 import { CLOSE_REPLACED, parseCommand, type Command } from '@deskhub-mobile/protocol';
 import { WebSocket } from 'ws';
 import type { Logger } from './log.js';
@@ -9,8 +9,11 @@ import {
   eventsMessage,
   HOME,
   LAYOUT,
+  MockAlerts,
+  MockNet,
   MockPlayer,
   MockTiles,
+  MockUsage,
   SERVER_COVER,
   serverMessage,
   TILES,
@@ -20,6 +23,18 @@ export const MOCK_STATS_MS = 1000;
 export const MOCK_ONLINE_MS = 45_000;
 /** Longer than ONLINE_TIMEOUT_MS, or going silent wouldn't show. */
 export const MOCK_OUTAGE_MS = 10_000;
+
+// In seconds it is online.
+const ALERT_EVERY = 60;
+const ALERT_AT = 12;
+const ALERT_FOR = 25;
+const SLEEP_EVERY = 180;
+const SLEEP_AT = 150;
+const SLEEP_FOR = 15;
+
+export const MOCK_SPEEDTEST_MS = 6000;
+
+const epoch = () => Math.floor(Date.now() / 1000);
 
 export interface MockOptions {
   url: string;
@@ -34,21 +49,29 @@ export function startMockCompanion({ url, token, companionConnected, log }: Mock
   const sample = createStatsSource();
   const player = new MockPlayer();
   const tiles = new MockTiles();
+  const usage = new MockUsage();
+  const alerts = new MockAlerts();
+  const net = new MockNet();
   let ws: WebSocket | null = null;
   let ticks = 0;
   let ticker: NodeJS.Timeout | undefined;
   let next: NodeJS.Timeout | undefined;
+  let test: NodeJS.Timeout | undefined;
+  let asleep = false;
   let outages = 0;
   let stopped = false;
 
   function send(message: object | Buffer): void {
-    ws?.send(Buffer.isBuffer(message) ? message : JSON.stringify(message));
+    if (ws?.readyState === WebSocket.OPEN) ws.send(Buffer.isBuffer(message) ? message : JSON.stringify(message));
   }
+
+  const pcPower = () => ({ type: 'pc_power', asleep });
 
   function stop(): void {
     stopped = true;
     clearInterval(ticker);
     clearTimeout(next);
+    clearTimeout(test);
     ws?.close();
   }
 
@@ -69,7 +92,17 @@ export function startMockCompanion({ url, token, companionConnected, log }: Mock
       if (JSON.parse(text).type !== 'hello_ok') return;
       log.info('mock: online');
       // In the order of Companion.session().
-      for (const message of [LAYOUT, HOME, TILES, tiles.message(), eventsMessage(Math.floor(Date.now() / 1000))])
+      for (const message of [
+        LAYOUT,
+        pcPower(),
+        HOME,
+        TILES,
+        tiles.message(),
+        eventsMessage(epoch()),
+        usage.message(epoch()),
+        alerts.message(),
+        net.message(epoch()),
+      ])
         send(message);
       send(SERVER_COVER);
       send(player.cover);
@@ -90,12 +123,35 @@ export function startMockCompanion({ url, token, companionConnected, log }: Mock
     log.info(`mock: got command ${text}`);
     if (command.type === 'media' && player.command(command)) send(player.cover);
     if (command.type === 'shortcut' && tiles.tap(command.id)) send(tiles.message());
+    if (command.type === 'alert_action' && alerts.command(command)) send(alerts.message());
+    if (command.type === 'speedtest' && net.startTest()) {
+      send(net.message(epoch()));
+      test = setTimeout(() => {
+        net.endTest(epoch());
+        send(net.message(epoch()));
+      }, MOCK_SPEEDTEST_MS);
+    }
   }
 
   function tick(): void {
     ticks++;
     if (player.tick()) send(player.cover);
     for (const message of [sample(), player.message(), serverMessage(ticks)]) send(message);
+    if (ticks % 5 === 0) send(usage.message(epoch()));
+    if (ticks % 2 === 0) {
+      net.probe();
+      send(net.message(epoch()));
+    }
+    const alert = ticks % ALERT_EVERY;
+    if (alert === ALERT_AT) alerts.raise();
+    if (alert === ALERT_AT + ALERT_FOR) alerts.clear();
+    if (alert === ALERT_AT || alert === ALERT_AT + ALERT_FOR) send(alerts.message());
+    const sleep = ticks % SLEEP_EVERY;
+    if (sleep === SLEEP_AT || sleep === SLEEP_AT + SLEEP_FOR) {
+      asleep = sleep === SLEEP_AT;
+      log.info(`mock: display ${asleep ? 'asleep' : 'awake'}`);
+      send(pcPower());
+    }
   }
 
   function goOnline(): void {

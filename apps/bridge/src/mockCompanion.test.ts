@@ -1,8 +1,8 @@
 import { ONLINE_TIMEOUT_MS, parseArtFrame, parseMessage } from '@deskhub-mobile/protocol';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { silentLogger } from './log.js';
-import { MOCK_ONLINE_MS, MOCK_OUTAGE_MS, MOCK_STATS_MS, startMockCompanion } from './mockCompanion.js';
-import { createStatsSource, eventsMessage, MockPlayer, SERVER_COVER } from './mockData.js';
+import { MOCK_ONLINE_MS, MOCK_OUTAGE_MS, MOCK_SPEEDTEST_MS, MOCK_STATS_MS, startMockCompanion } from './mockCompanion.js';
+import { createStatsSource, eventsMessage, MockAlerts, MockNet, MockPlayer, MockUsage, SERVER_COVER } from './mockData.js';
 import type { Bridge } from './server.js';
 import { connectClient, connectCompanion, HUB_TOKEN, startBridge, useFakeTimers } from './testing.js';
 
@@ -62,10 +62,14 @@ describe('mock companion', () => {
     expect(types.map((m) => m.kind)).toEqual(types.map(() => 'known'));
     expect(types.map((m) => 'type' in m && m.type)).toEqual([
       'layout',
+      'pc_power',
       'home',
       'tiles',
       'tile_state',
       'events',
+      'ai',
+      'alert',
+      'net',
       'stats',
       'media',
       'media_server',
@@ -86,6 +90,31 @@ describe('mock companion', () => {
     const media = nextMessage('media');
     await vi.advanceTimersByTimeAsync(MOCK_STATS_MS);
     expect(await media).toMatchObject({ art_id: 2, playing: true });
+  });
+
+  it('runs a speed test when asked', async () => {
+    await nextMessage('media_server');
+    const client = await connectClient(bridge);
+    await client.next();
+    const started = nextMessage('net');
+    client.send({ type: 'speedtest' });
+    expect(await started).toMatchObject({ testing: true, speed: null });
+    await advance(MOCK_SPEEDTEST_MS);
+    const net = JSON.parse(bridge.hub.messages.find((m) => m.includes('"net"'))!);
+    expect(net).toMatchObject({ testing: false, speed: { down_mbps: 942.3 } });
+  });
+
+  it('has an alert after a while, which its buttons end', async () => {
+    const client = await connectClient(bridge);
+    await client.next();
+    await nextMessage('media_server');
+    const alert = nextMessage('alert');
+    await advance(15_000);
+    expect(await alert).toMatchObject({ id: 'mock-permission', kind: 'permission' });
+    const cleared = nextMessage('alert');
+    client.send({ type: 'alert_action', id: 'mock-permission', action: 'focus' });
+    client.send({ type: 'alert_action', id: 'mock-permission', action: 'dismiss' });
+    expect(await cleared).toEqual({ type: 'alert', clear: true });
   });
 
   it('goes offline now and then, first by going silent and then by disconnecting', async () => {
@@ -135,6 +164,33 @@ describe('mock data', () => {
     for (let i = 0; i < 2; i++) player.command({ type: 'media', cmd: 'prev', value: 0 });
     expect(player.message().art_id).toBe(3);
     expect(parseArtFrame(player.cover)).toMatchObject({ id: 3, width: 280, height: 280 });
+  });
+
+  it('has usage, alerts and latency that fit the protocol', () => {
+    const usage = new MockUsage();
+    const alerts = new MockAlerts();
+    const net = new MockNet();
+    for (let i = 0; i < 300; i++) {
+      alerts.raise();
+      net.probe();
+      if (i === 100) expect(net.startTest()).toBe(true);
+      if (i === 101) expect(net.startTest()).toBe(false);
+      if (i === 102) net.endTest(1_800_000_000);
+      for (const message of [usage.message(1_800_000_000 + i), alerts.message(), net.message(1_800_000_000 + i)])
+        expect(parseMessage(message).kind).toBe('known');
+    }
+    expect(net.message(0).hist).toHaveLength(60);
+  });
+
+  it('keeps a permission alert when its window is shown, but not one that waits for a reply', () => {
+    const alerts = new MockAlerts();
+    const focus = (id: string) => alerts.command({ type: 'alert_action', id, action: 'focus' });
+    alerts.raise();
+    expect(focus('mock-permission')).toBe(false);
+    alerts.raise();
+    expect(focus('mock-permission')).toBe(false);
+    expect(focus('mock-input')).toBe(true);
+    expect(alerts.message()).toEqual({ type: 'alert', clear: true });
   });
 
   it('has a poster and events that fit the protocol', () => {

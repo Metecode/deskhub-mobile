@@ -211,4 +211,22 @@ describe('state', () => {
     await socket.flush();
     expect(bridge.hub.messages).toEqual(['{"type":"stats","cpu":2}', '{"type":"alert","clear":true}']);
   });
+
+  it('has the display power of the newest session (the companion sends it after every hello)', async () => {
+    const asleep = await connectCompanion(bridge);
+    asleep.send({ type: 'layout', pc_sleep: 'off' });
+    asleep.send({ type: 'pc_power', asleep: true });
+    await asleep.flush();
+    // The PC suspends: the connection is gone, but it is still asleep.
+    asleep.ws.terminate();
+    await new Promise((resolve) => bridge.hub.once('status', resolve));
+    expect(bridge.hub.messages).toContain('{"type":"pc_power","asleep":true}');
+
+    const awake = await connectCompanion(bridge);
+    awake.send({ type: 'layout', pc_sleep: 'off' });
+    awake.send({ type: 'pc_power', asleep: false });
+    await awake.flush();
+    expect(bridge.hub.messages).toContain('{"type":"pc_power","asleep":false}');
+    expect(bridge.hub.messages).toHaveLength(2);
+  });
 });

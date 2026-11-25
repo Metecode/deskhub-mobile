@@ -1,11 +1,14 @@
 // Made-up data for the mock companion, with the fields and rounding of the real one.
 import type {
+  AiMessage,
+  AlertMessage,
   Command,
   EventsMessage,
   HomeMessage,
   LayoutMessage,
   MediaMessage,
   MediaServerMessage,
+  NetMessage,
   StatsMessage,
   TilesMessage,
   TileStateMessage,
@@ -255,5 +258,139 @@ export class MockTiles {
     if (id >= TOGGLES) return false;
     if (!this.#on.delete(id)) this.#on.add(id);
     return true;
+  }
+}
+
+const MODELS = [
+  { name: 'Opus', share: 0.64 },
+  { name: 'Sonnet', share: 0.31 },
+  { name: 'Haiku', share: 0.05 },
+];
+
+/** Claude Code at work: usage grows with every message. */
+export class MockUsage {
+  #tokens = 48_200_000;
+  #messages = 214;
+  #pct = 38;
+
+  /** `now` in epoch seconds. */
+  message(now: number): AiMessage {
+    this.#tokens += Math.round(Math.random() * 60_000);
+    this.#messages += Math.random() < 0.3 ? 1 : 0;
+    this.#pct = this.#pct >= 99 ? 2 : round(this.#pct + Math.random() * 0.4, 1);
+    // Windows that end on whole hours.
+    const hour = 3600;
+    const reset5h = (Math.floor(now / hour) + 3) * hour;
+    const reset7d = (Math.floor(now / (24 * hour)) + 4) * 24 * hour;
+    return {
+      type: 'ai',
+      provider: 'claude',
+      limits: {
+        five_hour: { pct: this.#pct, reset: reset5h },
+        seven_day: { pct: 61, reset: reset7d },
+        updated: now - 20,
+      },
+      block: { active: true, reset: reset5h, tokens: 6_100_000, messages: 31 },
+      today: { tokens: this.#tokens, output: Math.round(this.#tokens * 0.004), messages: this.#messages },
+      last_hour: 6_100_000,
+      days: [32e6, 8e6, 21e6, 55e6, 41e6, 62e6, this.#tokens],
+      models: MODELS.map(({ name, share }) => ({ name, tokens: Math.round(this.#tokens * share) })),
+    };
+  }
+}
+
+const ALERTS: readonly AlertMessage[] = [
+  {
+    type: 'alert',
+    id: 'mock-permission',
+    kind: 'permission',
+    agent: 'claude',
+    title: 'Claude wants to use Bash',
+    detail: 'pnpm --filter @deskhub-mobile/web run build && pnpm test',
+    project: 'deskhub-mobile',
+  },
+  {
+    type: 'alert',
+    id: 'mock-input',
+    kind: 'input',
+    agent: 'claude',
+    title: 'Waiting for your reply',
+    detail: 'Finished. The tests pass.',
+    project: 'a-project-with-quite-a-long-name',
+  },
+];
+
+/** Alerts that come now and then and obey their buttons. */
+export class MockAlerts {
+  #next = 0;
+  #shown: AlertMessage | null = null;
+
+  message(): AlertMessage {
+    return this.#shown ?? { type: 'alert', clear: true };
+  }
+
+  raise(): void {
+    this.#shown = ALERTS[this.#next++ % ALERTS.length]!;
+  }
+
+  clear(): void {
+    this.#shown = null;
+  }
+
+  /** True when the alert is gone. Showing the window doesn't grant a permission. */
+  command({ id, action }: Extract<Command, { type: 'alert_action' }>): boolean {
+    if (id !== this.#shown?.id || (action === 'focus' && this.#shown.kind === 'permission')) return false;
+    this.clear();
+    return true;
+  }
+}
+
+/** Latency with a lost probe now and then, and a speed test. */
+export class MockNet {
+  readonly #wander = new Wander(18, 3, 8, 90);
+  #history: number[] = [];
+  #today = 3.2e9;
+  #month = 4.12e11;
+  #speed: NetMessage['speed'] = null;
+  #testing = false;
+
+  /** A probe, every 2 seconds. */
+  probe(): void {
+    const ms = Math.random() < 0.04 ? -1 : Math.round(this.#wander.next() + (Math.random() < 0.03 ? 70 : 0));
+    this.#history = [...this.#history, ms].slice(-60);
+    this.#today += 2e6;
+    this.#month += 2e6;
+  }
+
+  /** False when a test is running already. */
+  startTest(): boolean {
+    if (this.#testing) return false;
+    return (this.#testing = true);
+  }
+
+  /** `now` in epoch seconds. */
+  endTest(now: number): void {
+    this.#testing = false;
+    this.#speed = { down_mbps: 942.3, up_mbps: 38.1, ping_ms: 9.2, at: now };
+  }
+
+  /** `now` in epoch seconds. */
+  message(now: number): NetMessage {
+    const answered = this.#history.filter((ms) => ms >= 0);
+    return {
+      type: 'net',
+      online: true,
+      latency_ms: answered.at(-1) ?? null,
+      jitter_ms: answered.length > 1 ? 2.1 : null,
+      loss_pct: Math.round((100 * (this.#history.length - answered.length)) / Math.max(1, this.#history.length)),
+      hist: this.#history,
+      up_since: now - 277_200,
+      last_drop: { at: now - 277_200, dur_s: 45 },
+      today_bytes: this.#today,
+      month_bytes: this.#month,
+      speed: this.#speed,
+      testing: this.#testing,
+      ip: '',
+    };
   }
 }
