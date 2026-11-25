@@ -26,6 +26,7 @@ interface AllProps {
   /** Epoch seconds. */
   now: number;
   onOpen: (page: Page) => void;
+  onTabs: () => void;
   onInfo: () => void;
 }
 
@@ -44,7 +45,7 @@ const COLORS: Readonly<Record<Tab | 'network', string>> = {
   network: 'var(--cpu)',
 };
 
-export function AllPage({ tabs, state, weather, timer, error, now, onOpen, onInfo }: AllProps) {
+export function AllPage({ tabs, state, weather, timer, error, now, onOpen, onTabs, onInfo }: AllProps) {
   const online = isOnline(state);
   const waiting = online ? T.all.waiting : T.pcOffline;
 
@@ -100,6 +101,15 @@ export function AllPage({ tabs, state, weather, timer, error, now, onOpen, onInf
           </span>
         </button>
       ))}
+      <button type="button" className={styles.tile} onClick={onTabs}>
+        <span style={{ color: 'var(--muted)' }}>
+          <Icon name="shuffle" size={32} />
+        </span>
+        <span className={styles.text}>
+          <span className={styles.name}>{T.tabs.open}</span>
+          <span className={styles.line}>{T.tabs.openLine}</span>
+        </span>
+      </button>
       <button type="button" className={styles.tile} onClick={onInfo}>
         <span style={{ color: error ? 'var(--warn)' : 'var(--muted)' }}>
           <Icon name="settings" size={32} />

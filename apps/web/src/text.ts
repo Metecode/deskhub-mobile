@@ -92,8 +92,18 @@ export const T = {
     events: (n: number) => (n === 0 ? 'Etkinlik yok' : `${n} etkinlik`),
   },
 
+  tabs: {
+    open: 'Sekmeler',
+    openLine: 'Sırasını değiştir',
+    first: 'Yerini değiştirmek istediğin sekmeye dokun',
+    second: (name: string) => `${name} ile yer değiştirecek sekmeye dokun`,
+    dock: 'Altta',
+    rest: 'Tümü içinde',
+    reset: 'Varsayılan',
+    done: 'Bitti',
+  },
+
   agenda: {
-    heading: 'Yaklaşan',
     allDay: 'Tüm gün',
     nowUntil: (clock: string) => `Şimdi, bitiş ${clock}`,
     when: (day: string, time: string) => `${day}, ${time}`,

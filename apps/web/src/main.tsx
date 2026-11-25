@@ -21,6 +21,7 @@ import { OfflineStore } from './offline.js';
 import { isCalm, takeUpdate } from './reload.js';
 import { Sound } from './sound.js';
 import { SpeedTestStore } from './speedTest.js';
+import { TabOrderStore } from './tabOrder.js';
 import { TimerStore } from './timer.js';
 import { loadToken, takeTokenFromUrl } from './token.js';
 import { wakeLockEnvironment, WakeLockStore } from './wakeLock.js';
@@ -47,6 +48,7 @@ const offline = new OfflineStore(import.meta.env.PROD);
 const info = new InfoRoute();
 
 const burnIn = new BurnInStore();
+const tabOrder = new TabOrderStore();
 const link = new LinkStore((id) => connection.ping(id));
 connection.onPong = link.pong;
 
@@ -153,6 +155,7 @@ createRoot(document.getElementById('root')!).render(
         info={info}
         burnIn={burnIn}
         link={link}
+        tabOrder={tabOrder}
         calm={calm}
       />
     </ErrorBoundary>

@@ -1,7 +1,10 @@
 import { DEFAULT_HOME, GRID_COLS, GRID_ROWS, PAGES, type GridItem, type Page, type Widget } from '@deskhub-mobile/protocol';
 import { describe, expect, it } from 'vitest';
 import { homeGrid } from './homeLayout.js';
-import { DOCK_MAX, dockOf, markedTab, viewToShow } from './nav.js';
+import { DOCK_MAX, dockOf as dockOfTabs, markedTab, tabsOf, viewToShow as viewOfTabs } from './nav.js';
+
+const dockOf = (pages: readonly Page[]) => dockOfTabs(tabsOf(pages));
+const viewToShow = (view: Page | 'all' | 'tabs', pages: readonly Page[]) => viewOfTabs(view, tabsOf(pages));
 
 const ALL: readonly Page[] = PAGES;
 const FEW: readonly Page[] = ['home', 'ai', 'calendar', 'weather', 'stats', 'network', 'timer'];
@@ -31,6 +34,7 @@ describe('the dock', () => {
     expect(viewToShow('all', FEW)).toBe('home');
     expect(viewToShow('all', ALL)).toBe('all');
     expect(viewToShow('timer', FEW)).toBe('timer');
+    expect(viewToShow('tabs', FEW)).toBe('tabs');
   });
 
   it('marks All for the pages under it', () => {

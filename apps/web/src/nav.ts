@@ -20,7 +20,7 @@ export const TABS = {
 export type Tab = keyof typeof TABS;
 
 /** What the stage shows. */
-export type View = Tab | 'all';
+export type View = Tab | 'all' | 'tabs';
 
 const isTab = (page: Page): page is Tab => Object.hasOwn(TABS, page);
 
@@ -36,18 +36,18 @@ export interface Dock {
   rest: Tab[] | null;
 }
 
-export function dockOf(pages: readonly Page[]): Dock {
-  const tabs = tabsOf(pages);
-  if (tabs.length <= DOCK_MAX) return { tabs, rest: null };
+export function dockOf(tabs: readonly Tab[]): Dock {
+  if (tabs.length <= DOCK_MAX) return { tabs: [...tabs], rest: null };
   return { tabs: tabs.slice(0, DOCK_MAX - 1), rest: tabs.slice(DOCK_MAX - 1) };
 }
 
 /** The view to show: Home when the one asked for is turned off or doesn't exist. */
-export function viewToShow(view: Page | 'all', pages: readonly Page[]): View {
-  if (view === 'all') return dockOf(pages).rest ? 'all' : 'home';
-  return tabsOf(pages).find((tab) => tab === view) ?? 'home';
+export function viewToShow(view: Page | 'all' | 'tabs', tabs: readonly Tab[]): View {
+  if (view === 'tabs') return view;
+  if (view === 'all') return dockOf(tabs).rest ? 'all' : 'home';
+  return tabs.find((tab) => tab === view) ?? 'home';
 }
 
 /** The dock's marked entry: pages under "All" belong to it. */
 export const markedTab = (view: View, { tabs, rest }: Dock): View =>
-  view === 'all' || (rest?.includes(view) && !tabs.includes(view)) ? 'all' : view;
+  view === 'all' || view === 'tabs' || (rest?.includes(view) && !tabs.includes(view)) ? 'all' : view;

@@ -26,7 +26,7 @@ export function TabIcon({ tab, usage, size }: { tab: Tab; usage: Usage | null; s
 export function Dock({ dock, view, onSelect, badges, usage }: DockProps) {
   const marked = markedTab(view, dock);
   const restBadge = dock.rest?.map((tab) => badges[tab]).find(Boolean);
-  const entries: View[] = dock.rest ? [...dock.tabs, 'all'] : dock.tabs;
+  const entries: (Tab | 'all')[] = dock.rest ? [...dock.tabs, 'all'] : dock.tabs;
   return (
     <nav className={styles.dock} aria-label={T.nav.label}>
       {entries.map((entry) => {

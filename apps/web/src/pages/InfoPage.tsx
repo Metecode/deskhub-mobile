@@ -60,10 +60,11 @@ interface InfoPageProps {
   errors: ErrorStore;
   /** Epoch seconds. */
   now: number;
+  onTabs: () => void;
   onClose: () => void;
 }
 
-export function InfoPage({ state, link, wakeLock, offline, errors, now, onClose }: InfoPageProps) {
+export function InfoPage({ state, link, wakeLock, offline, errors, now, onTabs, onClose }: InfoPageProps) {
   const lock = useSyncExternalStore(wakeLock.subscribe, wakeLock.getState);
   const error = useSyncExternalStore(errors.subscribe, errors.getState);
   const worker = useSyncExternalStore(offline.subscribe, offline.getState);
@@ -74,6 +75,9 @@ export function InfoPage({ state, link, wakeLock, offline, errors, now, onClose 
     <main className={styles.page}>
       <header className={styles.header}>
         <h1>{T.info.title}</h1>
+        <button type="button" className={styles.button} onClick={onTabs}>
+          {T.tabs.open}
+        </button>
         <button type="button" className={styles.button} onClick={() => location.reload()}>
           {T.info.reload}
         </button>
