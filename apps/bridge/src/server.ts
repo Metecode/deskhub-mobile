@@ -8,7 +8,7 @@ import { CompanionEndpoint } from './companionEndpoint.js';
 import { createHttpHandler } from './http.js';
 import { Hub } from './hub.js';
 import type { Logger } from './log.js';
-import { allowedOrigins } from './origins.js';
+import { allowedOrigins, fromThisPc } from './origins.js';
 import { parseTarget } from './target.js';
 import { WebFiles } from './webFiles.js';
 
@@ -29,10 +29,12 @@ export class Bridge {
   readonly companion: CompanionEndpoint;
   readonly clients: ClientEndpoint;
   readonly #server: Server;
+  readonly #log: Logger;
 
   constructor(options: BridgeOptions) {
     const { hubToken, clientToken, clientOrigins, weather, webRoot, log } = options;
     const web = new WebFiles(webRoot, log);
+    this.#log = log;
     this.companion = new CompanionEndpoint(this.hub, hubToken, log);
     this.clients = new ClientEndpoint({
       hub: this.hub,
@@ -73,9 +75,13 @@ export class Bridge {
   #onUpgrade(req: IncomingMessage, socket: Duplex, head: Buffer): void {
     socket.on('error', () => socket.destroy());
     const { pathname } = parseTarget(req.url);
-    if (pathname === '/ws') this.companion.upgrade(req, socket, head);
-    else if (pathname === '/client') this.clients.upgrade(req, socket, head);
-    else refuse(socket, '404 Not Found');
+    if (pathname === '/client') this.clients.upgrade(req, socket, head);
+    else if (pathname !== '/ws') refuse(socket, '404 Not Found');
+    else if (fromThisPc(req)) this.companion.upgrade(req, socket, head);
+    else {
+      this.#log.warn(`/ws: refused ${req.socket.remoteAddress}, origin ${req.headers.origin ?? 'none'}`);
+      refuse(socket, '403 Forbidden');
+    }
   }
 }
 

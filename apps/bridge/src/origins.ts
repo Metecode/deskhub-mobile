@@ -1,5 +1,6 @@
-// Which web pages may open /client. Browsers always send an Origin header, so this
-// keeps other sites from using the phone's (or the PC's) browser to reach the bridge.
+// Who may open /ws, and which web pages may open /client. Browsers always send an Origin header, so
+// this keeps other sites from using the phone's (or the PC's) browser to reach the bridge.
+import type { IncomingMessage } from 'node:http';
 import { hostname, networkInterfaces } from 'node:os';
 
 /** The Vite dev server's port (apps/web/vite.config.ts). */
@@ -24,6 +25,14 @@ export function allowedOrigins(port: number, extra: readonly string[] = []): Set
   const origins = new Set(extra);
   for (const host of hosts) for (const p of [port, DEV_PORT]) origins.add(new URL(`http://${host}:${p}`).origin);
   return origins;
+}
+
+/**
+ * The companion is a program on this PC: both ends of its connection have the same address, whichever
+ * of the PC's that is. A web page opened here has that too, but also an Origin header.
+ */
+export function fromThisPc({ headers, socket }: IncomingMessage): boolean {
+  return headers.origin === undefined && socket.remoteAddress !== undefined && socket.remoteAddress === socket.localAddress;
 }
 
 /** Parses CLIENT_ORIGINS, a comma separated list like "http://hub.lan:8765". Throws on a bad one. */

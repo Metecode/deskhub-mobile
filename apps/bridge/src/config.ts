@@ -46,7 +46,7 @@ export function readConfig(env: Record<string, string | undefined>, mock: boolea
     if (!mock) throw new Error("HUB_TOKEN is not set. Use the token from the companion's config.toml.");
     hubToken = randomBytes(16).toString('hex');
   } else if (hubToken === 'change-me' && !mock) {
-    warnings.push('HUB_TOKEN is still "change-me": anyone on your network can pose as the companion.');
+    warnings.push('HUB_TOKEN is still "change-me": any program on this PC can pose as the companion.');
   }
   if (clientToken === hubToken) warnings.push('CLIENT_TOKEN and HUB_TOKEN are the same; use two different ones.');
 
