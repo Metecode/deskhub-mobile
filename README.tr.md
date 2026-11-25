@@ -43,7 +43,7 @@ Yanındaki küçük bir köprü (bridge) kart gibi davranır, telefon da sonucu 
 
 ## Sayfalar
 
-<img src="docs/images/hero.png" alt="Telefonda yatay ve dikey Ana sayfa: saat, hava, sıradaki etkinlik, Claude limitleri, PC yükü, GitHub grafiği ve çalan şarkı">
+<img src="docs/images/hero.png" alt="Telefonda yatay ve dikey Ana sayfa: saat, hava, sıradaki etkinlik, Claude limitleri, çalan şarkı ve PC yükü">
 
 <table>
   <tr>

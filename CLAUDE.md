@@ -91,6 +91,11 @@ The GIF and a fuller quick start (asked for by the user), branch `docs-gif` (fro
 
 - [x] `docs/images/demo.gif`, `demo.tr.gif`: the real app with made-up data
 - [x] Quick start tried in an empty folder: clone, `uv sync`, the launcher's first run
+- [x] Looked at on GitHub, pull request into `main` (by the user)
+
+The pictures with the user's own layout (asked for by the user), branch `docs-images` (from `main`):
+
+- [x] `docs/images/*.png` taken again, the data still made up
 - [ ] Looked at on GitHub, pull request into `main` (by the user)
 
 Phases 0 to 2 are done and verified on the phone by the user (branches `phase-0` to `phase-2`).

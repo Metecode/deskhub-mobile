@@ -44,7 +44,7 @@ small bridge next to it behaves like the board, and the phone shows the result i
 
 ## Pages
 
-<img src="docs/images/hero.png" alt="The Home page on a phone, sideways and upright: time, weather, next event, Claude limits, PC load, GitHub chart and the song that is playing">
+<img src="docs/images/hero.png" alt="The Home page on a phone, sideways and upright: time, weather, next event, Claude limits, the song that is playing and PC load">
 
 <table>
   <tr>
