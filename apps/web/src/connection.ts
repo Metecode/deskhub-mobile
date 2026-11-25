@@ -1,5 +1,6 @@
 // The connection to the bridge: reconnects by itself and holds the latest data.
 import {
+  addPortrait,
   applyLayout,
   CLOSE_BAD_ORIGIN,
   CLOSE_BAD_TOKEN,
@@ -8,29 +9,38 @@ import {
   NO_MEDIA,
   normalizeAlert,
   normalizeEvents,
+  normalizeGitHub,
   normalizeHome,
   normalizeMedia,
   normalizeMediaServer,
   normalizeNet,
   normalizePcPower,
+  normalizePrinters,
   normalizeStats,
+  normalizeSteam,
   normalizeTiles,
   normalizeTileState,
   normalizeUsage,
   SILENCE_TIMEOUT_MS,
+  STEAM_HEADER,
+  STEAM_PORTRAIT,
+  STEAM_THUMB,
   TOKEN_PARAM,
   type Alert,
   type BridgeMessage,
   type Command,
   type Events,
+  type GitHub,
   type Home,
   type Layout,
   type Media,
   type MediaServer,
   type MediaTarget,
   type Net,
+  type Printer,
   type RawMessage,
   type Stats,
+  type Steam,
   type Tile,
   type Usage,
   type WeatherSettings,
@@ -82,6 +92,20 @@ export interface HubData {
   netAt: number;
   /** The PC's display sleeps. Stays when the link drops: a PC that sleeps takes the bridge along. */
   asleep: boolean;
+  steam: Steam | null;
+  /** When `steam` arrived, ms. */
+  steamAt: number;
+  printers: readonly Printer[];
+  printersAt: number;
+  github: GitHub | null;
+}
+
+/** Covers of games; each shows for its own game only. */
+export interface GameCovers {
+  header: Cover | null;
+  thumb: Cover | null;
+  /** By app id. */
+  portraits: ReadonlyMap<number, Cover>;
 }
 
 export interface BridgeState extends HubData {
@@ -92,6 +116,9 @@ export interface BridgeState extends HubData {
   history: readonly HistoryPoint[];
   /** The last cover of the PC and of the media server; see coverOf(). */
   covers: Readonly<Record<'pc' | 'server', Cover | null>>;
+  gameCovers: GameCovers;
+  /** When the PC went offline, ms. null: it is online. */
+  offlineSince: number | null;
   /** undefined: the bridge hasn't said yet. null: no location is set. */
   weather: WeatherSettings | null | undefined;
   /** The last message of every type, as received. */
@@ -112,6 +139,11 @@ const NO_DATA: Omit<HubData, 'layout' | 'home'> = {
   net: null,
   netAt: 0,
   asleep: false,
+  steam: null,
+  steamAt: 0,
+  printers: [],
+  printersAt: 0,
+  github: null,
 };
 
 /** What a companion message changes. */
@@ -142,6 +174,12 @@ function read(message: RawMessage, layout: Layout): Partial<HubData> {
       return { net: normalizeNet(message), netAt: Date.now() };
     case 'pc_power':
       return { asleep: normalizePcPower(message) };
+    case 'steam':
+      return { steam: normalizeSteam(message), steamAt: Date.now() };
+    case 'printer':
+      return { printers: normalizePrinters(message), printersAt: Date.now() };
+    case 'github':
+      return { github: normalizeGitHub(message) };
     default:
       return {};
   }
@@ -183,6 +221,8 @@ export class Connection {
       pcOnline: false,
       history: [],
       covers: { pc: null, server: null },
+      gameCovers: { header: null, thumb: null, portraits: new Map() },
+      offlineSince: Date.now(),
       weather: undefined,
       messages: {},
       layout,
@@ -239,8 +279,7 @@ export class Connection {
   #onMessage(data: unknown): void {
     this.#feedWatchdog();
     if (data instanceof ArrayBuffer) {
-      const found = readCover(data);
-      if (found) this.#update({ covers: { ...this.#state.covers, [found.from]: found.cover } });
+      this.#onCover(data);
       return;
     }
     let message: RawMessage;
@@ -263,6 +302,26 @@ export class Connection {
     });
   }
 
+  #onCover(data: ArrayBuffer): void {
+    const found = readCover(data);
+    if (!found) return;
+    const { art, cover } = found;
+    const { covers, gameCovers, steam } = this.#state;
+    if (art.magic !== 'STM1') {
+      this.#update({ covers: { ...covers, [art.magic === 'ART1' ? 'pc' : 'server']: cover } });
+      return;
+    }
+    const recent = new Set(steam?.recent.map((game) => game.appid));
+    this.#update({
+      gameCovers: {
+        header: art.kind === STEAM_HEADER ? cover : gameCovers.header,
+        thumb: art.kind === STEAM_THUMB ? cover : gameCovers.thumb,
+        portraits:
+          art.kind === STEAM_PORTRAIT ? addPortrait(gameCovers.portraits, art.id, cover, recent) : gameCovers.portraits,
+      },
+    });
+  }
+
   #historyWith(stats: Stats): HistoryPoint[] {
     const t = Date.now();
     const recent = this.#state.history.filter((p) => p.t > t - HISTORY_MS && p.t <= t);
@@ -279,6 +338,13 @@ export class Connection {
     // Its stats aren't part of the history: there's no telling how old they are.
     let data: HubData = { ...this.#state, ...NO_DATA };
     for (const m of message.messages) data = { ...data, ...read(m, data.layout) };
+    // Seen before, so it has been running for as long as then.
+    const { messages, steamAt, printersAt } = this.#state;
+    const known = (m: RawMessage) => JSON.stringify(m) === JSON.stringify(messages[m.type]);
+    for (const m of message.messages) {
+      if (m.type === 'steam' && known(m)) data = { ...data, steamAt };
+      if (m.type === 'printer' && known(m)) data = { ...data, printersAt };
+    }
     this.#update({
       ...this.#state,
       ...data,
@@ -319,7 +385,9 @@ export class Connection {
   }
 
   #update(change: Partial<BridgeState>): void {
-    this.#state = { ...this.#state, ...change };
+    const next = { ...this.#state, ...change };
+    next.offlineSince = isOnline(next) ? null : (next.offlineSince ?? Date.now());
+    this.#state = next;
     for (const listener of this.#listeners) listener();
   }
 }

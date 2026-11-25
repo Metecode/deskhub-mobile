@@ -1,5 +1,5 @@
-// Cover frames (ART1, ARS1) as pixels for a canvas.
-import { parseArtFrame, type Media } from '@deskhub-mobile/protocol';
+// Cover frames (ART1, ARS1, STM1) as pixels for a canvas.
+import { parseArtFrame, type ArtFrame, type Media } from '@deskhub-mobile/protocol';
 
 export interface Cover {
   id: number;
@@ -24,13 +24,13 @@ export function rgb565ToRgba(data: Uint8Array): Uint8ClampedArray<ArrayBuffer> {
 }
 
 /** null when it isn't a valid cover. */
-export function readCover(frame: ArrayBuffer): { from: 'pc' | 'server'; cover: Cover } | null {
+export function readCover(frame: ArrayBuffer): { art: ArtFrame; cover: Cover } | null {
   const data = new Uint8Array(frame);
   const art = parseArtFrame(data);
-  if (!art || art.magic === 'STM1') return null;
+  if (!art) return null;
   const { id, width, height, pixelOffset } = art;
   const cover = { id, width, height, rgba: rgb565ToRgba(data.subarray(pixelOffset)) };
-  return { from: art.magic === 'ART1' ? 'pc' : 'server', cover };
+  return { art, cover };
 }
 
 /** The cover if it belongs to what is playing (ui_media_has_art in ui.c). */

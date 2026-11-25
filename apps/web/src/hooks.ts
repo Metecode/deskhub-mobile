@@ -26,19 +26,25 @@ export function usePortrait(): boolean {
   return useSyncExternalStore(onPortraitChange, () => portrait?.matches ?? false);
 }
 
-/** An element's inner height in board pixels, 0 until it is known. */
-export function useInnerHeight(ref: RefObject<HTMLElement | null>): number {
-  const [height, setHeight] = useState(0);
+export interface Size {
+  width: number;
+  height: number;
+}
+
+/** An element's inner size in board pixels, 0 until it is known. */
+export function useInnerSize(ref: RefObject<HTMLElement | null>): Size {
+  const [size, setSize] = useState<Size>({ width: 0, height: 0 });
   useEffect(() => {
     const element = ref.current;
     if (!element) return;
     const observer = new ResizeObserver(([entry]) => {
       // The body's font is 14 board pixels.
       const unit = Number.parseFloat(getComputedStyle(document.body).fontSize) / 14;
-      setHeight(entry!.contentRect.height / unit);
+      const { width, height } = entry!.contentRect;
+      setSize({ width: width / unit, height: height / unit });
     });
     observer.observe(element);
     return () => observer.disconnect();
   }, [ref]);
-  return height;
+  return size;
 }

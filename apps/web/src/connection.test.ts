@@ -338,6 +338,74 @@ describe('AI, alerts and the internet', () => {
   });
 });
 
+describe('games, printers and GitHub', () => {
+  const steam = { type: 'steam', found: true, playing: { appid: 1, session_s: 60 }, recent: [{ appid: 2 }] };
+  const printer = { type: 'printer', printers: [{ name: 'P' }] };
+  const frame = (appid: number, kind: number) => {
+    const data = new DataView(new ArrayBuffer(18));
+    for (const [i, c] of [...'STM1'].entries()) data.setUint8(i, c.charCodeAt(0));
+    data.setUint32(4, appid, true);
+    data.setUint16(8, 1, true);
+    data.setUint16(10, 1, true);
+    data.setUint16(12, kind, true);
+    return data.buffer;
+  };
+
+  it('have their data', () => {
+    vi.setSystemTime(5000);
+    const connection = connect();
+    expect(connection.getState()).toMatchObject({ steam: null, printers: [], github: null });
+    last().snapshot(true, [steam, printer, { type: 'github', total: 7 }]);
+    expect(connection.getState()).toMatchObject({
+      steam: { playing: { appid: 1 } },
+      steamAt: 5000,
+      printers: [{ name: 'P' }],
+      printersAt: 5000,
+      github: { total: 7 },
+    });
+  });
+
+  it('keep the time of a message that a reconnect brings again', () => {
+    vi.setSystemTime(5000);
+    const connection = connect();
+    last().snapshot(true, [steam, printer]);
+    vi.setSystemTime(65_000);
+    last().snapshot(true, [steam, { ...printer, printers: [] }]);
+    expect(connection.getState()).toMatchObject({ steamAt: 5000, printersAt: 65_000 });
+  });
+
+  it('get covers by kind, with a portrait per game', () => {
+    const connection = connect();
+    last().snapshot(true, [steam]);
+    for (const [appid, kind] of [[1, 0], [1, 1], [2, 2], [3, 2], [2, 2]] as const) last().receiveBinary(frame(appid, kind));
+    last().receiveBinary(frame(9, 3));
+    const { header, thumb, portraits } = connection.getState().gameCovers;
+    expect([header?.id, thumb?.id]).toEqual([1, 1]);
+    expect([...portraits.keys()]).toEqual([3, 2]);
+    // Only the recent game's and the newest ones stay.
+    for (const appid of [4, 5, 6, 7]) last().receiveBinary(frame(appid, 2));
+    expect([...connection.getState().gameCovers.portraits.keys()]).toEqual([2, 4, 5, 6, 7]);
+  });
+
+  it('know since when the PC is offline', () => {
+    vi.setSystemTime(1000);
+    const connection = connect();
+    expect(connection.getState().offlineSince).toBe(1000);
+    last().snapshot(true);
+    expect(connection.getState().offlineSince).toBeNull();
+    vi.setSystemTime(2000);
+    last().receive({ type: 'bridge.status', pc_online: false });
+    vi.setSystemTime(3000);
+    last().receive({ type: 'bridge.status', pc_online: false });
+    expect(connection.getState().offlineSince).toBe(2000);
+    last().receive({ type: 'bridge.status', pc_online: true });
+    expect(connection.getState().offlineSince).toBeNull();
+    vi.setSystemTime(4000);
+    last().onclose!({ code: 1006 });
+    expect(connection.getState().offlineSince).toBe(4000);
+  });
+});
+
 describe('commands', () => {
   it('are sent while the PC is online, and dropped otherwise', () => {
     const connection = connect();
