@@ -6,8 +6,7 @@ Desk Hub
 https://github.com/zacharyinserra/deskhub
 Based on commit b78c505279a50f80cd40bfc86f0d9de9ac79437c.
 
-The wire protocol, the board's connection rules, the Graphite colours and the
-layout of the pages were taken from Desk Hub's firmware and companion. The
+The wire protocol, the board's connection rules and what the pages show were taken from Desk Hub's firmware and companion. The
 companion itself is not included; it is used unmodified from the project above.
 Desk Hub is available under the MIT License:
 
@@ -48,6 +47,12 @@ The built web app includes the Material Icons font (through
 Google licenses it under the Apache License, Version 2.0:
 https://www.apache.org/licenses/LICENSE-2.0
 (The package's own metadata says SIL Open Font License 1.1.)
+
+Claude
+------
+The Claude logo is a trademark of Anthropic, PBC. It only names the product whose
+usage is shown. Its drawing is from Simple Icons (https://simpleicons.org), CC0 1.0.
+This project is not affiliated with or endorsed by Anthropic.
 
 Open-Meteo
 ----------

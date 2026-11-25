@@ -14,7 +14,9 @@ Companion (Desk Hub, Python) --> Bridge (Node, on the PC) --> Web app (phone, fu
 ```
 
 It has all of the board's pages: Home, PC Stats with the Internet, AI usage, Calendar, Weather, Media, 3D
-printers, Timer, Games, GitHub and Shortcuts.
+printers, Timer, Games, GitHub and Shortcuts, in a layout of its own: a panel with the time, the weather and
+the next event on every page, the page beside it, and named tabs. **The app, the launcher and its QR page are
+in Turkish**; all texts of the app are in [apps/web/src/text.ts](apps/web/src/text.ts).
 
 ## Requirements
 
@@ -28,7 +30,7 @@ printers, Timer, Games, GitHub and Shortcuts.
 double-click **deskhub-mobile.cmd**. The first time it makes `.env` with new tokens (or with the companion's),
 installs, builds, asks for the companion's folder, the firewall and starting at sign-in, and shows a QR code to
 scan with the phone. If the companion doesn't know the bridge yet, it says which two lines to change. After
-that a double-click starts what isn't running, builds when the code is newer, and has a menu: QR code,
+that a double-click starts what isn't running, builds when the code is newer, and has a menu (in Turkish): QR code,
 restart, stop, sign-in on or off. It never changes the companion's files. What is left by hand is Chrome's
 flag on the phone, and what is in `.env` besides the tokens, such as the place for the weather.
 
@@ -146,8 +148,8 @@ context*: HTTPS, or an address you declare as secure. On the phone, in Chrome:
 2. Enter the address without the token, for example `http://192.168.1.20:8765`.
 3. Choose *Enabled* and tap *Relaunch*.
 
-Then touch the two status icons at the end of the navigation bar (or open `/#info`): the diagnostics
-should say *Secure context: yes*, *Wake lock: on* and *Service worker: active*. The flag only changes what
+Then touch the connection's icon in the panel (or open `/#info`): the diagnostics (*Tanılama*) should say
+*Güvenli bağlam: var*, *Ekranı açık tutma: ... açık* and *Çevrimdışı kopya: etkin*. The flag only changes what
 this one page may use; the traffic stays as unencrypted as before. It is meant for developers and may
 disappear from Chrome one day. Without it everything else works; then turn on *Stay awake* (while
 charging) in Android's developer options.
@@ -177,7 +179,9 @@ README. Without them the AI page shows tokens only.
 
 Games start with one tap; after that all of them are locked for 5 seconds on that phone. GitHub needs a
 token (`deskhub-setup github`), printers are added with `deskhub-printers`; see the Desk Hub README.
-With more pages than fit on the navigation bar, it scrolls.
+The dock has the first five pages in the order of `[pages] enabled`, the rest are under *Tümü*. `nav` says on
+which side the panel is; with `bottom` it is a line across the top. Home leaves out the weather and the events,
+as the panel has both, and the widgets next to them grow.
 
 The timer's end and new alerts come with a beep and a vibration. Browsers only allow both after a
 touch on the page, so after a reload there's only the picture until you touch it.
@@ -193,7 +197,11 @@ companion looks ahead (`days` under `[calendar]`), and events that are over are 
 before the page is next open. Whoever has the unlocked phone can read it.
 
 **Against burn-in**, everything moves by a few pixels once a minute, and after 2 minutes without a touch
-the navigation bar and Home's header are dimmed. *Time's up* goes dark after 10 minutes.
+the panel and the dock are dimmed. The timer's end goes dark after 10 minutes.
+
+**The connection's icon** goes by how long the bridge's answers take, as a page can't read the Wi-Fi's signal
+strength: three green arcs, two orange ones, one red one, crossed out without a connection. A crossed-out PC
+next to it: the bridge is there, the companion isn't.
 
 **Updates.** After `pnpm build` the running bridge serves the new build, and phones load it by
 themselves: once nobody has touched them for a minute, and neither while there is an alert nor while a timer
@@ -217,7 +225,7 @@ coordinates nothing is fetched.
 - **CPU temperature**: the companion doesn't send it. It will show if a later version does.
 - **GPU**: the companion reads NVIDIA cards only.
 - **Sharper covers**: the companion sends them at 280 x 280.
-- **The agents' logos**: they are trademarks, so there's an icon in their colour.
+- **Codex's logo**: there's a neutral icon in its colour. Claude's is there, see [NOTICE](NOTICE).
 - **Turning the screen off**: see above.
 - **Sharper game covers**: 96 x 144, as the companion sends them.
 - **Plex and Jellyfin**: the split Media page is there, but hasn't been tried with a real server.
@@ -241,7 +249,7 @@ at it is at its top.
 - [docs/protocol.md](docs/protocol.md): the messages
 - [docs/plan-phase0.md](docs/plan-phase0.md), [docs/plan-phase1.md](docs/plan-phase1.md),
   [docs/plan-phase2.md](docs/plan-phase2.md), [docs/plan-phase3.md](docs/plan-phase3.md),
-  [docs/plan-phase4.md](docs/plan-phase4.md): the plans
+  [docs/plan-phase4.md](docs/plan-phase4.md), [docs/plan-phase5.md](docs/plan-phase5.md): the plans
 - [CLAUDE.md](CLAUDE.md): project context, rules and phases
 
 ## License

@@ -67,7 +67,7 @@ printers, timer, games, GitHub, shortcuts, and Home's widgets in all sizes the c
 | Dates, times, numbers | `tr-TR`: 24 hours, "25 Kasım Çarşamba", "%38", "63,2 Mn" |
 | What the companion sends in English (Claude's alerts, limits of "as of") | Known sentences are translated; others are shown as they are |
 | Names the user wrote (tiles, calendars, events) | As they are |
-| `deskhub-mobile.cmd`, its QR page, the bridge's messages for the user | Turkish as well; the script has to be saved with a BOM for Windows PowerShell 5.1 |
+| `deskhub-mobile.cmd`, its QR page | Turkish as well; the script has to be saved with a BOM for Windows PowerShell 5.1. The bridge's log stays English: it runs hidden, and the log is for looking into errors. |
 | Code, comments, documents | English, as before |
 
 Decided: Turkish only. A second language would be a second file later.

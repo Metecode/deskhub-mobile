@@ -59,14 +59,14 @@ Companion (upstream, Windows, Python) --ws /ws--> Bridge (Node, on the PC) --ws 
 Phases 0 to 4 are in `main`, tag `v0.2.0`. Phase 5, branch `phase-5` (from `main`):
 
 - [x] Plan approved and written down
-- [ ] Web: Turkish
-- [ ] Web: panel, stage, dock, All; tokens
-- [ ] Web and bridge: the connection's icon
-- [ ] Web: Home and its widgets
-- [ ] Web: the pages
-- [ ] Claude's logo
-- [ ] Launcher, QR page and the bridge's messages in Turkish
-- [ ] README, docs/protocol.md
+- [x] Web: Turkish
+- [x] Web: panel, stage, dock, All; tokens
+- [x] Web and bridge: the connection's icon
+- [x] Web: Home and its widgets
+- [x] Web: the pages
+- [x] Claude's logo
+- [x] Launcher and QR page in Turkish (the bridge's log stays English)
+- [x] README, docs/protocol.md
 - [ ] Verified with the mock and the real companion, at all sizes
 - [ ] Verified on the phone (by the user)
 
