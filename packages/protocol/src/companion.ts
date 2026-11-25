@@ -222,6 +222,79 @@ export type NetMessage = z.infer<typeof netSchema>;
 export const pcPowerSchema = z.looseObject({ type: z.literal('pc_power'), asleep: flag });
 export type PcPowerMessage = z.infer<typeof pcPowerSchema>;
 
+const game = { appid: num, name: str, total_min: num };
+
+/** companion -> hub, when it changes and every 60 seconds (steam.py). Not only Steam's games. */
+export const steamSchema = z.looseObject({
+  type: z.literal('steam'),
+  found: flag,
+  /** Seconds into the session when the message was sent. */
+  playing: z.looseObject({ ...game, session_s: num }).nullish(),
+  /** Epoch seconds when it was last played. */
+  recent: z.array(z.looseObject({ ...game, last: num })).nullish(),
+  /** Friends in a game. */
+  friends: z.array(z.looseObject({ name: str, game: str })).nullish(),
+});
+export type SteamMessage = z.infer<typeof steamSchema>;
+
+/** companion -> hub, when it changes and every 30 seconds (printer.py, printer_poll.py). */
+export const printerSchema = z.looseObject({
+  type: z.literal('printer'),
+  printers: z
+    .array(
+      z.looseObject({
+        online: flag,
+        name: str,
+        model: str,
+        state: str,
+        file: str,
+        speed: str,
+        error: str,
+        /** % */
+        pct: num,
+        remaining_min: num,
+        layer: num,
+        layers: num,
+        /** °C; null when unknown. */
+        nozzle: num,
+        nozzle_target: num,
+        bed: num,
+        bed_target: num,
+        chamber: num,
+        /** Filament slots. */
+        ams: z.array(z.looseObject({ color: str, type: str, active: flag })).nullish(),
+      }),
+    )
+    .nullish(),
+});
+export type PrinterMessage = z.infer<typeof printerSchema>;
+
+/** companion -> hub, when it changes (github.py, message). */
+export const githubSchema = z.looseObject({
+  type: z.literal('github'),
+  login: str,
+  accent: flag,
+  total: num,
+  today: num,
+  week: num,
+  last_week: num,
+  streak: num,
+  longest: num,
+  best: num,
+  best_date: str,
+  /** A digit from 0 to 4 per day, oldest first. */
+  levels: str,
+  /** Weekday of the first day, 0 is Sunday. */
+  start_wday: num,
+  /** Pairs of a week column and a name. */
+  months: z.array(z.unknown()).nullish(),
+  week_days: z.array(num).nullish(),
+  last_week_days: z.array(num).nullish(),
+  kinds: z.looseObject({ commits: num, prs: num, reviews: num, issues: num, private: num }).nullish(),
+  repos: z.array(z.looseObject({ name: str, count: num })).nullish(),
+});
+export type GitHubMessage = z.infer<typeof githubSchema>;
+
 const schemas = {
   hello: helloSchema,
   hello_ok: helloOkSchema,
@@ -239,10 +312,10 @@ const schemas = {
   alert: alertSchema,
   net: netSchema,
   pc_power: pcPowerSchema,
+  steam: steamSchema,
+  printer: printerSchema,
+  github: githubSchema,
 } as const;
-
-/** Types the board handles that don't have a schema yet. They parse as "unknown". */
-export const TYPES_WITHOUT_SCHEMA: ReadonlySet<string> = new Set(['printer', 'steam', 'github']);
 
 export type KnownMessage =
   | HelloMessage
@@ -260,12 +333,15 @@ export type KnownMessage =
   | ClaudeMessage
   | AlertMessage
   | NetMessage
-  | PcPowerMessage;
+  | PcPowerMessage
+  | SteamMessage
+  | PrinterMessage
+  | GitHubMessage;
 export type RawMessage = { type: string; [key: string]: unknown };
 
 export type ParsedMessage =
   | { kind: 'known'; type: KnownMessage['type']; message: KnownMessage; raw: RawMessage }
-  /** A type without a schema, or no usable type at all (type is then ""). */
+  /** A type nobody knows, or no usable type at all (type is then ""). */
   | { kind: 'unknown'; type: string; raw: RawMessage }
   /** A type with a schema that the message doesn't fit. */
   | { kind: 'mismatch'; type: KnownMessage['type']; raw: RawMessage; issues: string }

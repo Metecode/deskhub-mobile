@@ -29,5 +29,18 @@ export const USAGE_MODELS = 4;
 /** Latency probes (hub_model.h, HUB_NET_HIST). */
 export const NET_HISTORY = 60;
 
+/** Recent games (hub_model.h, HUB_STEAM_RECENT), with a portrait each, and friends (HUB_STEAM_FRIENDS). */
+export const STEAM_RECENT = 5;
+export const STEAM_FRIENDS = 5;
+
+/** Printers (hub_model.h, HUB_MAX_PRINTERS) and their filament slots (HUB_MAX_AMS). */
+export const MAX_PRINTERS = 4;
+export const MAX_FILAMENTS = 8;
+
+/** GitHub (hub_model.h, HUB_GH_DAYS, HUB_GH_MONTHS, HUB_GH_REPOS). */
+export const GITHUB_DAYS = 378;
+export const GITHUB_MONTHS = 14;
+export const GITHUB_REPOS = 4;
+
 /** Longest alert id the board echoes back: char id[64] (hub_model.h, hub_alert_t). */
 export const ALERT_ID_MAX = 63;

@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { parseCompanionMessage, parseMessage, TYPES_WITHOUT_SCHEMA } from './companion.js';
+import { parseCompanionMessage, parseMessage } from './companion.js';
 import { normalizeStats } from './stats.js';
 
 // The message Stats.sample() builds on a PC with an NVIDIA GPU.
@@ -53,11 +53,6 @@ describe('parseCompanionMessage', () => {
   it('passes unknown types through untouched', () => {
     const raw = { type: 'weather_v9', nested: { a: [1, 2] } };
     expect(parseCompanionMessage(JSON.stringify(raw))).toEqual({ kind: 'unknown', type: 'weather_v9', raw });
-  });
-
-  it('treats the types without a schema as unknown', () => {
-    expect(TYPES_WITHOUT_SCHEMA).toContain('printer');
-    for (const type of TYPES_WITHOUT_SCHEMA) expect(parseMessage({ type })).toMatchObject({ kind: 'unknown', type });
   });
 
   it.each(['__proto__', 'constructor', 'toString'])('does not trip over the type %s', (type) => {
