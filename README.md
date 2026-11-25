@@ -177,6 +177,8 @@ Claude Code's alerts ("needs permission", "waiting for you") and its limits need
 line in Claude Code's settings, which the companion's `install_claude.py` adds; see the Desk Hub
 README. Without them the AI page shows tokens only.
 
+A shortcut with the icon `power_settings_new` (for sleep or shutdown) takes two touches.
+
 Games start with one tap; after that all of them are locked for 5 seconds on that phone. GitHub needs a
 token (`deskhub-setup github`), printers are added with `deskhub-printers`; see the Desk Hub README.
 The dock has the first five pages in the order of `[pages] enabled`, the rest are under *Tümü*. *Tümü* >

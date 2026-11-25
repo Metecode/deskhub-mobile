@@ -320,6 +320,7 @@ export const T = {
   shortcuts: {
     none: 'Henüz kısayol yok',
     add: 'Companion’ın config.toml dosyasına ekle',
+    again: 'Emin misin? Tekrar dokun',
   },
 
   token: {

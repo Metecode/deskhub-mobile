@@ -47,6 +47,16 @@
   color: #fff;
 }
 
+/* Touched once, of two times. */
+.tile[data-armed] {
+  background: var(--bad);
+  color: #1c0505;
+}
+
+.tile[data-armed] .icon {
+  color: inherit;
+}
+
 .tile:active {
   background: color-mix(in srgb, var(--tint) 60%, var(--card));
 }
