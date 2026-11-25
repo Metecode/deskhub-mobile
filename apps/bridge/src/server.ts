@@ -75,6 +75,13 @@ export class Bridge {
     const { pathname } = parseTarget(req.url);
     if (pathname === '/ws') this.companion.upgrade(req, socket, head);
     else if (pathname === '/client') this.clients.upgrade(req, socket, head);
-    else socket.end('HTTP/1.1 404 Not Found\r\nConnection: close\r\nContent-Length: 0\r\n\r\n');
+    else refuse(socket, '404 Not Found');
   }
+}
+
+function refuse(socket: Duplex, status: string): void {
+  // The HTTP server lets go of a socket with its upgrade, and this one isn't read any more: left to
+  // the other side it would stay for good.
+  socket.once('finish', () => socket.destroy());
+  socket.end(`HTTP/1.1 ${status}\r\nConnection: close\r\nContent-Length: 0\r\n\r\n`);
 }
