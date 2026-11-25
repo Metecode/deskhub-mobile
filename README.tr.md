@@ -19,7 +19,7 @@ Ek donanım yok, kurulacak uygulama yok: telefonda sadece tarayıcı yeterli.
 
 [Sayfalar](#sayfalar) · [Hızlı kurulum](#hızlı-kurulum) · [Nasıl çalışır](#nasıl-çalışır) · [Güvenlik](#güvenlik) · [Belgeler](#belgeler)
 
-<img src="docs/images/hero.png" alt="Telefonda yatay ve dikey Ana sayfa: saat, hava, sıradaki etkinlik, Claude limitleri, PC yükü, GitHub grafiği ve çalan şarkı">
+<img src="docs/images/demo.tr.gif" width="520" alt="Boşta duran telefon masa ekranına dönüşüyor: bilgisayarın durumu, kısayollar, Claude Code uyarısı, takvim, hava, müzik ve oyunlar">
 
 </div>
 
@@ -42,6 +42,8 @@ Yanındaki küçük bir köprü (bridge) kart gibi davranır, telefon da sonucu 
 - **Yerel.** Hesap yok, kendine ait bir bulut yok: telefon PC'nle, hava için de Open-Meteo ile konuşur.
 
 ## Sayfalar
+
+<img src="docs/images/hero.png" alt="Telefonda yatay ve dikey Ana sayfa: saat, hava, sıradaki etkinlik, Claude limitleri, PC yükü, GitHub grafiği ve çalan şarkı">
 
 <table>
   <tr>
@@ -81,10 +83,23 @@ Yanındaki küçük bir köprü (bridge) kart gibi davranır, telefon da sonucu 
 
 ## Hızlı kurulum
 
-**Gerekenler:** [Node](https://nodejs.org) 22.12 ya da üstü, [pnpm](https://pnpm.io) 10 ve
-[uv](https://docs.astral.sh/uv/) kurulu bir Windows PC; aynı ağda, güncel Chrome'lu bir telefon.
+**Gerekenler:** Bir Windows PC ve aynı ağda, güncel Chrome'lu bir Android telefon.
 
-**1. İki projeyi yan yana indir ve companion'ı kur**
+**1. Programları kur** (sende olanları atla)
+
+```powershell
+winget install -e --id Git.Git
+winget install -e --id OpenJS.NodeJS.LTS   # 22.12 ya da üstü
+winget install -e --id astral-sh.uv
+```
+
+Terminali kapat, yenisini aç ve şunu çalıştır:
+
+```powershell
+npm.cmd install -g pnpm@10
+```
+
+**2. İki projeyi yan yana indir ve companion'ı kur**
 
 ```powershell
 git clone https://github.com/zacharyinserra/deskhub
@@ -96,16 +111,43 @@ uv sync
 copy config.example.toml config.toml
 ```
 
-**2. `deskhub-mobile.cmd` dosyasına çift tıkla**
+**3. `deskhub-mobile` klasöründeki `deskhub-mobile.cmd` dosyasına çift tıkla**
 
-Her şeyi hazırlar ve companion'ın köprüye bağlanması için `config.toml`'da hangi iki satırı yazacağını söyler.
+Companion'ın klasörünü sorunca Enter'a bas. `.env` dosyasını oluşturur ve companion'ın `config.toml` dosyasıyla birlikte
+açmayı önerir. `config.toml`'da şu iki satırı `.env`'deki `HUB_TOKEN` ile değiştir ve kaydet:
 
-**3. QR kodu telefonla okut**
+```toml
+[hub]
+host = "127.0.0.1:8765"
+token = ".env'deki HUB_TOKEN"
+```
 
-**4. Telefonun ekranı açık tutmasına izin ver**
+Hava için `.env`'deki `WEATHER_LATITUDE` ve `WEATHER_LONGITUDE` değerlerini de doldur. Sonra başlatıcı kurar, derler, her
+şeyi başlatır ve QR kodu gösterir. Güvenlik duvarı kuralına evet de; ağın Windows'un ağ ayarlarında *Özel* olmalı.
+
+**4. QR kodu telefonla okut**
+
+**5. Telefonun ekranı açık tutmasına izin ver**
 
 Telefonda `chrome://flags/#unsafely-treat-insecure-origin-as-secure` sayfasını aç, PC'nin adresini yaz (örneğin
 `http://192.168.1.20:8765`), *Enabled* seç ve *Relaunch*'a dokun.
+
+### Kendine göre ayarla
+
+Bunları `deskhub\companion` klasöründe çalıştır, sonra başlatıcının penceresinde **Y** ile yeniden başlat:
+
+| Ne için | Komut |
+| --- | --- |
+| Takvimler | `uv run deskhub-setup calendar` |
+| Claude limitleri ve uyarıları | `uv run deskhub-setup claude` |
+| Kısayol düğmeleri | `uv run deskhub-setup shortcuts` |
+| Steam ve diğer oyunlar | `uv run deskhub-setup games` |
+| GitHub grafiği | `uv run deskhub-setup github` |
+| Sayfalar, Ana sayfanın düzeni | `uv run deskhub-setup pages`, `uv run deskhub-setup home` |
+
+> [!IMPORTANT]
+> Komuta her zaman bir konu ekle. `deskhub-setup` tek başına ESP32 kartını ve yazılımını da kurmaya çalışır, burada
+> gerekmez. Havanın konumu `weather` konusunda değil, `.env` dosyasındadır.
 
 > [!TIP]
 > Elle kurulumun her adımı, güvenlik duvarı, sabit adres, Windows ile başlatma ve ana ekrana ekleme

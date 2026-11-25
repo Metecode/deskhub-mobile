@@ -85,6 +85,12 @@ README for GitHub (asked for by the user), branch `docs-readme` (from `main`):
 - [x] `README.md` is the introduction; what it had is in `docs/setup.md`, `docs/usage.md`, `docs/security.md`
 - [x] `README.tr.md`
 - [x] `docs/images`: the real app with made-up data, never the user's own
+- [x] Looked at on GitHub, pull request into `main` (by the user)
+
+The GIF and a fuller quick start (asked for by the user), branch `docs-gif` (from `main`):
+
+- [x] `docs/images/demo.gif`, `demo.tr.gif`: the real app with made-up data
+- [x] Quick start tried in an empty folder: clone, `uv sync`, the launcher's first run
 - [ ] Looked at on GitHub, pull request into `main` (by the user)
 
 Phases 0 to 2 are done and verified on the phone by the user (branches `phase-0` to `phase-2`).

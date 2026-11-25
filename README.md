@@ -19,7 +19,7 @@ No extra hardware, no app to install: the phone only needs its browser.
 
 [Pages](#pages) · [Quick start](#quick-start) · [How it works](#how-it-works) · [Security](#security) · [Documentation](#documentation)
 
-<img src="docs/images/hero.png" alt="The Home page on a phone, sideways and upright: time, weather, next event, Claude limits, PC load, GitHub chart and the song that is playing">
+<img src="docs/images/demo.gif" width="520" alt="A phone that was lying around becomes a desk display: PC load, shortcuts, an alert from Claude Code, calendar, weather, music and games">
 
 </div>
 
@@ -43,6 +43,8 @@ small bridge next to it behaves like the board, and the phone shows the result i
 - **Local.** No account and no cloud of its own: the phone talks to your PC, and to Open-Meteo for the weather.
 
 ## Pages
+
+<img src="docs/images/hero.png" alt="The Home page on a phone, sideways and upright: time, weather, next event, Claude limits, PC load, GitHub chart and the song that is playing">
 
 <table>
   <tr>
@@ -82,10 +84,23 @@ small bridge next to it behaves like the board, and the phone shows the result i
 
 ## Quick start
 
-**You need** a Windows PC with [Node](https://nodejs.org) 22.12 or newer, [pnpm](https://pnpm.io) 10 and
-[uv](https://docs.astral.sh/uv/), and a phone on the same network with a current Chrome.
+**You need** a Windows PC and an Android phone with a current Chrome, on the same network.
 
-**1. Get both projects, side by side, and install the companion**
+**1. Install the programs** (skip those you have)
+
+```powershell
+winget install -e --id Git.Git
+winget install -e --id OpenJS.NodeJS.LTS   # 22.12 or newer
+winget install -e --id astral-sh.uv
+```
+
+Close the terminal, open a new one, and:
+
+```powershell
+npm.cmd install -g pnpm@10
+```
+
+**2. Get both projects, side by side, and install the companion**
 
 ```powershell
 git clone https://github.com/zacharyinserra/deskhub
@@ -97,16 +112,44 @@ uv sync
 copy config.example.toml config.toml
 ```
 
-**2. Double-click `deskhub-mobile.cmd`**
+**3. Double-click `deskhub-mobile.cmd`**, in the `deskhub-mobile` folder
 
-It sets everything up, and says which two lines of `config.toml` make the companion connect to the bridge.
+Press Enter for the companion's folder. It makes `.env` and offers to open it together with the companion's
+`config.toml`. Change these two lines there, with the `HUB_TOKEN` from `.env`, and save:
 
-**3. Scan the QR code with the phone**
+```toml
+[hub]
+host = "127.0.0.1:8765"
+token = "the HUB_TOKEN from .env"
+```
 
-**4. Let the phone keep its screen on**
+For the weather, fill in `WEATHER_LATITUDE` and `WEATHER_LONGITUDE` in `.env` as well. Then it installs, builds,
+starts everything and shows a QR code. Say yes to the firewall rule; your network must be *Private* in Windows'
+network settings.
+
+**4. Scan the QR code with the phone**
+
+**5. Let the phone keep its screen on**
 
 On the phone, open `chrome://flags/#unsafely-treat-insecure-origin-as-secure`, enter the PC's address (such as
 `http://192.168.1.20:8765`), choose *Enabled* and tap *Relaunch*.
+
+### Make it yours
+
+Run these in `deskhub\companion`, then restart with **Y** in the launcher's window:
+
+| For | Command |
+| --- | --- |
+| Calendars | `uv run deskhub-setup calendar` |
+| Claude limits and alerts | `uv run deskhub-setup claude` |
+| Shortcut buttons | `uv run deskhub-setup shortcuts` |
+| Steam and other games | `uv run deskhub-setup games` |
+| GitHub chart | `uv run deskhub-setup github` |
+| Pages, Home's layout | `uv run deskhub-setup pages`, `uv run deskhub-setup home` |
+
+> [!IMPORTANT]
+> Always name a topic. `deskhub-setup` on its own also goes through the ESP32 board and its firmware, which you
+> don't need here. The weather's place is in `.env`, not in its `weather` topic.
 
 > [!TIP]
 > The [setup guide](docs/setup.md) has every step by hand, the firewall, a fixed address, starting with Windows
