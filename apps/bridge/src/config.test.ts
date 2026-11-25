@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { readConfig } from './config.js';
 
-const env = { HUB_TOKEN: 'hub', CLIENT_TOKEN: 'client' };
+const env = { HUB_TOKEN: 'hub', CLIENT_TOKEN: 'client-0123456789' };
 
 describe('readConfig', () => {
   it('has defaults', () => {
@@ -9,7 +9,7 @@ describe('readConfig', () => {
       mock: false,
       hubToken: 'hub',
       port: 8765,
-      clientToken: 'client',
+      clientToken: 'client-0123456789',
       clientOrigins: [],
       weather: null,
       warnings: [],
@@ -28,7 +28,9 @@ describe('readConfig', () => {
 
   it('warns about weak tokens', () => {
     expect(readConfig({ ...env, HUB_TOKEN: 'change-me' }, false).warnings).toHaveLength(1);
-    expect(readConfig({ HUB_TOKEN: 'x', CLIENT_TOKEN: 'x' }, false).warnings).toHaveLength(1);
+    const same = 'x'.repeat(16);
+    expect(readConfig({ HUB_TOKEN: same, CLIENT_TOKEN: same }, false).warnings).toHaveLength(1);
+    expect(readConfig({ ...env, CLIENT_TOKEN: 'x'.repeat(15) }, false).warnings).toHaveLength(1);
   });
 
   it.each(['0', '65536', 'abc', '80.5'])('refuses port %s', (HUB_PORT) => {

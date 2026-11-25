@@ -221,6 +221,8 @@ Other websites can't connect through your browser: only the PC's own addresses, 
 port and Vite's 5173, and `CLIENT_ORIGINS` may. Nor can they frame the app. Only a program on the PC
 itself can connect as the companion.
 
+Nothing slows down guessing, so `CLIENT_TOKEN` should be as long as the command above makes it.
+
 The weather comes from [Open-Meteo](https://open-meteo.com), straight to the phone. Open-Meteo sees the
 phone's address and the coordinates in `.env` (two decimals are plenty), nothing else. Without
 coordinates nothing is fetched.
