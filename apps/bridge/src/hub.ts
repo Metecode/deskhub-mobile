@@ -67,7 +67,8 @@ export class Hub extends EventEmitter<HubEvents> {
 
   #recentGames(): Set<number> {
     const text = this.#messages.get('steam');
-    return new Set(text && normalizeSteam(JSON.parse(text)).recent.map((game) => game.appid));
+    const recent = text ? normalizeSteam(JSON.parse(text)).recent : [];
+    return new Set(recent.map((game) => game.appid));
   }
 
   #setOnline(online: boolean): void {
