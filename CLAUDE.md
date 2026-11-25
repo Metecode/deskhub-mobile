@@ -60,7 +60,7 @@ Phase 3, branch `phase-3`:
 - [x] Plan approved and written down
 - [x] Protocol: schemas, normalizers, portraits
 - [x] Bridge: game covers
-- [ ] Bridge: mock mode
+- [x] Bridge: mock mode
 - [ ] Web: navigation bar
 - [ ] Web: games page and widget
 - [ ] Web: printer page and widget

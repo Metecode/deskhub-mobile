@@ -1,8 +1,19 @@
 import { ONLINE_TIMEOUT_MS, parseArtFrame, parseMessage } from '@deskhub-mobile/protocol';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { silentLogger } from './log.js';
-import { MOCK_ONLINE_MS, MOCK_OUTAGE_MS, MOCK_SPEEDTEST_MS, MOCK_STATS_MS, startMockCompanion } from './mockCompanion.js';
-import { createStatsSource, eventsMessage, MockAlerts, MockNet, MockPlayer, MockUsage, SERVER_COVER } from './mockData.js';
+import { MOCK_ONLINE_MS, MOCK_LAUNCH_MS, MOCK_GAME_MS, MOCK_OUTAGE_MS, MOCK_SPEEDTEST_MS, MOCK_STATS_MS, startMockCompanion } from './mockCompanion.js';
+import {
+  createStatsSource,
+  eventsMessage,
+  githubMessage,
+  MockAlerts,
+  MockGames,
+  MockNet,
+  MockPlayer,
+  MockUsage,
+  printerMessage,
+  SERVER_COVER,
+} from './mockData.js';
 import type { Bridge } from './server.js';
 import { connectClient, connectCompanion, HUB_TOKEN, startBridge, useFakeTimers } from './testing.js';
 
@@ -69,12 +80,16 @@ describe('mock companion', () => {
       'events',
       'ai',
       'alert',
+      'printer',
       'net',
+      'github',
+      'steam',
       'stats',
       'media',
       'media_server',
     ]);
-    expect(bridge.hub.covers).toHaveLength(2);
+    // Two covers, a thumbnail and five portraits.
+    expect(bridge.hub.covers).toHaveLength(8);
   });
 
   it('obeys media and shortcut commands', async () => {
@@ -102,6 +117,20 @@ describe('mock companion', () => {
     await advance(MOCK_SPEEDTEST_MS);
     const net = JSON.parse(bridge.hub.messages.find((m) => m.includes('"net"'))!);
     expect(net).toMatchObject({ testing: false, speed: { down_mbps: 942.3 } });
+  });
+
+  it('starts a game when asked, and it ends', async () => {
+    await nextMessage('media_server');
+    const client = await connectClient(bridge);
+    await client.next();
+    const steam = nextMessage('steam');
+    client.send({ type: 'steam_launch', appid: 0xc0000003 });
+    await client.flush();
+    await advance(MOCK_LAUNCH_MS);
+    expect(await steam).toMatchObject({ playing: { appid: 0xc0000003, session_s: 0 } });
+    expect(bridge.hub.covers).toHaveLength(9);
+    await advance(MOCK_GAME_MS);
+    expect(JSON.parse(bridge.hub.messages.find((m) => m.includes('"steam"'))!).playing).toBeNull();
   });
 
   it('has an alert after a while, which its buttons end', async () => {
@@ -180,6 +209,30 @@ describe('mock data', () => {
         expect(parseMessage(message).kind).toBe('known');
     }
     expect(net.message(0).hist).toHaveLength(60);
+  });
+
+  it('has games whose covers fit, and refuses to start others', () => {
+    const games = new MockGames();
+    const now = 1_800_000_000;
+    expect(parseMessage(games.message(now)).kind).toBe('known');
+    expect(games.covers(now).map((f) => parseArtFrame(f))).toHaveLength(6);
+    expect(games.launch(1006, now)).toBe(false);
+    expect(games.launch(1001, now)).toBe(true);
+    const ids = games.message(now).recent!.map((g) => g.appid);
+    expect(ids).toHaveLength(5);
+    expect(ids).not.toContain(1001);
+    for (const frame of games.covers(now)) expect(parseArtFrame(frame)).toMatchObject({ magic: 'STM1' });
+    games.stop(now + 60);
+    expect(games.message(now + 60)).toMatchObject({ playing: null, recent: [{ appid: 1001, last: now + 60 }, {}, {}, {}, {}] });
+  });
+
+  it('has printers and contributions that fit the protocol', () => {
+    for (let i = 0; i < 220; i++) expect(parseMessage(printerMessage(i)).kind).toBe('known');
+    for (let day = 0; day < 8; day++) {
+      const github = githubMessage(1_800_000_000 + day * 86_400);
+      expect(parseMessage(github).kind).toBe('known');
+      expect(github.levels).toMatch(/^[0-4]{365,371}$/);
+    }
   });
 
   it('keeps a permission alert when its window is shown, but not one that waits for a reply', () => {

@@ -7,13 +7,16 @@ import type { Logger } from './log.js';
 import {
   createStatsSource,
   eventsMessage,
+  githubMessage,
   HOME,
   LAYOUT,
   MockAlerts,
+  MockGames,
   MockNet,
   MockPlayer,
   MockTiles,
   MockUsage,
+  printerMessage,
   SERVER_COVER,
   serverMessage,
   TILES,
@@ -33,6 +36,9 @@ const SLEEP_AT = 150;
 const SLEEP_FOR = 15;
 
 export const MOCK_SPEEDTEST_MS = 6000;
+/** Until a launched game runs, and how long it does. */
+export const MOCK_LAUNCH_MS = 2000;
+export const MOCK_GAME_MS = 60_000;
 
 const epoch = () => Math.floor(Date.now() / 1000);
 
@@ -52,11 +58,13 @@ export function startMockCompanion({ url, token, companionConnected, log }: Mock
   const usage = new MockUsage();
   const alerts = new MockAlerts();
   const net = new MockNet();
+  const games = new MockGames();
   let ws: WebSocket | null = null;
   let ticks = 0;
   let ticker: NodeJS.Timeout | undefined;
   let next: NodeJS.Timeout | undefined;
   let test: NodeJS.Timeout | undefined;
+  let game: NodeJS.Timeout | undefined;
   let asleep = false;
   let outages = 0;
   let stopped = false;
@@ -72,6 +80,7 @@ export function startMockCompanion({ url, token, companionConnected, log }: Mock
     clearInterval(ticker);
     clearTimeout(next);
     clearTimeout(test);
+    clearTimeout(game);
     ws?.close();
   }
 
@@ -101,9 +110,12 @@ export function startMockCompanion({ url, token, companionConnected, log }: Mock
         eventsMessage(epoch()),
         usage.message(epoch()),
         alerts.message(),
+        printerMessage(ticks),
         net.message(epoch()),
+        githubMessage(epoch()),
       ])
         send(message);
+      sendGames();
       send(SERVER_COVER);
       send(player.cover);
       goOnline();
@@ -119,11 +131,27 @@ export function startMockCompanion({ url, token, companionConnected, log }: Mock
     });
   }
 
+  function sendGames(): void {
+    send(games.message(epoch()));
+    for (const cover of games.covers(epoch())) send(cover);
+  }
+
   function onCommand(command: Command, text: string): void {
     log.info(`mock: got command ${text}`);
     if (command.type === 'media' && player.command(command)) send(player.cover);
     if (command.type === 'shortcut' && tiles.tap(command.id)) send(tiles.message());
     if (command.type === 'alert_action' && alerts.command(command)) send(alerts.message());
+    if (command.type === 'steam_launch') {
+      clearTimeout(game);
+      game = setTimeout(() => {
+        if (!games.launch(command.appid, epoch())) return log.warn('mock: launch refused');
+        sendGames();
+        game = setTimeout(() => {
+          games.stop(epoch());
+          sendGames();
+        }, MOCK_GAME_MS);
+      }, MOCK_LAUNCH_MS);
+    }
     if (command.type === 'speedtest' && net.startTest()) {
       send(net.message(epoch()));
       test = setTimeout(() => {
@@ -138,6 +166,7 @@ export function startMockCompanion({ url, token, companionConnected, log }: Mock
     if (player.tick()) send(player.cover);
     for (const message of [sample(), player.message(), serverMessage(ticks)]) send(message);
     if (ticks % 5 === 0) send(usage.message(epoch()));
+    if (ticks % 3 === 0) send(printerMessage(ticks));
     if (ticks % 2 === 0) {
       net.probe();
       send(net.message(epoch()));

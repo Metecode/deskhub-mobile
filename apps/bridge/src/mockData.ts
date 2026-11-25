@@ -1,15 +1,19 @@
 // Made-up data for the mock companion, with the fields and rounding of the real one.
+import { STEAM_HEADER, STEAM_PORTRAIT, STEAM_THUMB } from '@deskhub-mobile/protocol';
 import type {
   AiMessage,
   AlertMessage,
   Command,
   EventsMessage,
+  GitHubMessage,
   HomeMessage,
   LayoutMessage,
   MediaMessage,
   MediaServerMessage,
   NetMessage,
+  PrinterMessage,
   StatsMessage,
+  SteamMessage,
   TilesMessage,
   TileStateMessage,
 } from '@deskhub-mobile/protocol';
@@ -70,18 +74,37 @@ type Rgb = readonly [number, number, number];
 export function coverFrame(magic: 'ART1' | 'ARS1', id: number, width: number, height: number, top: Rgb, bottom: Rgb): Buffer {
   const frame = Buffer.alloc(12 + width * height * 2);
   frame.write(magic, 'latin1');
+  writeSize(frame, id, width, height);
+  paint(frame.subarray(12), width, height, top, bottom);
+  return frame;
+}
+
+function writeSize(frame: Buffer, id: number, width: number, height: number): void {
   frame.writeUInt32LE(id, 4);
   frame.writeUInt16LE(width, 8);
   frame.writeUInt16LE(height, 10);
-  const radius = width / 5;
+}
+
+function paint(pixels: Buffer, width: number, height: number, top: Rgb, bottom: Rgb): void {
+  const radius = Math.min(width, height) / 5;
   for (let y = 0; y < height; y++) {
     const t = y / (height - 1);
     for (let x = 0; x < width; x++) {
       const sun = Math.hypot(x - width / 2, y - height / 3) < radius;
       const [r, g, b] = sun ? [248, 222, 160] : top.map((c, i) => c + (bottom[i]! - c) * t);
-      frame.writeUInt16LE(((r! & 0xf8) << 8) | ((g! & 0xfc) << 3) | (b! >> 3), 12 + (y * width + x) * 2);
+      pixels.writeUInt16LE(((r! & 0xf8) << 8) | ((g! & 0xfc) << 3) | (b! >> 3), (y * width + x) * 2);
     }
   }
+}
+
+/** A game's cover (build_frame and KIND_SIZES in companion/deskhub/steam.py). */
+export function steamFrame(appid: number, kind: number, top: Rgb, bottom: Rgb): Buffer {
+  const [width, height] = ([[340, 159], [64, 96], [96, 144]] as const)[kind]!;
+  const frame = Buffer.alloc(16 + width * height * 2);
+  frame.write('STM1', 'latin1');
+  writeSize(frame, appid, width, height);
+  frame.writeUInt16LE(kind, 12);
+  paint(frame.subarray(16), width, height, top, bottom);
   return frame;
 }
 
@@ -188,7 +211,20 @@ export function serverMessage(pos: number): MediaServerMessage {
 
 export const LAYOUT: LayoutMessage = {
   type: 'layout',
-  pages: ['home', 'stats', 'ai', 'calendar', 'weather', 'media', 'timer', 'network', 'shortcuts'],
+  pages: [
+    'home',
+    'stats',
+    'ai',
+    'calendar',
+    'weather',
+    'media',
+    'printer',
+    'timer',
+    'games',
+    'network',
+    'github',
+    'shortcuts',
+  ],
   ordered: true,
   nav: 'left',
   pc_sleep: 'off',
@@ -393,4 +429,181 @@ export class MockNet {
       ip: '',
     };
   }
+}
+
+interface MockGame {
+  appid: number;
+  name: string;
+  total: number;
+  /** Seconds ago. */
+  ago: number;
+  top: Rgb;
+  bottom: Rgb;
+}
+
+const GAMES: readonly MockGame[] = [
+  { appid: 1001, name: 'Harbor Lights', total: 2460, ago: 7200, top: [40, 90, 150], bottom: [220, 150, 110] },
+  { appid: 1002, name: 'Iron Orchard', total: 990, ago: 100_000, top: [60, 130, 60], bottom: [200, 200, 120] },
+  // A custom game.
+  { appid: 0xc0000003, name: 'Neon Drift', total: 724, ago: 400_000, top: [60, 10, 80], bottom: [200, 30, 120] },
+  { appid: 1004, name: 'Frostline: The Very Long Subtitle', total: 300, ago: 2e6, top: [130, 190, 230], bottom: [240, 250, 255] },
+  { appid: 1005, name: 'Ember Keep', total: 0, ago: 1.2e7, top: [110, 30, 20], bottom: [230, 110, 40] },
+  { appid: 1006, name: 'Starfall Tactics', total: 7680, ago: 3e7, top: [40, 30, 100], bottom: [120, 70, 160] },
+];
+
+/** A games library. What is launched runs for a while. */
+export class MockGames {
+  readonly #lastPlayed = new Map<number, number>();
+  #playing: MockGame | null = null;
+  #since = 0;
+
+  /** `now` in epoch seconds. */
+  message(now: number): SteamMessage {
+    const recent = this.#recent(now).map(({ game, last }) => ({
+      appid: game.appid,
+      name: game.name,
+      last,
+      total_min: game.total,
+    }));
+    const playing = this.#playing && {
+      appid: this.#playing.appid,
+      name: this.#playing.name,
+      session_s: now - this.#since,
+      total_min: this.#playing.total,
+    };
+    const friends = [
+      { name: 'alex', game: 'Harbor Lights' },
+      { name: 'sam_with_a_long_name', game: 'Frostline: The Very Long Subtitle' },
+    ];
+    return { type: 'steam', found: true, playing, recent, friends };
+  }
+
+  /** In the order of Steam._wanted(). */
+  covers(now: number): Buffer[] {
+    const recent = this.#recent(now).map(({ game }) => game);
+    const thumb = this.#playing ?? recent[0];
+    const frame = (game: MockGame, kind: number) => steamFrame(game.appid, kind, game.top, game.bottom);
+    return [
+      ...(this.#playing ? [frame(this.#playing, STEAM_HEADER)] : []),
+      ...(thumb ? [frame(thumb, STEAM_THUMB)] : []),
+      ...recent.map((game) => frame(game, STEAM_PORTRAIT)),
+    ];
+  }
+
+  /** False when the companion would refuse it. */
+  launch(appid: number, now: number): boolean {
+    const game = this.#recent(now).find((g) => g.game.appid === appid)?.game;
+    if (!game) return false;
+    this.stop(now);
+    this.#playing = game;
+    this.#since = now;
+    return true;
+  }
+
+  stop(now: number): void {
+    if (this.#playing) this.#lastPlayed.set(this.#playing.appid, now);
+    this.#playing = null;
+  }
+
+  #recent(now: number): { game: MockGame; last: number }[] {
+    return GAMES.filter((game) => game !== this.#playing)
+      .map((game) => ({ game, last: this.#lastPlayed.get(game.appid) ?? Math.trunc(now - game.ago) }))
+      .sort((a, b) => b.last - a.last)
+      .slice(0, 5);
+  }
+}
+
+const PRINT_MINUTES = 90;
+
+/** Two printers: one goes through a print and back to the start, the other comes and goes. */
+export function printerMessage(tick: number): PrinterMessage {
+  const pct = tick % 110;
+  const state = pct < 3 ? 'PREPARE' : pct >= 100 ? 'FINISH' : pct % 40 > 36 ? 'PAUSE' : 'RUNNING';
+  const online = tick % 60 < 40;
+  const nothing = { pct: 0, remaining_min: 0, layer: 0, layers: 0, file: '', speed: '', error: '', chamber: null };
+  return {
+    type: 'printer',
+    printers: [
+      {
+        name: 'Attic Voron',
+        model: 'Voron 2.4',
+        online: true,
+        state,
+        pct: Math.min(100, pct),
+        remaining_min: Math.round((PRINT_MINUTES * Math.max(0, 100 - pct)) / 100),
+        layer: Math.round(2.4 * Math.min(100, pct)),
+        layers: 240,
+        file: 'Desk_Organizer_v3_final_really_final',
+        nozzle: 219.6,
+        nozzle_target: 220,
+        bed: 55.2,
+        bed_target: 55,
+        chamber: 34,
+        speed: '100%',
+        error: state === 'PAUSE' ? 'Filament ran out' : '',
+        ams: [
+          { color: '#F0F0F0', type: 'PLA', active: false },
+          { color: '#101010', type: 'PLA', active: false },
+          { color: '#FFB224', type: 'PETG', active: true },
+          { color: '#3A7BFF', type: 'PLA', active: false },
+        ],
+      },
+      {
+        ...nothing,
+        name: 'A1 mini',
+        model: 'A1 mini',
+        online,
+        state: online ? 'IDLE' : 'OFFLINE',
+        nozzle: online ? 24 : null,
+        nozzle_target: online ? 0 : null,
+        bed: online ? 23 : null,
+        bed_target: online ? 0 : null,
+        ams: [],
+      },
+    ],
+  };
+}
+
+/** A year of contributions up to `now`, in epoch seconds. */
+export function githubMessage(now: number): GitHubMessage {
+  const today = new Date(now * 1000);
+  // From the Sunday 52 weeks before this week's, as GitHub does.
+  const days = 52 * 7 + today.getDay() + 1;
+  const counts = Array.from({ length: days }, (_, i) => {
+    const busy = (Math.sin(i * 12.9898) * 43758.5453) % 1;
+    return Math.abs(busy) < 0.45 && i < days - 5 ? 0 : Math.ceil(Math.abs(busy) * (i > days - 40 ? 24 : 9));
+  });
+  const months: [number, string][] = [];
+  for (let i = 0; i < days; i += 7) {
+    const day = new Date(today.getFullYear(), today.getMonth(), today.getDate() - (days - 1 - i));
+    if (day.getDate() <= 7) months.push([i / 7, new Intl.DateTimeFormat('en-US', { month: 'short' }).format(day)]);
+  }
+  const sum = (list: number[]) => list.reduce((a, b) => a + b, 0);
+  const thisWeek = counts.slice(days - 1 - today.getDay());
+  const lastWeek = counts.slice(days - 8 - today.getDay(), days - 1 - today.getDay());
+  return {
+    type: 'github',
+    login: 'octocat',
+    total: sum(counts),
+    levels: counts.map((n) => Math.min(4, Math.ceil(n / 4))).join(''),
+    start_wday: 0,
+    months,
+    today: counts.at(-1)!,
+    week: sum(thisWeek),
+    last_week: sum(lastWeek),
+    streak: 5,
+    longest: 10,
+    best: Math.max(...counts),
+    best_date: 'Nov 16',
+    week_days: thisWeek,
+    last_week_days: lastWeek,
+    kinds: { commits: 820, prs: 61, reviews: 40, issues: 12, private: 1207 },
+    repos: [
+      { name: 'pixel-garden', count: 222 },
+      { name: 'tide-engine', count: 201 },
+      { name: 'a-repository-with-a-rather-long-name', count: 111 },
+      { name: 'lumen-notes', count: 88 },
+    ],
+    accent: false,
+  };
 }
