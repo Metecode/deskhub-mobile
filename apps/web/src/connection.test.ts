@@ -1,8 +1,10 @@
 import {
   CLOSE_BAD_ORIGIN,
   CLOSE_BAD_TOKEN,
+  DEFAULT_HOME,
   DEFAULT_LAYOUT,
   NO_MEDIA,
+  normalizeEvents,
   SILENCE_TIMEOUT_MS,
   STATUS_INTERVAL_MS,
 } from '@deskhub-mobile/protocol';
@@ -247,6 +249,29 @@ describe('pages', () => {
     expect(isOnline(connection.getState())).toBe(false);
     expect(pcMedia(connection.getState())).toEqual(NO_MEDIA);
     expect(connection.getState().events.events).toHaveLength(1);
+  });
+
+  it('start with the saved calendar, and keep it until the companion sends another', () => {
+    const events = normalizeEvents({ type: 'events', events: [{ title: 'saved', end: 5 }], days: 3 });
+    const connection = new Connection('ws://hub/client', 't', { layout: DEFAULT_LAYOUT, home: DEFAULT_HOME, events });
+    connection.connect();
+    expect(connection.getState().events).toBe(events);
+    // The PC was started anew, and the companion isn't there yet.
+    last().snapshot(false);
+    expect(connection.getState().events).toBe(events);
+    last().receive({ type: 'events', events: [], days: 3 });
+    expect(connection.getState().events.events).toEqual([]);
+  });
+
+  it('say which build the bridge serves', () => {
+    const connection = connect();
+    last().receive({ type: 'bridge.snapshot', pc_online: true, messages: [], weather: null, build: 'one' });
+    expect(connection.getState().build).toBe('one');
+    last().receive({ type: 'bridge.status', pc_online: true, build: 'two' });
+    expect(connection.getState().build).toBe('two');
+    // An older bridge doesn't.
+    last().snapshot(true);
+    expect(connection.getState().build).toBeNull();
   });
 
   it('get covers as they come', () => {

@@ -1,11 +1,9 @@
 // Plain HTTP: the built web app, and safe answers where the board has endpoints that
 // make no sense here.
-import { existsSync } from 'node:fs';
 import type { IncomingMessage, RequestListener, ServerResponse } from 'node:http';
-import { join } from 'node:path';
-import sirv from 'sirv';
 import { parseTarget } from './target.js';
 import { tokensEqual } from './tokens.js';
+import type { WebFiles } from './webFiles.js';
 
 const DEBUG_ENDPOINTS = new Set(['/screenshot', '/tap', '/perf']);
 
@@ -25,17 +23,8 @@ function refuseFirmware(req: IncomingMessage, res: ServerResponse): void {
   req.resume();
 }
 
-export function createHttpHandler(options: { hubToken: string; webRoot: string }): RequestListener {
-  const { hubToken, webRoot } = options;
-  const serve = existsSync(join(webRoot, 'index.html'))
-    ? sirv(webRoot, {
-        setHeaders: (res, path) => {
-          // Vite puts a content hash in the names under assets/.
-          const hashed = path.startsWith('/assets/');
-          res.setHeader('Cache-Control', hashed ? 'public, max-age=31536000, immutable' : 'no-cache');
-        },
-      })
-    : null;
+export function createHttpHandler(options: { hubToken: string; web: WebFiles }): RequestListener {
+  const { hubToken, web } = options;
 
   return (req, res) => {
     const { pathname, params } = parseTarget(req.url);
@@ -47,9 +36,11 @@ export function createHttpHandler(options: { hubToken: string; webRoot: string }
         ? text(res, 501, 'not available on deskhub-mobile')
         : text(res, 403, 'bad token');
     }
-    if (serve) return serve(req, res, () => text(res, 404, 'not found'));
+    const file = web.get(pathname);
+    if (file) return void res.writeHead(200, file.headers).end(req.method === 'HEAD' ? undefined : file.body);
     // deskhub-setup checks that "/" answers with a status below 500.
-    if (pathname === '/') return text(res, 200, 'deskhub-mobile bridge: the web app is not built, run "pnpm build"');
+    if (pathname === '/' && !web.built)
+      return text(res, 200, 'deskhub-mobile bridge: the web app is not built, run "pnpm build"');
     text(res, 404, 'not found');
   };
 }

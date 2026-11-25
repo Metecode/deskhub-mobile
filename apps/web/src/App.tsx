@@ -1,9 +1,11 @@
 import { visibleWidgets, type Page } from '@deskhub-mobile/protocol';
-import { useState, useSyncExternalStore } from 'react';
+import { useState, useSyncExternalStore, type CSSProperties, type ReactNode } from 'react';
 import { calendarBadge } from './agenda.js';
 import type { AlertStore } from './alerts.js';
 import styles from './App.module.css';
+import type { BurnInStore } from './burnIn.js';
 import { DarkLayer } from './components/DarkLayer.js';
+import { ErrorBoundary } from './components/ErrorNote.js';
 import { Rail } from './components/Rail.js';
 import { TimesUp } from './components/TimesUp.js';
 import { TokenForm } from './components/TokenForm.js';
@@ -48,10 +50,17 @@ export interface Stores {
   offline: OfflineStore;
   errors: ErrorStore;
   info: InfoRoute;
+  burnIn: BurnInStore;
+  /** Whether a reload would disturb nothing. */
+  calm: () => boolean;
 }
+
+/** So that an error while rendering is the page's and not the app's. */
+const Show = ({ render }: { render: () => ReactNode }) => render();
 
 export function App(stores: Stores) {
   const { connection, weather, alerts, timer, dark, speedTest, launches, sound, wakeLock, offline, errors, info } = stores;
+  const { burnIn, calm } = stores;
   const state = useSyncExternalStore(connection.subscribe, connection.getState);
   const forecast = useSyncExternalStore(weather.subscribe, weather.getState);
   const alert = useSyncExternalStore(alerts.subscribe, alerts.getState);
@@ -61,6 +70,7 @@ export function App(stores: Stores) {
   const [statsView, setStatsView] = useState<StatsView>('pc');
   const now = Math.floor(useNow(1000) / 1000);
   const portrait = usePortrait();
+  const { shift, dim } = useSyncExternalStore(burnIn.subscribe, burnIn.getState);
   const infoOpen = useSyncExternalStore(info.subscribe, info.getState);
   const infoPage = infoOpen && (
     <InfoPage state={state} wakeLock={wakeLock} offline={offline} errors={errors} now={now} onClose={info.close} />
@@ -141,7 +151,12 @@ export function App(stores: Stores) {
   };
 
   return (
-    <div className={styles.app} data-nav={portrait ? 'bottom' : nav}>
+    <div
+      className={styles.app}
+      data-nav={portrait ? 'bottom' : nav}
+      data-dim={dim || undefined}
+      style={{ '--shift-x': `${shift.x}px`, '--shift-y': `${shift.y}px` } as CSSProperties}
+    >
       <Rail
         tabs={tabsOf(pages)}
         current={current}
@@ -158,9 +173,13 @@ export function App(stores: Stores) {
         online={isOnline(state)}
         onStatus={infoOpen ? info.close : info.open}
       />
-      <div className={styles.page}>{infoPage || show()}</div>
+      <div className={styles.page}>
+        <ErrorBoundary key={infoOpen ? 'info' : current} calm={calm} onError={errors.add}>
+          {infoPage || <Show render={show} />}
+        </ErrorBoundary>
+      </div>
       {darkStyle && <DarkLayer style={darkStyle} now={now} onWake={dark.wake} />}
-      {timerState.done && <TimesUp timer={timer} total={timerState.total} sound={sound} onTouch={dark.wake} />}
+      {timerState.done && <TimesUp timer={timer} total={timerState.total} sound={sound} now={now} onTouch={dark.wake} />}
     </div>
   );
 }

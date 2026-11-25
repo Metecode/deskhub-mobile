@@ -10,6 +10,7 @@ import { Hub } from './hub.js';
 import type { Logger } from './log.js';
 import { allowedOrigins } from './origins.js';
 import { parseTarget } from './target.js';
+import { WebFiles } from './webFiles.js';
 
 export interface BridgeOptions {
   hubToken: string;
@@ -31,16 +32,18 @@ export class Bridge {
 
   constructor(options: BridgeOptions) {
     const { hubToken, clientToken, clientOrigins, weather, webRoot, log } = options;
+    const web = new WebFiles(webRoot, log);
     this.companion = new CompanionEndpoint(this.hub, hubToken, log);
     this.clients = new ClientEndpoint({
       hub: this.hub,
       token: clientToken,
       originAllowed: (origin) => allowedOrigins(this.port, clientOrigins).has(origin),
       weather,
+      build: () => web.build,
       sendCommand: (command) => this.companion.send(command),
       log,
     });
-    this.#server = createServer(createHttpHandler({ hubToken, webRoot }));
+    this.#server = createServer(createHttpHandler({ hubToken, web }));
     this.#server.on('upgrade', (req, socket, head) => this.#onUpgrade(req, socket, head));
   }
 

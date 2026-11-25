@@ -126,6 +126,8 @@ export interface BridgeState extends HubData {
   offlineSince: number | null;
   /** undefined: the bridge hasn't said yet. null: no location is set. */
   weather: WeatherSettings | null | undefined;
+  /** The build the bridge serves. null: not known. */
+  build: string | null;
   /** The last message of every type, as received. */
   messages: Readonly<Record<string, RawMessage>>;
 }
@@ -229,6 +231,7 @@ export class Connection {
       gameCovers: { header: null, thumb: null, portraits: new Map() },
       offlineSince: Date.now(),
       weather: undefined,
+      build: null,
       messages: {},
       layout,
       home,
@@ -335,8 +338,9 @@ export class Connection {
   }
 
   #onBridgeMessage(message: BridgeMessage): void {
+    const build = message.build ?? null;
     if (message.type === 'bridge.status') {
-      this.#update({ pcOnline: message.pc_online });
+      this.#update({ pcOnline: message.pc_online, build });
       return;
     }
     // The bridge let us in.
@@ -357,6 +361,7 @@ export class Connection {
       link: 'open',
       pcOnline: message.pc_online,
       weather: message.weather ?? null,
+      build,
       messages: Object.fromEntries(message.messages.map((m) => [m.type, m])),
     });
   }

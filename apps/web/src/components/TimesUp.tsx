@@ -1,4 +1,6 @@
 // The timer's end, over everything (show_done in firmware/main/ui_timer.c).
+import { useState } from 'react';
+import { TIMES_UP_DIM_MS } from '../burnIn.js';
 import type { Sound } from '../sound.js';
 import { timerName, type TimerStore } from '../timer.js';
 import { Icon } from './Icon.js';
@@ -8,13 +10,26 @@ interface TimesUpProps {
   timer: TimerStore;
   total: number;
   sound: Sound;
+  /** Epoch seconds. */
+  now: number;
   /** It lies above the dark layer, which doesn't get its touches. */
   onTouch: () => void;
 }
 
-export function TimesUp({ timer, total, sound, onTouch }: TimesUpProps) {
+export function TimesUp({ timer, total, sound, now, onTouch }: TimesUpProps) {
+  /** When it came or was touched, ms. */
+  const [since, setSince] = useState(Date.now);
   return (
-    <div className={styles.layer} role="alertdialog" aria-label="Time's up" onPointerDown={onTouch}>
+    <div
+      className={styles.layer}
+      role="alertdialog"
+      aria-label="Time's up"
+      data-dim={now * 1000 - since >= TIMES_UP_DIM_MS || undefined}
+      onPointerDown={() => {
+        setSince(Date.now());
+        onTouch();
+      }}
+    >
       <section className={styles.card}>
         <Icon name="timer" size={80} color="var(--good)" />
         <h2 className={styles.title}>Time's up</h2>

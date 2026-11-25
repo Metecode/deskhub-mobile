@@ -36,7 +36,7 @@ interface HomeProps {
 
 function Header({ now }: { now: number }) {
   return (
-    <header className={styles.header}>
+    <header className={styles.header} data-dims>
       <span className={styles.headerTime}>{formatDigits(now)}</span>
       {HOUR12 && <span className={styles.headerAmPm}>{amPm(now)}</span>}
       <span className={styles.headerDate}>{formatDate(now)}</span>

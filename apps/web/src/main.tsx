@@ -7,6 +7,8 @@ import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
 import { AlertStore } from './alerts.js';
 import { App } from './App.js';
+import { BurnInStore } from './burnIn.js';
+import { ErrorBoundary } from './components/ErrorNote.js';
 import { Connection } from './connection.js';
 import { DarkStore } from './dark.js';
 import { ErrorStore, InfoRoute } from './diagnostics.js';
@@ -15,6 +17,7 @@ import { goFullscreenOnTap } from './fullscreen.js';
 import { LaunchStore } from './games.js';
 import { loadLayout, saveLayout } from './layoutStore.js';
 import { OfflineStore } from './offline.js';
+import { isCalm, takeUpdate } from './reload.js';
 import { Sound } from './sound.js';
 import { SpeedTestStore } from './speedTest.js';
 import { TimerStore } from './timer.js';
@@ -42,6 +45,8 @@ const wakeLock = new WakeLockStore(wakeLockEnvironment());
 const offline = new OfflineStore(import.meta.env.PROD);
 const info = new InfoRoute();
 
+const burnIn = new BurnInStore();
+
 const darkReasons = () => {
   const { asleep, layout } = connection.getState();
   return { asleep, pcSleep: layout.pcSleep, night: layout.night };
@@ -49,12 +54,15 @@ const darkReasons = () => {
 const dark = new DarkStore(darkReasons());
 const timer = new TimerStore(() => {
   dark.wake();
+  burnIn.wake();
   sound.play('timer');
 });
 const alerts = new AlertStore(() => {
   dark.wake();
+  burnIn.wake();
   sound.play('alert');
 });
+const calm = () => isCalm(alerts, timer);
 
 let saved = connection.getState();
 connection.subscribe(() => {
@@ -68,9 +76,16 @@ connection.subscribe(() => {
 });
 connection.connect();
 dark.start();
+burnIn.start();
 timer.resume();
 wakeLock.start();
 void offline.start();
+
+setInterval(() => {
+  const { build } = connection.getState();
+  if (takeUpdate({ own: __BUILD__, served: build, calm: calm(), lastTouch: burnIn.lastTouch, now: Date.now() }))
+    location.reload();
+}, 5000);
 
 setInterval(() => {
   events.clean(seconds());
@@ -83,10 +98,12 @@ function wake(): void {
   weather.wake();
   timer.tick();
   dark.tick();
+  burnIn.tick();
   void wakeLock.update();
 }
 document.addEventListener('visibilitychange', () => {
   if (document.visibilityState === 'visible') wake();
+  else burnIn.forget();
 });
 window.addEventListener('online', wake);
 
@@ -101,23 +118,31 @@ document.addEventListener(
   true,
 );
 
+document.addEventListener('pointerdown', (e) => burnIn.down(e.pointerId), true);
+for (const type of ['pointerup', 'pointercancel'] as const)
+  document.addEventListener(type, (e) => burnIn.up(e.pointerId), true);
+
 goFullscreenOnTap();
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
-    <App
-      connection={connection}
-      weather={weather}
-      alerts={alerts}
-      timer={timer}
-      dark={dark}
-      speedTest={speedTest}
-      launches={launches}
-      sound={sound}
-      wakeLock={wakeLock}
-      offline={offline}
-      errors={errors}
-      info={info}
-    />
+    <ErrorBoundary calm={calm} onError={errors.add}>
+      <App
+        connection={connection}
+        weather={weather}
+        alerts={alerts}
+        timer={timer}
+        dark={dark}
+        speedTest={speedTest}
+        launches={launches}
+        sound={sound}
+        wakeLock={wakeLock}
+        offline={offline}
+        errors={errors}
+        info={info}
+        burnIn={burnIn}
+        calm={calm}
+      />
+    </ErrorBoundary>
   </StrictMode>,
 );

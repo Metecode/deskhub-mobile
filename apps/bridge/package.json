@@ -6,13 +6,12 @@
   "type": "module",
   "scripts": {
     "dev": "tsx watch src/index.ts --mock",
-    "build": "esbuild src/index.ts --bundle --platform=node --target=node20 --format=esm --outfile=dist/index.js --external:ws --external:sirv --log-level=warning",
+    "build": "esbuild src/index.ts --bundle --platform=node --target=node20 --format=esm --outfile=dist/index.js --external:ws --log-level=warning",
     "start": "node dist/index.js",
     "typecheck": "tsc -p ."
   },
   "dependencies": {
     "@deskhub-mobile/protocol": "workspace:*",
-    "sirv": "^3.0.2",
     "ws": "^8.23.0"
   },
   "devDependencies": {

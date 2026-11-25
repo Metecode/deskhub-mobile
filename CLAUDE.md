@@ -77,10 +77,10 @@ Phase 4, branch `phase-4` (from `phase-3`):
 - [x] Plan approved and written down
 - [x] Web: diagnostics page
 - [x] Way A (Chrome's flag) tried on the phone (by the user): it works, so no HTTPS
-- [ ] Web: wake lock
-- [ ] Web: service worker, manifest, saved calendar
-- [ ] Web: burn-in (pixel shift, dimming, Time's up)
-- [ ] Web and bridge: updates, error note
+- [x] Web: wake lock
+- [x] Web: service worker, manifest, saved calendar
+- [x] Web: burn-in (pixel shift, dimming, Time's up)
+- [x] Web and bridge: updates, error note
 - [ ] `tools/autostart.ps1`
 - [ ] CI
 - [ ] README, docs/protocol.md

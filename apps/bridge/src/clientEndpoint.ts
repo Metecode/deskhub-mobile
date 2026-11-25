@@ -8,6 +8,7 @@ import {
   parseCommand,
   STATUS_INTERVAL_MS,
   TOKEN_PARAM,
+  type BridgeMessage,
   type Command,
   type StatusMessage,
   type WeatherSettings,
@@ -30,6 +31,8 @@ export interface ClientEndpointOptions {
   originAllowed: (origin: string) => boolean;
   /** For phones to get the weather with. null: not set. */
   weather: WeatherSettings | null;
+  /** The build of the web app that is served. null: there is none. */
+  build: () => string | null;
   /** Passes a command on. False when there's no companion to take it. */
   sendCommand: (command: Command) => boolean;
   log: Logger;
@@ -91,9 +94,12 @@ export class ClientEndpoint {
       if (ws.readyState === ws.OPEN && !isBinary) this.#onCommand(data.toString('utf8'));
     });
     // The messages are JSON texts already.
+    const build = this.#build();
     const messages = hub.messages.join(',');
     ws.send(
-      `{"type":"bridge.snapshot","pc_online":${hub.online},"messages":[${messages}],"weather":${JSON.stringify(weather)}}`,
+      `{"type":"bridge.snapshot","pc_online":${hub.online},"messages":[${messages}],"weather":${JSON.stringify(weather)}${
+        build.build ? `,"build":${JSON.stringify(build.build)}` : ''
+      }}`,
     );
     for (const frame of hub.covers) ws.send(frame);
   }
@@ -109,8 +115,14 @@ export class ClientEndpoint {
     log.info(`command ${command.type}${sent ? '' : ' dropped, no companion connected'}`);
   }
 
+  #build(): Pick<BridgeMessage, 'build'> {
+    const build = this.#options.build();
+    return build ? { build } : {};
+  }
+
   #status(): string {
-    return JSON.stringify({ type: 'bridge.status', pc_online: this.#options.hub.online } satisfies StatusMessage);
+    const status: StatusMessage = { type: 'bridge.status', pc_online: this.#options.hub.online, ...this.#build() };
+    return JSON.stringify(status);
   }
 
   #broadcast(data: string | Buffer): void {

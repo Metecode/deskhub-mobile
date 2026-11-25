@@ -11,6 +11,24 @@
   flex-direction: column-reverse;
 }
 
+/* Against burn-in. Not the layers above them: those have to cover everything. */
+.app > nav,
+.page {
+  position: relative;
+  top: var(--shift-y, 0);
+  left: var(--shift-x, 0);
+}
+
+.app > nav,
+.app header[data-dims] {
+  transition: opacity 1s;
+}
+
+.app[data-dim] > nav,
+.app[data-dim] header[data-dims] {
+  opacity: 0.45;
+}
+
 .page {
   display: flex;
   flex: 1;

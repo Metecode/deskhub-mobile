@@ -113,7 +113,10 @@ export function InfoPage({ state, wakeLock, offline, errors, now, onClose }: Inf
           {innerWidth} x {innerHeight}, {Math.round(devicePixelRatio * 100) / 100} pixels each
           {document.fullscreenElement ? ', fullscreen' : ''}
         </Row>
-        <Row label="Build">{__BUILD__}</Row>
+        <Row label="Build">
+          {__BUILD__}
+          {state.build && state.build !== __BUILD__ && `, the bridge has ${state.build}`}
+        </Row>
         <Row label="Last error" mark={error ? 'bad' : undefined}>
           {error ? `${formatClock(Math.floor(error.at / 1000))}  ${error.text}` : 'none'}
         </Row>

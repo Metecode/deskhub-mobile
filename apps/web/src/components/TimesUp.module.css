@@ -7,6 +7,21 @@
   place-items: center;
   padding: calc(16 * var(--u));
   background: var(--bg);
+  transition: background 1s;
+}
+
+/* It stands still for long. */
+.layer[data-dim] {
+  background: #000;
+}
+
+.layer[data-dim] > .card {
+  position: relative;
+  top: var(--shift-y, 0);
+  left: var(--shift-x, 0);
+  border-color: #333;
+  background: #000;
+  opacity: 0.35;
 }
 
 .card {

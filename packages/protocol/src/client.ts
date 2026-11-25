@@ -22,12 +22,16 @@ export interface SnapshotMessage {
   messages: RawMessage[];
   /** What to get the weather for; phones fetch it themselves. null: not set. */
   weather: WeatherSettings | null;
+  /** The build of the web app that the bridge serves, if there is one. */
+  build?: string;
 }
 
 /** Sent when the PC goes online or offline, and every STATUS_INTERVAL_MS as a heartbeat. */
 export interface StatusMessage {
   type: 'bridge.status';
   pc_online: boolean;
+  /** As in the snapshot; it may change. */
+  build?: string;
 }
 
 export type BridgeMessage = SnapshotMessage | StatusMessage;
