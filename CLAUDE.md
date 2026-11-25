@@ -67,7 +67,7 @@ Phases 0 to 4 are in `main`, tag `v0.2.0`. Phase 5, branch `phase-5` (from `main
 - [x] Claude's logo
 - [x] Launcher and QR page in Turkish (the bridge's log stays English)
 - [x] README, docs/protocol.md
-- [ ] Verified with the mock and the real companion, at all sizes
+- [x] Verified with the mock and the real companion, at all sizes
 - [ ] Verified on the phone (by the user)
 
 Phases 0 to 2 are done and verified on the phone by the user (branches `phase-0` to `phase-2`).
@@ -105,7 +105,8 @@ Phase 4, branch `phase-4` (from `phase-3`):
 - [ ] Verified on the phone (by the user)
 - [x] One pull request into `main`, tag `v0.2.0`
 
-Next: the user tries the rest of phase 4 on the phone (overnight, home screen, opening without the PC).
+Next: the user tries phase 5 on the phone, and the limits of `linkQuality.ts` (`GOOD_MS`, `FAIR_MS`) near the
+router and far from it; from phase 4 the night, the home screen and opening without the PC.
 
 Not verified yet:
 

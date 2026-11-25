@@ -269,7 +269,7 @@
 .media[data-tall] .cover,
 .media[data-tall] .poster {
   flex: 1 1 0;
-  align-self: flex-start;
+  align-self: center;
   width: auto;
   min-height: 0;
   aspect-ratio: 1;
