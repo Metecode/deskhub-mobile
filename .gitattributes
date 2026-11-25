@@ -1,1 +1,3 @@
 * text=auto eol=lf
+# cmd.exe wants it.
+*.cmd text eol=crlf
