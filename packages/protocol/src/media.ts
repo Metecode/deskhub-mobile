@@ -3,6 +3,9 @@
 import type { RawMessage } from './companion.js';
 import { bool, int, text, type Fields } from './fields.js';
 
+/** What a media command is for: the PC or the media server. */
+export type MediaTarget = 'media' | 'media_server';
+
 export interface Media {
   active: boolean;
   playing: boolean;
