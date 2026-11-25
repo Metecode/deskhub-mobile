@@ -65,12 +65,20 @@ Phase 2, branch `phase-2`:
 - [x] Web: timer
 - [x] Web: Internet view and Home widget
 - [x] Web: dark layer
-- [ ] README, docs/protocol.md
-- [ ] Verified with the real companion
+- [x] README, docs/protocol.md
+- [x] Verified with the real companion (AI page, alerts and their buttons, Internet, a speed test)
 - [ ] Verified on the phone (by the user)
 
 Update this list with every step.
 
-Not verified yet: the split Media page with a real Plex or Jellyfin server; the binary frames `ARS1`
-and `STM1` from a real companion (covered by unit tests only); how the phone looks while the PC is
-offline (tests and a desktop browser only).
+Next: the user tries phase 2 on the phone.
+
+Not verified yet:
+
+- From phase 1: the split Media page with a real Plex or Jellyfin server; `ARS1` and `STM1` from a
+  real companion (unit tests only); how the phone looks while the PC is offline.
+- Phase 2: limit bars with real numbers and Codex (no status line or Codex on this PC; tests and a fake
+  companion only); alerts from real hooks (tried with a session file by hand, so "Show on PC" had no
+  window to show); the PC's display really sleeping and waking (the PC has Modern Standby, so it wasn't
+  turned off by the agent; a fake companion only); the beep and the vibration on the phone (a desktop
+  browser only).

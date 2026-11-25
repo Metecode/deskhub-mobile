@@ -1,6 +1,6 @@
 # Protocol
 
-What the bridge speaks, as of phase 1. Upstream references are to commit
+What the bridge speaks, as of phase 2. Upstream references are to commit
 `b78c505279a50f80cd40bfc86f0d9de9ac79437c`. The schemas are in `packages/protocol`.
 
 ## Companion <-> bridge: `/ws`
@@ -119,7 +119,9 @@ On connecting. Source: `pages.py` `layout_message()`, `on_layout()`. Phones keep
 | `pages` | array of strings | the enabled pages; Home is always on |
 | `ordered` | boolean | `pages` is in the bar's order; otherwise the order stays |
 | `nav` | string | `left`, `right` or `bottom`; otherwise the bar stays, at first on the left |
-| `pc_sleep`, `night_start`, `night_end`, `night_style` | | not used yet |
+| `pc_sleep` | string | while the display sleeps: `off`, `clock` or `none`; otherwise as before, at first `off` |
+| `night_start`, `night_end` | number | minutes after midnight, -1 for no night mode; out of range changes nothing. Without `night_start` the night stays as it is. |
+| `night_style` | string | `clock`, anything else is `off` |
 
 ### `home` (companion -> hub)
 
@@ -132,10 +134,66 @@ keep the last one.
 | `grid[]` | array | `widget`, and the cells `x`, `y`, `w`, `h` of a grid of 5 columns by 3 rows |
 | `left`, `right` | arrays of strings | two columns, for firmware from before the grid; used when `grid` is missing |
 
+### `ai` (companion -> hub)
+
+Every 5 seconds; `claude` from older companions is the same. Source: `claude_usage.py`,
+`codex_usage.py`, `on_claude()`.
+
+| Field | Type | |
+| --- | --- | --- |
+| `provider` | string | `codex`, anything else is Claude Code |
+| `limits` | object | empty without a status line or live limits |
+| `limits.five_hour`, `.seven_day` | object | `pct` (used), `reset` (epoch seconds). Left out when the window is over. |
+| `limits.updated` | number | when the agent last reported them, epoch seconds |
+| `block` | object | an estimate of the 5-hour window: `active`, `reset`, `tokens`, `messages` |
+| `today` | object | `tokens`, `output`, `messages` |
+| `last_hour` | number | tokens |
+| `days` | array of 7 numbers | tokens per day, the last one is today |
+| `models[]` | array, up to 4 | `name`, `tokens`, of today |
+
+### `alert` (companion -> hub)
+
+When it changes, and on connecting if there is one. Source: `claude_alerts.py`, `on_alert()`.
+
+| Field | Type | |
+| --- | --- | --- |
+| `clear` | boolean | true: nothing is waiting, the rest is missing |
+| `id` | string | echoed in `alert_action`; characters other than `0-9A-Za-z_-` become `_` |
+| `kind` | string | `permission`, anything else waits for a reply |
+| `title`, `detail`, `project` | string | |
+| `agent` | string | `claude`; not used |
+
+### `net` (companion -> hub)
+
+Every 2 seconds. Source: `netstats.py` `message()`, `on_net()`.
+
+| Field | Type | |
+| --- | --- | --- |
+| `online`, `testing` | boolean | `testing`: a speed test is running |
+| `latency_ms`, `jitter_ms` | number or null | |
+| `loss_pct` | number | |
+| `hist` | array of up to 60 numbers | ms per probe, one every 2 s, oldest first; -1 is a lost one |
+| `up_since` | number or null | epoch seconds |
+| `last_drop` | object or null | `at` (epoch seconds), `dur_s` |
+| `today_bytes`, `month_bytes` | number | |
+| `speed` | object or null | `down_mbps`, `up_mbps`, `ping_ms`, `at` (epoch seconds) |
+| `ip` | string | empty unless set up |
+
+### `pc_power` (companion -> hub)
+
+On connecting, right after `layout`, and when the PC's display sleeps or wakes; also just before the PC
+suspends. Source: `pc_power.py`, `session()`, `on_pc_power()`.
+
+| Field | Type | |
+| --- | --- | --- |
+| `asleep` | boolean | |
+
+Every session starts with the current state, so the snapshot's copy is never out of date for longer
+than the companion is away. Phones keep `asleep` while the bridge is out of reach.
+
 ### Everything else
 
-`ai` (`claude` from older companions), `printer`, `pc_power`, `alert`, `steam`, `net` and `github` have
-no schema yet.
+`printer`, `steam` and `github` have no schema yet.
 They, types nobody knows, and messages that don't fit their schema are relayed to phones unchanged.
 
 ### Binary frames (companion -> hub)

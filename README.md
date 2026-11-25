@@ -13,8 +13,8 @@ the board, and the phone shows the result in its browser:
 Companion (Desk Hub, Python) --> Bridge (Node, on the PC) --> Web app (phone, fullscreen)
 ```
 
-There are Home, PC Stats, Calendar, Weather, Media and Shortcuts. The other pages (AI usage, timer,
-Internet, games, printers, GitHub) follow; until then their Home widgets are placeholders.
+There are Home, PC Stats with the Internet, AI usage, Calendar, Weather, Media, Timer and Shortcuts.
+The other pages (games, printers, GitHub) follow; until then their Home widgets are placeholders.
 
 ## Requirements
 
@@ -102,6 +102,18 @@ The bridge prints links like `http://192.168.1.20:8765/?token=...`. Open one on 
 token is saved in the browser and removed from the address, so you only need the link once.
 Tap the screen to go fullscreen.
 
+Claude Code's alerts ("needs permission", "waiting for you") and its limits need a hook and a status
+line in Claude Code's settings, which the companion's `install_claude.py` adds; see the Desk Hub
+README. Without them the AI page shows tokens only.
+
+The timer's end and new alerts come with a beep and a vibration. Browsers only allow both after a
+touch on the page, so after a reload there's only the picture until you touch it.
+
+When the PC's display goes to sleep, or at night, the screen goes dark (`pc_sleep` and `night` under
+`[display]` in `config.toml`, as for the board); a touch wakes it for a minute. A web page can't turn
+the screen off, so it's black: dark on an OLED phone, a faint glow on an LCD, where the clock may look
+better.
+
 While the PC is off, the clock, the weather and the last calendar stay, as long as the page is open.
 Opening it needs the bridge.
 
@@ -128,6 +140,8 @@ coordinates nothing is fetched.
 - **CPU temperature**: the companion doesn't send it. It will show if a later version does.
 - **GPU**: the companion reads NVIDIA cards only.
 - **Sharper covers**: the companion sends them at 280 x 280.
+- **The agents' logos**: they are trademarks, so there's an icon in their colour.
+- **Turning the screen off**: see above.
 - **Plex and Jellyfin**: the split Media page is there, but hasn't been tried with a real server.
 
 ## Development
@@ -143,7 +157,8 @@ bridge: it lists the web app's files when it starts. The made-up PC goes offline
 seconds now and then, on purpose. To open it on the phone, allow port 5173 in the firewall too.
 
 - [docs/protocol.md](docs/protocol.md): the messages
-- [docs/plan-phase0.md](docs/plan-phase0.md), [docs/plan-phase1.md](docs/plan-phase1.md): the plans
+- [docs/plan-phase0.md](docs/plan-phase0.md), [docs/plan-phase1.md](docs/plan-phase1.md),
+  [docs/plan-phase2.md](docs/plan-phase2.md): the plans
 - [CLAUDE.md](CLAUDE.md): project context, rules and phases
 
 ## License
