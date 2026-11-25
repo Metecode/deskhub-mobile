@@ -159,6 +159,69 @@ export const homeSchema = z.looseObject({
 });
 export type HomeMessage = z.infer<typeof homeSchema>;
 
+const limit = z.looseObject({ pct: num, reset: num }).nullish();
+const usage = {
+  /** "claude" or "codex"; left out means claude. */
+  provider: str,
+  /** Empty without a status line or live limits. Windows that are over are left out. */
+  limits: z.looseObject({ five_hour: limit, seven_day: limit, updated: num }).nullish(),
+  /** An estimate of the current 5-hour window. */
+  block: z.looseObject({ active: flag, reset: num, tokens: num, messages: num }).nullish(),
+  today: z.looseObject({ tokens: num, output: num, messages: num }).nullish(),
+  /** Tokens. */
+  last_hour: num,
+  /** Tokens per day, oldest first. */
+  days: z.array(num).nullish(),
+  models: z.array(z.looseObject({ name: str, tokens: num })).nullish(),
+};
+
+/** companion -> hub, every 5 seconds (claude_usage.py, codex_usage.py). */
+export const aiSchema = z.looseObject({ type: z.literal('ai'), ...usage });
+export type AiMessage = z.infer<typeof aiSchema>;
+
+/** companion -> hub, the same from older companions. */
+export const claudeSchema = z.looseObject({ type: z.literal('claude'), ...usage });
+export type ClaudeMessage = z.infer<typeof claudeSchema>;
+
+/** companion -> hub, when it changes (claude_alerts.py). */
+export const alertSchema = z.looseObject({
+  type: z.literal('alert'),
+  /** Nothing is waiting. The other fields are left out then. */
+  clear: flag,
+  id: str,
+  /** "permission" or "input" */
+  kind: str,
+  agent: str,
+  title: str,
+  detail: str,
+  project: str,
+});
+export type AlertMessage = z.infer<typeof alertSchema>;
+
+/** companion -> hub, every 2 seconds (netstats.py, message). */
+export const netSchema = z.looseObject({
+  type: z.literal('net'),
+  online: flag,
+  latency_ms: num,
+  jitter_ms: num,
+  loss_pct: num,
+  /** ms per probe, oldest first; -1: lost. */
+  hist: z.array(num).nullish(),
+  /** Epoch seconds. */
+  up_since: num,
+  last_drop: z.looseObject({ at: num, dur_s: num }).nullish(),
+  today_bytes: num,
+  month_bytes: num,
+  speed: z.looseObject({ down_mbps: num, up_mbps: num, ping_ms: num, at: num }).nullish(),
+  testing: flag,
+  ip: str,
+});
+export type NetMessage = z.infer<typeof netSchema>;
+
+/** companion -> hub, on connecting and when the PC's display sleeps or wakes (pc_power.py). */
+export const pcPowerSchema = z.looseObject({ type: z.literal('pc_power'), asleep: flag });
+export type PcPowerMessage = z.infer<typeof pcPowerSchema>;
+
 const schemas = {
   hello: helloSchema,
   hello_ok: helloOkSchema,
@@ -171,19 +234,15 @@ const schemas = {
   tile_state: tileStateSchema,
   layout: layoutSchema,
   home: homeSchema,
+  ai: aiSchema,
+  claude: claudeSchema,
+  alert: alertSchema,
+  net: netSchema,
+  pc_power: pcPowerSchema,
 } as const;
 
 /** Types the board handles that don't have a schema yet. They parse as "unknown". */
-export const TYPES_WITHOUT_SCHEMA: ReadonlySet<string> = new Set([
-  'ai',
-  'claude',
-  'printer',
-  'pc_power',
-  'alert',
-  'steam',
-  'net',
-  'github',
-]);
+export const TYPES_WITHOUT_SCHEMA: ReadonlySet<string> = new Set(['printer', 'steam', 'github']);
 
 export type KnownMessage =
   | HelloMessage
@@ -196,7 +255,12 @@ export type KnownMessage =
   | TilesMessage
   | TileStateMessage
   | LayoutMessage
-  | HomeMessage;
+  | HomeMessage
+  | AiMessage
+  | ClaudeMessage
+  | AlertMessage
+  | NetMessage
+  | PcPowerMessage;
 export type RawMessage = { type: string; [key: string]: unknown };
 
 export type ParsedMessage =

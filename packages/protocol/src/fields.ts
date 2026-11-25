@@ -4,9 +4,12 @@
 
 export type Fields = Readonly<Record<string, unknown>>;
 
+export const isObject = (value: unknown): value is Fields =>
+  typeof value === 'object' && value !== null && !Array.isArray(value);
+
 /** The fields of a JSON value; none when it isn't an object. */
 export function fields(value: unknown): Fields {
-  return typeof value === 'object' && value !== null && !Array.isArray(value) ? (value as Fields) : {};
+  return isObject(value) ? value : {};
 }
 
 export function list(o: Fields, key: string): readonly unknown[] {

@@ -1,11 +1,16 @@
+export * from './alert.js';
 export * from './art.js';
 export * from './client.js';
 export * from './commands.js';
 export * from './companion.js';
 export * from './events.js';
+export { fields, isObject } from './fields.js';
 export * from './home.js';
 export * from './layout.js';
 export * from './limits.js';
 export * from './media.js';
+export * from './net.js';
+export * from './power.js';
 export * from './stats.js';
 export * from './tiles.js';
+export * from './usage.js';

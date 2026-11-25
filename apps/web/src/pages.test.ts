@@ -213,7 +213,7 @@ describe('navigation', () => {
   it('goes Home when a page is off or missing', () => {
     expect(pageToShow('media', ['home', 'media'])).toBe('media');
     expect(pageToShow('media', ['home', 'stats'])).toBe('home');
-    expect(pageToShow('ai', ['home', 'ai'])).toBe('home');
+    expect(pageToShow('printer', ['home', 'printer'])).toBe('home');
   });
 });
 
@@ -235,7 +235,12 @@ describe('saved layout', () => {
 
   it('comes back', () => {
     const saved = {
-      layout: { pages: ['home', 'media', 'stats'], nav: 'bottom' },
+      layout: {
+        pages: ['home', 'media', 'stats'],
+        nav: 'bottom',
+        pcSleep: 'clock',
+        night: { start: 1380, end: 420, style: 'clock' },
+      },
       home: { header: false, grid: [{ widget: 'clock', x: 1, y: 0, w: 3, h: 2 }] },
     } as const;
     saveLayout(saved);

@@ -22,5 +22,12 @@ export const MAX_EVENTS = 16;
 /** Covers, in pixels per side (hub_server.c, on_binary). */
 export const MAX_COVER = 320;
 
+/** Days of AI usage (hub_model.h, HUB_CLAUDE_DAYS) and models (HUB_CLAUDE_MODELS). */
+export const USAGE_DAYS = 7;
+export const USAGE_MODELS = 4;
+
+/** Latency probes (hub_model.h, HUB_NET_HIST). */
+export const NET_HISTORY = 60;
+
 /** Longest alert id the board echoes back: char id[64] (hub_model.h, hub_alert_t). */
 export const ALERT_ID_MAX = 63;

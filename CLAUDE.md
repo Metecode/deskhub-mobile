@@ -58,7 +58,7 @@ Phases 0 and 1 are done and verified on the phone by the user (branches `phase-0
 Phase 2, branch `phase-2`:
 
 - [x] Plan approved and written down
-- [ ] Protocol: schemas and normalizers
+- [x] Protocol: schemas and normalizers
 - [ ] Bridge: `pc_power` test, mock mode
 - [ ] Web: AI page and Home widget
 - [ ] Web: sound, alerts

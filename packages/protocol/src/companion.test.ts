@@ -56,7 +56,7 @@ describe('parseCompanionMessage', () => {
   });
 
   it('treats the types without a schema as unknown', () => {
-    expect(TYPES_WITHOUT_SCHEMA).toContain('ai');
+    expect(TYPES_WITHOUT_SCHEMA).toContain('printer');
     for (const type of TYPES_WITHOUT_SCHEMA) expect(parseMessage({ type })).toMatchObject({ kind: 'unknown', type });
   });
 

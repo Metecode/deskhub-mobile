@@ -211,19 +211,21 @@ describe('layout', () => {
     expect(DEFAULT_LAYOUT).toEqual({
       pages: ['home', 'stats', 'ai', 'calendar', 'weather', 'media', 'timer', 'games', 'network', 'shortcuts'],
       nav: 'left',
+      pcSleep: 'off',
+      night: { start: -1, end: -1, style: 'off' },
     });
   });
 
   it('takes the pages in the order sent', () => {
-    expect(applyLayout(DEFAULT_LAYOUT, LAYOUT)).toEqual({ pages: LAYOUT.pages, nav: 'left' });
+    expect(applyLayout(DEFAULT_LAYOUT, LAYOUT)).toMatchObject({ pages: LAYOUT.pages, nav: 'left' });
     const raw = { type: 'layout', ordered: true, nav: 'bottom', pages: ['media', 'media', 'x', 4, 'weather'] };
-    expect(applyLayout(DEFAULT_LAYOUT, raw)).toEqual({ pages: ['home', 'media', 'weather'], nav: 'bottom' });
+    expect(applyLayout(DEFAULT_LAYOUT, raw)).toMatchObject({ pages: ['home', 'media', 'weather'], nav: 'bottom' });
   });
 
   it('keeps the order when the companion is too old to have one', () => {
-    const previous = { pages: ['home', 'weather', 'stats'], nav: 'right' } as const;
+    const previous = { ...DEFAULT_LAYOUT, pages: ['home', 'weather', 'stats'], nav: 'right' } as const;
     const raw = { type: 'layout', pages: ['stats', 'weather', 'shortcuts', 'media'] };
-    expect(applyLayout(previous, raw)).toEqual({
+    expect(applyLayout(previous, raw)).toMatchObject({
       pages: ['home', 'weather', 'stats', 'media', 'shortcuts'],
       nav: 'right',
     });
