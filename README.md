@@ -228,6 +228,10 @@ user folder every account can read it; to do the same by hand:
 `icacls .env /inheritance:r /grant:r "%USERNAME%:F"` (in cmd). They can still change the code there, which
 runs as you, so on a PC that you share keep all of it in your user folder.
 
+Use a network that Windows treats as *Private*. If Windows made rules for Node.js, they may open every port on
+*Public* networks too: look for *Node.js JavaScript Runtime* in the firewall's inbound rules, and prefer the rule
+above.
+
 The weather comes from [Open-Meteo](https://open-meteo.com), straight to the phone. Open-Meteo sees the
 phone's address and the coordinates in `.env` (two decimals are plenty), nothing else. Without
 coordinates nothing is fetched.
