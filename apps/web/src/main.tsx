@@ -8,22 +8,38 @@ import { createRoot } from 'react-dom/client';
 import { App } from './App.js';
 import { Connection } from './connection.js';
 import { goFullscreenOnTap } from './fullscreen.js';
+import { loadLayout, saveLayout } from './layoutStore.js';
 import { loadToken, takeTokenFromUrl } from './token.js';
+import { WeatherStore } from './weather.js';
 
 takeTokenFromUrl();
 
 const scheme = location.protocol === 'https:' ? 'wss:' : 'ws:';
-const connection = new Connection(`${scheme}//${location.host}/client`, loadToken());
-connection.connect();
-document.addEventListener('visibilitychange', () => {
-  if (document.visibilityState === 'visible') connection.wake();
+const connection = new Connection(`${scheme}//${location.host}/client`, loadToken(), loadLayout());
+const weather = new WeatherStore();
+
+let saved = connection.getState();
+connection.subscribe(() => {
+  const state = connection.getState();
+  weather.setSettings(state.weather);
+  if (state.layout !== saved.layout || state.home !== saved.home) saveLayout(state);
+  saved = state;
 });
-window.addEventListener('online', () => connection.wake());
+connection.connect();
+
+function wake(): void {
+  connection.wake();
+  weather.wake();
+}
+document.addEventListener('visibilitychange', () => {
+  if (document.visibilityState === 'visible') wake();
+});
+window.addEventListener('online', wake);
 
 goFullscreenOnTap();
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
-    <App connection={connection} />
+    <App connection={connection} weather={weather} />
   </StrictMode>,
 );

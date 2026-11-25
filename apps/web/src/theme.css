@@ -1,9 +1,11 @@
 /* Desk Hub's Graphite theme: the COL_* values of firmware/main/ui_internal.h. */
 :root {
   --bg: #0d0e11;
+  --rail: #111216;
   --card: #16181d;
-  --card-hi: #262a32; /* gauge and bar tracks, chart lines */
+  --card-hi: #262a32; /* gauge and bar tracks, chart lines, pressed cards, the selected tab */
   --border: #262a32;
+  --pressed: #30343d;
   --text: #f3f4f6;
   --muted: #9aa0aa;
   --dim: #6b717c;
@@ -11,6 +13,7 @@
   --on-accent: #16181d;
   --good: #3dd68c;
   --bad: #ff6b6b;
+  --track: #3a3f49; /* a progress track on a card (ui_media.c) */
 
   /* Data series, in the order ui_stats.c gives them to the gauges. */
   --cpu: #6cb4ff;
@@ -18,16 +21,24 @@
   --ram: #b49cff;
   --vram: #f79ad3;
 
-  /* One board pixel: the board's page (about 712x440 without its rail) scaled to the screen. */
-  --u: min(100vw / 760, 100dvh / 440);
+  /* One board pixel. The board is 800x480; its page padding is cut by 15 px at both ends. */
+  --u: min(100vw / 800, 100dvh / 450);
 
   color-scheme: dark;
 }
 
 @media (orientation: portrait) {
   :root {
-    --u: min(100vw / 400, 100dvh / 700);
+    --u: min(100vw / 400, 100dvh / 760);
   }
+}
+
+/* Own rule instead of the package's: with "swap", boxes would show until the font is there. */
+@font-face {
+  font-family: 'Material Icons';
+  font-weight: 400;
+  font-display: block;
+  src: url('@fontsource/material-icons/files/material-icons-latin-400-normal.woff2') format('woff2');
 }
 
 * {
@@ -52,4 +63,13 @@ body {
   -webkit-tap-highlight-color: transparent;
   -webkit-text-size-adjust: none;
   user-select: none;
+}
+
+button {
+  padding: 0;
+  border: 0;
+  background: none;
+  color: inherit;
+  font: inherit;
+  touch-action: manipulation;
 }

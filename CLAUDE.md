@@ -59,12 +59,12 @@ Phase 0 is done, on branch `phase-0`, verified on the phone by the user. Phase 1
 - [x] Protocol: schemas, normalizers, grid
 - [x] Bridge: covers and weather settings
 - [x] Bridge: mock mode
-- [ ] Web: navigation and layout
-- [ ] Web: Media page
-- [ ] Web: Weather page
-- [ ] Web: Calendar page
-- [ ] Web: Shortcuts page
-- [ ] Web: Home page
+- [x] Web: navigation and layout
+- [x] Web: Media page
+- [x] Web: Weather page
+- [x] Web: Calendar page
+- [x] Web: Shortcuts page
+- [x] Web: Home page
 - [ ] Optional launcher (`tools/run-companion.py`)
 - [ ] README, NOTICE, docs/protocol.md
 - [ ] Verified with the real companion

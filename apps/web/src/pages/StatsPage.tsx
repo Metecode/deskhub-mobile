@@ -2,24 +2,19 @@
 import type { Stats } from '@deskhub-mobile/protocol';
 import { Gauge } from '../components/Gauge.js';
 import { HistoryChart } from '../components/HistoryChart.js';
-import type { BridgeState } from '../connection.js';
+import { isOnline, type BridgeState } from '../connection.js';
 import { formatMemory, formatRate, formatTemperature } from '../format.js';
+import { statusHint } from '../status.js';
 import styles from './StatsPage.module.css';
 
 const share = (used: number, total: number) => (total > 0 ? (100 * used) / total : null);
 const memory = (used: number, total: number) => (total > 0 ? formatMemory(used, total) : '');
 
-function hint({ link, pcOnline }: BridgeState): string {
-  if (link === 'bad_origin') return "This address isn't on the bridge's list, add it to CLIENT_ORIGINS";
-  if (link !== 'open') return 'Connecting to the bridge on your PC';
-  return pcOnline ? '' : 'Start the companion app on your PC';
-}
-
 export function StatsPage({ state }: { state: BridgeState }) {
   // Like the board, show no old numbers while the PC is offline.
-  const s: Stats | null = state.link === 'open' && state.pcOnline ? state.stats : null;
+  const s: Stats | null = isOnline(state) ? state.stats : null;
   const hasGpu = s !== null && s.gpu !== null;
-  const message = hint(state);
+  const message = statusHint(state);
 
   return (
     <main className={styles.page}>

@@ -1,0 +1,95 @@
+/* Along a side unless App puts it at the bottom (--dock). */
+.rail {
+  display: flex;
+  flex: none;
+  flex-direction: column;
+  align-items: center;
+  gap: calc(2 * var(--u));
+  width: calc(88 * var(--u) + env(safe-area-inset-left));
+  padding: calc(10 * var(--u)) 0 max(calc(10 * var(--u)), env(safe-area-inset-bottom)) env(safe-area-inset-left);
+  border-right: 1px solid var(--border);
+  background: var(--rail);
+}
+
+.tab {
+  position: relative;
+  display: grid;
+  flex: 1;
+  place-items: center;
+  width: calc(64 * var(--u));
+  max-height: calc(60 * var(--u));
+  border-radius: calc(14 * var(--u));
+  color: var(--muted);
+}
+
+.tab[aria-current] {
+  background: var(--card-hi);
+  color: var(--text);
+}
+
+.tab:active {
+  background: var(--pressed);
+}
+
+.badge {
+  position: absolute;
+  top: calc(5 * var(--u));
+  right: calc(8 * var(--u));
+  width: calc(12 * var(--u));
+  height: calc(12 * var(--u));
+  border: calc(2 * var(--u)) solid var(--rail);
+  border-radius: 50%;
+}
+
+.status {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: calc(6 * var(--u));
+  margin-top: auto;
+  padding-top: calc(8 * var(--u));
+}
+
+.good {
+  color: var(--good);
+}
+
+.bad {
+  color: var(--bad);
+}
+
+.off {
+  color: var(--dim);
+}
+
+:global([data-nav='right']) > .rail {
+  width: calc(88 * var(--u) + env(safe-area-inset-right));
+  padding-right: env(safe-area-inset-right);
+  padding-left: 0;
+  border-right: 0;
+  border-left: 1px solid var(--border);
+}
+
+:global([data-nav='bottom']) > .rail {
+  flex-direction: row;
+  width: 100%;
+  height: calc(64 * var(--u) + env(safe-area-inset-bottom));
+  padding: 0 max(calc(14 * var(--u)), env(safe-area-inset-right)) env(safe-area-inset-bottom)
+    max(calc(14 * var(--u)), env(safe-area-inset-left));
+  border-top: 1px solid var(--border);
+  border-right: 0;
+  border-left: 0;
+}
+
+:global([data-nav='bottom']) > .rail .tab {
+  width: auto;
+  max-width: calc(84 * var(--u));
+  height: calc(52 * var(--u));
+}
+
+:global([data-nav='bottom']) > .rail .status {
+  gap: calc(2 * var(--u));
+  margin-top: 0;
+  padding-top: 0;
+  margin-left: auto;
+}
