@@ -33,6 +33,12 @@ afterEach(async () => {
   vi.useRealTimers();
 });
 
+/** toEqual() goes through large frames byte by byte, which takes seconds. */
+function expectFrames(found: readonly Buffer[], expected: readonly Buffer[]): void {
+  expect(found.map((frame) => frame.length)).toEqual(expected.map((frame) => frame.length));
+  expect(found.map((frame, i) => frame.equals(expected[i]!))).toEqual(expected.map(() => true));
+}
+
 const status = (pc_online: boolean) => ({ type: 'bridge.status', pc_online });
 
 describe('token', () => {
@@ -157,8 +163,7 @@ describe('covers', () => {
     for (const frame of frames) companion.send(frame);
     await companion.flush();
     await client.flush();
-    // toEqual() goes through them byte by byte, which takes seconds.
-    expect(client.binary.map((frame, i) => frame.equals(frames[i]!))).toEqual([true, true]);
+    expectFrames(client.binary, frames);
   });
 
   it('follow the snapshot, the last of each kind, also while the PC is offline', async () => {
@@ -203,11 +208,11 @@ describe('covers', () => {
     for (const frame of all) companion.send(frame);
     await companion.flush();
     await early.flush();
-    expect(early.binary).toEqual(all);
+    expectFrames(early.binary, all);
 
     const late = await connectClient(bridge);
     await late.flush();
-    expect(late.binary).toEqual([header, thumb, portraits[0], portraits[2], again]);
+    expectFrames(late.binary, [header, thumb, portraits[0]!, portraits[2]!, again]);
   });
 
   it('of games that are no longer recent make room', async () => {
