@@ -1,5 +1,6 @@
 import { mkdir, mkdtemp, rm, writeFile } from 'node:fs/promises';
 import { request } from 'node:http';
+import { connect } from 'node:net';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
@@ -56,6 +57,14 @@ describe('web app', () => {
     const manifest = await fetch(url('/manifest.webmanifest'));
     expect(manifest.headers.get('content-type')).toBe('application/manifest+json');
     expect(manifest.headers.get('cache-control')).toBe('no-cache');
+  });
+
+  it.each(['/', '/assets/app-abc123.js', '/nope', '/screenshot'])('lets no other site frame %s or add to it', async (path) => {
+    const { headers } = await fetch(url(path));
+    expect(headers.get('content-security-policy')).toContain("default-src 'none'");
+    expect(headers.get('content-security-policy')).toContain("frame-ancestors 'none'");
+    expect(headers.get('x-content-type-options')).toBe('nosniff');
+    expect(headers.get('referrer-policy')).toBe('no-referrer');
   });
 
   it('sends headers alone for HEAD', async () => {
@@ -167,5 +176,17 @@ describe('upgrade', () => {
   it.each(['/', '/nope', '/ws/', '//'])('refuses %s', async (path) => {
     await expect(new TestSocket(bridge.port, path).open()).rejects.toThrow();
     expect((await fetch(url('/'))).status).toBe(200);
+  });
+
+  it('lets go of a refused socket whose other side stays', async () => {
+    const own = await startBridge();
+    const socket = connect({ port: own.port, host: '127.0.0.1', allowHalfOpen: true });
+    socket.on('error', () => {});
+    socket.resume();
+    socket.write('GET /nope HTTP/1.1\r\nHost: x\r\nConnection: Upgrade\r\nUpgrade: websocket\r\n\r\n');
+    await new Promise((resolve) => socket.once('end', resolve));
+    // Waits for every socket there is.
+    await own.close();
+    socket.destroy();
   });
 });

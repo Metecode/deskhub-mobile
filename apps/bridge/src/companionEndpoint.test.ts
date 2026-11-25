@@ -71,6 +71,17 @@ describe('hello', () => {
   });
 });
 
+describe('who may connect', () => {
+  it.each(['https://evil.example', 'http://localhost:8765', 'null'])('refuses web pages, as from %s', async (origin) => {
+    await expect(new TestSocket(bridge.port, '/ws', { origin }).open()).rejects.toThrow('403');
+    expect(bridge.companion.connected).toBe(false);
+  });
+
+  it('refuses another address than its own', async () => {
+    await expect(new TestSocket(bridge.port, '/ws', { localAddress: '127.0.0.2' }).open()).rejects.toThrow('403');
+  });
+});
+
 describe('before hello', () => {
   it.each([
     ['stats', { type: 'stats', cpu: 1 }],

@@ -10,6 +10,7 @@ JSON text frames and binary picture frames. The rules are the board's
 
 | Rule | Value |
 | --- | --- |
+| From another address than the PC's own, or with an `Origin` header | HTTP 403. Not the board's: here the companion is on the same PC. |
 | Largest frame | 300 x 1024 bytes; more closes the connection (1009) |
 | Largest frame before hello | 256 bytes; more closes the connection (1009) |
 | Small frames before hello that aren't hello | ignored |
@@ -310,6 +311,7 @@ is refused like any unknown command.
 | Request | Answer |
 | --- | --- |
 | `GET /...` | The web app, a new build as soon as its `build.json` is there; without a build, `/` is a 200 with a hint |
+| any | With a `Content-Security-Policy` (`CONTENT_POLICY` in `apps/bridge/src/http.ts`), `nosniff` and `no-referrer`. What the web app comes to use must be allowed there. |
 | `GET /build.json` | `build`, and in `files` what the service worker keeps |
 | `POST /firmware` | 403 after reading the upload. Any other refusal makes `deskhub-flash` flash over USB. |
 | `GET /screenshot`, `/tap`, `/perf` | 403 without `?token=<HUB_TOKEN>`, else 501 |

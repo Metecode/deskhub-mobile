@@ -32,6 +32,9 @@ function readWeather(value: (key: string) => string): WeatherSettings | null {
   };
 }
 
+/** Nothing slows down guessing, so a short CLIENT_TOKEN is found sooner or later. */
+const MIN_CLIENT_TOKEN = 16;
+
 /** Reads the settings. Throws an Error with a message for the user when one is missing or wrong. */
 export function readConfig(env: Record<string, string | undefined>, mock: boolean): Config {
   const value = (key: string) => env[key]?.trim() ?? '';
@@ -46,8 +49,10 @@ export function readConfig(env: Record<string, string | undefined>, mock: boolea
     if (!mock) throw new Error("HUB_TOKEN is not set. Use the token from the companion's config.toml.");
     hubToken = randomBytes(16).toString('hex');
   } else if (hubToken === 'change-me' && !mock) {
-    warnings.push('HUB_TOKEN is still "change-me": anyone on your network can pose as the companion.');
+    warnings.push('HUB_TOKEN is still "change-me": any program on this PC can pose as the companion.');
   }
+  if (clientToken.length < MIN_CLIENT_TOKEN)
+    warnings.push(`CLIENT_TOKEN is short enough to be guessed; use at least ${MIN_CLIENT_TOKEN} random characters.`);
   if (clientToken === hubToken) warnings.push('CLIENT_TOKEN and HUB_TOKEN are the same; use two different ones.');
 
   const portText = value('HUB_PORT') || '8765';
