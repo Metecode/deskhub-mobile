@@ -8,3 +8,5 @@ coverage/
 !.env.example
 .DS_Store
 __pycache__/
+.claude/
+skills-lock.json
