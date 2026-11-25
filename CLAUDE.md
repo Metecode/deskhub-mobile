@@ -46,30 +46,31 @@ Companion (upstream, Windows, Python) --ws /ws--> Bridge (Node, on the PC) --ws 
 ## Phases
 
 - **0: PoC.** Bridge, protocol, PC Stats. Plan: `docs/plan-phase0.md`.
-- **1:** Home, media, calendar, weather, shortcuts.
+- **1:** Home (the companion's grid), media, calendar, weather, shortcuts. Plan: `docs/plan-phase1.md`.
 - **2:** Claude/Codex, alerts, timer, internet, sleep and night mode.
-- **3:** Steam, printers, GitHub, Home grid.
+- **3:** Steam, printers, GitHub: pages and Home widgets.
 - **4:** Kiosk, finishing touches.
 
 ## Where we are
 
-Phase 0, branch `phase-0`.
+Phase 0 is done, on branch `phase-0`, verified on the phone by the user. Phase 1, branch `phase-1`.
 
-- [x] Workspace scaffold
 - [x] Plan approved and written down
-- [x] Protocol package
-- [x] Bridge: companion endpoint
-- [x] Bridge: client endpoint and HTTP
-- [x] Bridge: mock mode
-- [x] Web: connection and theme
-- [x] Web: PC Stats page
-- [x] README, NOTICE, LICENSE, docs/protocol.md
-- [x] Verified with the real companion (stats, connect, disconnect, media covers)
-- [x] Verified on the phone (by the user)
+- [ ] Protocol: schemas, normalizers, grid
+- [ ] Bridge: covers and weather settings
+- [ ] Bridge: mock mode
+- [ ] Web: navigation and layout
+- [ ] Web: Media page
+- [ ] Web: Weather page
+- [ ] Web: Calendar page
+- [ ] Web: Shortcuts page
+- [ ] Web: Home page
+- [ ] Optional launcher (`tools/run-companion.py`)
+- [ ] README, NOTICE, docs/protocol.md
+- [ ] Verified with the real companion
+- [ ] Verified on the phone (by the user)
 
 Update this list with every step.
-
-Phase 0 is done. Next: the phase 1 plan, for approval.
 
 Not verified yet: the other binary frames, `ARS1` and `STM1`, from a real companion (covered by
 unit tests only). `ART1` is verified; its id matches `art_id` in the `media` message.
