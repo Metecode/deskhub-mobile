@@ -67,11 +67,11 @@ Phase 2, branch `phase-2`:
 - [x] Web: dark layer
 - [x] README, docs/protocol.md
 - [x] Verified with the real companion (AI page, alerts and their buttons, Internet, a speed test)
-- [ ] Verified on the phone (by the user)
+- [x] Verified on the phone (by the user)
 
 Update this list with every step.
 
-Next: the user tries phase 2 on the phone.
+Phase 2 is done. Next: the phase 3 plan, for approval.
 
 Not verified yet:
 
