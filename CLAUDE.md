@@ -70,7 +70,8 @@ Phases 0 to 4 are in `main`, tag `v0.2.0`. Phase 5, branch `phase-5` (from `main
 - [x] Tabs can be swapped on the phone (`tabOrder.ts`, asked for by the user)
 - [x] Swiping between the dock's pages (`swipe.ts`, asked for by the user)
 - [x] Verified with the mock and the real companion, at all sizes
-- [ ] Verified on the phone (by the user)
+- [x] Verified on the phone (by the user)
+- [ ] Pull request into `main`, tag `v0.3.0` (the user opens and merges it)
 
 Phases 0 to 2 are done and verified on the phone by the user (branches `phase-0` to `phase-2`).
 Phase 3, branch `phase-3`:
@@ -107,8 +108,7 @@ Phase 4, branch `phase-4` (from `phase-3`):
 - [ ] Verified on the phone (by the user)
 - [x] One pull request into `main`, tag `v0.2.0`
 
-Next: the user tries phase 5 on the phone, and the limits of `linkQuality.ts` (`GOOD_MS`, `FAIR_MS`) near the
-router and far from it; from phase 4 the night, the home screen and opening without the PC.
+Next: the limits of `linkQuality.ts` (`GOOD_MS`, `FAIR_MS`), near the router and far from it; from phase 4 the night, the home screen and opening without the PC.
 
 Not verified yet:
 
