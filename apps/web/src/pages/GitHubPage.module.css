@@ -24,7 +24,7 @@
 .muted,
 .summary {
   color: var(--muted);
-  font-size: calc(14 * var(--u));
+  font-size: max(12px, calc(14 * var(--u)));
   font-weight: 500;
 }
 
@@ -76,7 +76,7 @@
 }
 
 .facts {
-  font-size: calc(14 * var(--u));
+  font-size: max(12px, calc(14 * var(--u)));
 }
 
 .facts > div {
@@ -160,7 +160,7 @@
   display: flex;
   gap: calc(10 * var(--u));
   justify-content: space-between;
-  font-size: calc(14 * var(--u));
+  font-size: max(12px, calc(14 * var(--u)));
 }
 
 .repo > :first-child {

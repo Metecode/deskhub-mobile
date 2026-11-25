@@ -61,7 +61,7 @@
 .when span + span {
   display: block;
   color: var(--muted);
-  font-size: calc(14 * var(--u));
+  font-size: max(12px, calc(14 * var(--u)));
   font-weight: 500;
 }
 
@@ -95,11 +95,11 @@
 
 .detail {
   color: var(--muted);
-  font-size: calc(14 * var(--u));
+  font-size: max(12px, calc(14 * var(--u)));
 }
 
 .end {
   padding-top: calc(10 * var(--u));
   color: var(--muted);
-  font-size: calc(14 * var(--u));
+  font-size: max(12px, calc(14 * var(--u)));
 }

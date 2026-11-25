@@ -77,8 +77,3 @@
 .app[data-layout='upright'] .unit {
   --u: min(100cqw / 388, 100cqh / 620);
 }
-
-/* The same with a wider stage: otherwise it would be small. */
-.app[data-layout='top'] .unit {
-  --u: min(100cqw / 720, 100cqh / 275);
-}

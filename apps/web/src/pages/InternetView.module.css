@@ -31,7 +31,7 @@
 .muted {
   flex: none;
   color: var(--muted);
-  font-size: calc(14 * var(--u));
+  font-size: max(12px, calc(14 * var(--u)));
   font-weight: 500;
   white-space: nowrap;
 }

@@ -51,7 +51,7 @@
   border-radius: calc(14 * var(--u));
   background: color-mix(in srgb, var(--state) 22%, var(--card));
   color: var(--text);
-  font-size: calc(14 * var(--u));
+  font-size: max(12px, calc(14 * var(--u)));
   font-weight: 600;
 }
 
@@ -120,7 +120,7 @@
 .muted {
   flex: none;
   color: var(--muted);
-  font-size: calc(14 * var(--u));
+  font-size: max(12px, calc(14 * var(--u)));
   font-weight: 500;
 }
 
@@ -155,7 +155,7 @@
   gap: calc(6 * var(--u));
   align-items: center;
   color: var(--muted);
-  font-size: calc(14 * var(--u));
+  font-size: max(12px, calc(14 * var(--u)));
 }
 
 .temp {

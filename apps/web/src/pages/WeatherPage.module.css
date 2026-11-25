@@ -76,7 +76,7 @@
 
 .label {
   color: var(--muted);
-  font-size: calc(14 * var(--u));
+  font-size: max(12px, calc(14 * var(--u)));
 }
 
 .hourTemp {

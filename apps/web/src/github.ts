@@ -67,8 +67,8 @@ const clampWeeks = (width: number, pitch: number, github: GitHub | null) =>
 const MIN_PITCH = 9;
 
 /** The page's chart: all 53 weeks across `width`, or with room for fewer, the newest that fit. */
-export function pageChart(github: GitHub | null, width: number): ChartSize {
-  const pitch = Math.min(16, Math.max(MIN_PITCH, Math.floor((width + GAP) / 53)));
+export function pageChart(github: GitHub | null, width: number, height: number): ChartSize {
+  const pitch = Math.min(16, Math.max(MIN_PITCH, Math.min(Math.floor((width + GAP) / 53), Math.floor((height + GAP) / 7))));
   return { pitch, weeks: clampWeeks(width, pitch, github) };
 }
 

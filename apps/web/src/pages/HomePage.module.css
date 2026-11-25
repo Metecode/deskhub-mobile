@@ -83,7 +83,7 @@
 .sub {
   min-height: 1.2em;
   color: var(--muted);
-  font-size: calc(14 * var(--u));
+  font-size: max(12px, calc(14 * var(--u)));
 }
 
 /* ---- clock, only when there is nothing else ---- */
@@ -150,7 +150,7 @@
 }
 
 .claude[data-narrow] .limitHead {
-  font-size: calc(14 * var(--u));
+  font-size: max(12px, calc(14 * var(--u)));
 }
 
 .claude[data-narrow] .limitValue {
@@ -217,7 +217,7 @@
 .eventWhen,
 .eventsEnd {
   color: var(--muted);
-  font-size: calc(14 * var(--u));
+  font-size: max(12px, calc(14 * var(--u)));
 }
 
 .eventsEnd[data-indent] {
@@ -352,7 +352,7 @@
 .statName {
   overflow: hidden;
   color: var(--muted);
-  font-size: calc(14 * var(--u));
+  font-size: max(12px, calc(14 * var(--u)));
   text-overflow: ellipsis;
   white-space: nowrap;
 }
@@ -463,7 +463,7 @@
 .gameSub {
   overflow: hidden;
   color: var(--muted);
-  font-size: calc(14 * var(--u));
+  font-size: max(12px, calc(14 * var(--u)));
   text-overflow: ellipsis;
   white-space: nowrap;
 }
@@ -520,7 +520,7 @@
   display: flex;
   gap: calc(22 * var(--u));
   color: var(--muted);
-  font-size: calc(14 * var(--u));
+  font-size: max(12px, calc(14 * var(--u)));
   white-space: nowrap;
 }
 

@@ -73,7 +73,7 @@
 .sub {
   min-height: 1.2em;
   color: var(--muted);
-  font-size: calc(14 * var(--u));
+  font-size: max(12px, calc(14 * var(--u)));
   white-space: nowrap;
 }
 
@@ -83,7 +83,7 @@
   gap: calc(6 * var(--u));
   padding-top: calc(10 * var(--u));
   padding-bottom: calc(10 * var(--u));
-  font-size: calc(14 * var(--u));
+  font-size: max(12px, calc(14 * var(--u)));
 }
 
 .row {

@@ -1,6 +1,6 @@
 // GitHub contributions (firmware/main/ui_github.c).
 import { useRef } from 'react';
-import { ContributionChart, WEEKDAYS_WIDTH } from '../components/ContributionChart.js';
+import { ContributionChart, MONTHS_HEIGHT, WEEKDAYS_WIDTH } from '../components/ContributionChart.js';
 import { isOnline, type BridgeState } from '../connection.js';
 import { barColor, bestText, formatCount, longestText, pageChart, summary, weekChange } from '../github.js';
 import { useInnerSize } from '../hooks.js';
@@ -10,7 +10,7 @@ import styles from './GitHubPage.module.css';
 export function GitHubPage({ state }: { state: BridgeState }) {
   const { github } = state;
   const year = useRef<HTMLDivElement>(null);
-  const { width } = useInnerSize(year);
+  const { width, height: room } = useInnerSize(year);
   const why = isOnline(state) ? T.waitingForPc : T.pcOffline;
   const color = barColor(github);
   const change = github && weekChange(github);
@@ -27,7 +27,7 @@ export function GitHubPage({ state }: { state: BridgeState }) {
         </div>
         <div ref={year} className={styles.year}>
           {width > 0 && (
-            <ContributionChart github={github} {...pageChart(github, width - WEEKDAYS_WIDTH - 2)} months weekdays />
+            <ContributionChart github={github} {...pageChart(github, width - WEEKDAYS_WIDTH - 2, room - MONTHS_HEIGHT - 2)} months weekdays />
           )}
         </div>
       </section>

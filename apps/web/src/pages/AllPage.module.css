@@ -39,7 +39,7 @@
 .line {
   overflow: hidden;
   color: var(--muted);
-  font-size: calc(14 * var(--u));
+  font-size: max(12px, calc(14 * var(--u)));
   text-overflow: ellipsis;
   white-space: nowrap;
 }

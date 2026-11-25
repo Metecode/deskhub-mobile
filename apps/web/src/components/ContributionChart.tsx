@@ -13,7 +13,7 @@ interface ContributionChartProps extends ChartSize {
   weekdays?: boolean;
 }
 
-const MONTHS_HEIGHT = 20;
+export const MONTHS_HEIGHT = 20;
 export const WEEKDAYS_WIDTH = 34;
 
 export const ContributionChart = memo(function ContributionChart({

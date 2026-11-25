@@ -25,7 +25,7 @@
 
 .playing {
   color: var(--good);
-  font-size: calc(14 * var(--u));
+  font-size: max(12px, calc(14 * var(--u)));
   font-weight: 600;
 }
 
@@ -61,7 +61,7 @@
 .friends {
   flex: 0 1 calc(230 * var(--u));
   min-width: 0;
-  font-size: calc(14 * var(--u));
+  font-size: max(12px, calc(14 * var(--u)));
 }
 
 .friend {
@@ -84,7 +84,7 @@
 
 .muted {
   flex: none;
-  font-size: calc(14 * var(--u));
+  font-size: max(12px, calc(14 * var(--u)));
   font-weight: 500;
 }
 
@@ -139,7 +139,7 @@
 .tileName {
   max-width: 100%;
   overflow: hidden;
-  font-size: calc(14 * var(--u));
+  font-size: max(12px, calc(14 * var(--u)));
   text-overflow: ellipsis;
   white-space: nowrap;
 }

@@ -291,10 +291,11 @@ describe('GitHub', () => {
   });
 
   it('fits the page, down to a size that can be seen', () => {
-    expect(pageChart(github, 640)).toEqual({ pitch: 12, weeks: 53 });
-    expect(pageChart(github, 2000)).toEqual({ pitch: 16, weeks: 53 });
-    expect(pageChart(github, 300)).toEqual({ pitch: 9, weeks: 33 });
-    expect(pageChart(github, 0).weeks).toBe(1);
+    expect(pageChart(github, 640, 200)).toEqual({ pitch: 12, weeks: 53 });
+    expect(pageChart(github, 2000, 200)).toEqual({ pitch: 16, weeks: 53 });
+    expect(pageChart(github, 300, 200)).toEqual({ pitch: 9, weeks: 33 });
+    expect(pageChart(github, 0, 0).weeks).toBe(1);
+    expect(pageChart(github, 2000, 80)).toEqual({ pitch: 11, weeks: 53 });
   });
 
   it('fits the Home card', () => {

@@ -190,7 +190,8 @@
   padding: 0 calc(5 * var(--u));
   border-radius: calc(14 * var(--u));
   background: var(--selected);
-  font-size: max(12px, calc(13.5 * var(--u)));
+  font-size: max(12px, calc(13 * var(--u)));
+  white-space: nowrap;
   font-weight: 600;
   text-align: center;
 }
