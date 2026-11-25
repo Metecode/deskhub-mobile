@@ -49,7 +49,7 @@ Companion (upstream, Windows, Python) --ws /ws--> Bridge (Node, on the PC) --ws 
 - **1:** Home (the companion's grid), media, calendar, weather, shortcuts. Plan: `docs/plan-phase1.md`.
 - **2:** Claude/Codex, alerts, timer, internet, sleep and night mode. Plan: `docs/plan-phase2.md`.
 - **3:** Steam, printers, GitHub: pages and Home widgets. Plan: `docs/plan-phase3.md`.
-- **4:** Kiosk, finishing touches. OLED burn-in (the phone is a Galaxy A52, Super AMOLED): shift the
+- **4:** Kiosk, finishing touches. Plan: `docs/plan-phase4.md`. OLED burn-in (the phone is a Galaxy A52, Super AMOLED): shift the
   pixels now and then, dim static elements such as the navigation bar and the clock.
 
 ## Where we are
@@ -72,7 +72,23 @@ Phase 3, branch `phase-3`:
 
 Update this list with every step.
 
-Next: the user tries phase 3 on the phone.
+Phase 4, branch `phase-4` (from `phase-3`):
+
+- [x] Plan approved and written down
+- [ ] Web: diagnostics page
+- [ ] Way A (Chrome's flag) tried on the phone (by the user): decides about HTTPS
+- [ ] Web: wake lock
+- [ ] Web: service worker, manifest, saved calendar
+- [ ] Web: burn-in (pixel shift, dimming, Time's up)
+- [ ] Web and bridge: updates, error note
+- [ ] `tools/autostart.ps1`
+- [ ] CI
+- [ ] README, docs/protocol.md
+- [ ] Verified in a desktop browser
+- [ ] Verified on the phone (by the user)
+- [ ] One pull request into `main`, tag `v0.2.0` (only when the user says so, after phase 3 on the phone)
+
+Next: the user tries phase 3 and the diagnostics page on the phone.
 
 Not verified yet:
 
