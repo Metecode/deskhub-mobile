@@ -95,7 +95,7 @@ function Get-CompanionFolder {
         if ($answer -eq '-') { $folder = ''; break }
         if ($answer -eq '' -and $found) { $folder = $found; break }
         if (Test-CompanionFolder $answer) { $folder = (Resolve-Path -LiteralPath $answer).Path; break }
-        Say 'O klasörde config.toml ve .venv yok. Companion’ı kendi README’sine göre kur.' Yellow
+        Say 'O klasörde config.toml ve .venv yok. Companion''ı kendi README''sine göre kur.' Yellow
     }
     $memory.companion = $folder
     Save-Memory
@@ -298,13 +298,13 @@ try {
         $hub = Read-Hub $companion
         if ($hub.host -ne "127.0.0.1:$port" -or $hub.token -ne $settings.HUB_TOKEN) {
             Say ''
-            Say "Companion bu bridge’i henüz tanımıyor. config.toml içinde [hub] altına şunları yaz:" Yellow
+            Say "Companion bu bridge'i henüz tanımıyor. config.toml içinde [hub] altına şunları yaz:" Yellow
             Say "  host = `"127.0.0.1:$port`"" White
             Say '  token = "..."   (.env içindeki HUB_TOKEN)' White
             if (Confirm-Yes 'İki dosya şimdi açılsın mı?') {
                 Start-Process notepad $envFile
                 Start-Process notepad (Join-Path $companion 'config.toml')
-                Read-Host 'config.toml dosyasını kaydet, sonra Enter’a bas' | Out-Null
+                Read-Host 'config.toml dosyasını kaydet, sonra Enter''a bas' | Out-Null
             }
         }
     }

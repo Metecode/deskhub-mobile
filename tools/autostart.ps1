@@ -59,7 +59,7 @@ function Install-Autostart {
     # Everything is checked before anything is written.
     if ($Companion) {
         if (Test-Path -LiteralPath $upstreamLink) {
-            throw "Companion’ı deskhub-install kısayolu zaten başlatıyor. Önce onu kaldır: uv run deskhub-install --remove"
+            throw "Companion'ı deskhub-install kısayolu zaten başlatıyor. Önce onu kaldır: uv run deskhub-install --remove"
         }
         $folder = (Resolve-Path -LiteralPath $Companion).Path
         $python = Join-Path $folder '.venv\Scripts\pythonw.exe'
