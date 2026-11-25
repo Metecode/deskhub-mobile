@@ -16,6 +16,7 @@ import {
   connectCompanion,
   HUB_TOKEN,
   startBridge,
+  steamFrame,
   TestSocket,
   useFakeTimers,
 } from './testing.js';
@@ -177,7 +178,10 @@ describe('covers', () => {
     ['ARS1 wider than 320', artFrame('ARS1', 0, 321, 320)],
     ['ARS1 taller than 320', artFrame('ARS1', 0, 320, 321)],
     ['a frame with trailing bytes', artFrame('ART1', 1)],
-    ['STM1, until it has a page', artFrame('STM1')],
+    ['STM1 wider than 400', steamFrame(1, 0, 401, 1)],
+    ['STM1 taller than 240', steamFrame(1, 2, 1, 241)],
+    ['STM1 of a kind nobody knows', steamFrame(1, 3)],
+    ['STM1 with trailing bytes', artFrame('STM1', 1)],
   ])('leave out %s', async (_name, frame) => {
     const companion = await connectCompanion(bridge);
     const client = await connectClient(bridge);
@@ -186,6 +190,42 @@ describe('covers', () => {
     await client.flush();
     expect(client.binary).toEqual([]);
     expect(bridge.hub.covers).toEqual([]);
+  });
+
+  it('of games are relayed, and follow the snapshot with a portrait per game', async () => {
+    const companion = await connectCompanion(bridge);
+    const early = await connectClient(bridge);
+    const [oldHeader, header, thumb] = [steamFrame(1, 0), steamFrame(2, 0, 340, 159), steamFrame(2, 1, 64, 96)];
+    const portraits = [10, 11, 12].map((id) => steamFrame(id, 2, 96, 144));
+    const again = steamFrame(11, 2, 8, 12);
+    const all = [oldHeader, header, thumb, ...portraits, again];
+    for (const frame of all) companion.send(frame);
+    await companion.flush();
+    await early.flush();
+    expect(early.binary).toEqual(all);
+
+    const late = await connectClient(bridge);
+    await late.flush();
+    expect(late.binary).toEqual([header, thumb, portraits[0], portraits[2], again]);
+  });
+
+  it('of games that are no longer recent make room', async () => {
+    const companion = await connectCompanion(bridge);
+    const recent = (...ids: number[]) => companion.send({ type: 'steam', recent: ids.map((appid) => ({ appid })) });
+    const portrait = (id: number) => steamFrame(id, 2);
+    const ids = () => bridge.hub.covers.map((frame) => frame.readUInt32LE(4));
+    recent(1, 2, 3, 4, 5);
+    for (const id of [1, 2, 3, 4, 5]) companion.send(portrait(id));
+    await companion.flush();
+    expect(ids()).toEqual([1, 2, 3, 4, 5]);
+    recent(6, 1, 2, 4, 5);
+    companion.send(portrait(6));
+    await companion.flush();
+    expect(ids()).toEqual([1, 2, 4, 5, 6]);
+    // A frame before its message: all five are recent, so the oldest goes.
+    companion.send(portrait(7));
+    await companion.flush();
+    expect(ids()).toEqual([2, 4, 5, 6, 7]);
   });
 
   it('do not go to a refused client, or come from one', async () => {

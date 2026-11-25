@@ -115,3 +115,11 @@ export function artFrame(magic: 'ART1' | 'ARS1' | 'STM1', extra = 0, w = 4, h = 
   data.writeUInt16LE(h, 10);
   return data;
 }
+
+/** An STM1 frame. */
+export function steamFrame(appid: number, kind: number, w = 4, h = 4): Buffer {
+  const data = artFrame('STM1', 0, w, h);
+  data.writeUInt32LE(appid, 4);
+  data.writeUInt16LE(kind, 12);
+  return data;
+}

@@ -1,13 +1,10 @@
 // What the board keeps in RAM: the last message of every type, the last covers, and
 // whether the PC is online.
 import { EventEmitter } from 'node:events';
-import { ONLINE_TIMEOUT_MS } from '@deskhub-mobile/protocol';
+import { addPortrait, normalizeSteam, ONLINE_TIMEOUT_MS, STEAM_PORTRAIT, type ArtFrame } from '@deskhub-mobile/protocol';
 
 // Not state: nothing to show, so not relayed and not in the snapshot.
 const NOT_STATE = new Set(['', 'hello', 'hello_ok', 'ping']);
-
-/** Covers that phones get: the PC's and the media server's. */
-export type CoverMagic = 'ART1' | 'ARS1';
 
 interface HubEvents {
   /** The text of a companion message to relay. */
@@ -21,7 +18,10 @@ export class Hub extends EventEmitter<HubEvents> {
   #online = false;
   #timer: NodeJS.Timeout | undefined;
   readonly #messages = new Map<string, string>();
-  readonly #covers = new Map<CoverMagic, Buffer>();
+  /** By what they show: ART1, ARS1, and STM1 with its kind. */
+  readonly #covers = new Map<string, Buffer>();
+  /** Of recent games, by app id. */
+  #portraits = new Map<number, Buffer>();
 
   get online(): boolean {
     return this.#online;
@@ -32,9 +32,9 @@ export class Hub extends EventEmitter<HubEvents> {
     return [...this.#messages.values()];
   }
 
-  /** The last cover of each kind, as received. */
+  /** The last cover of each kind, and the portraits of games, as received. */
   get covers(): Buffer[] {
-    return [...this.#covers.values()];
+    return [...this.#covers.values(), ...this.#portraits.values()];
   }
 
   /** Something arrived from the companion: the PC is online for another while. */
@@ -57,10 +57,17 @@ export class Hub extends EventEmitter<HubEvents> {
     this.emit('message', text);
   }
 
-  /** Remembers and relays a cover. `frame` must be valid. */
-  publishCover(magic: CoverMagic, frame: Buffer): void {
-    this.#covers.set(magic, frame);
+  /** Remembers and relays a cover. `header` is what parseArtFrame() says about the frame. */
+  publishCover(header: ArtFrame, frame: Buffer): void {
+    if (header.magic !== 'STM1') this.#covers.set(header.magic, frame);
+    else if (header.kind !== STEAM_PORTRAIT) this.#covers.set(`STM1 ${header.kind}`, frame);
+    else this.#portraits = addPortrait(this.#portraits, header.id, frame, this.#recentGames());
     this.emit('cover', frame);
+  }
+
+  #recentGames(): Set<number> {
+    const text = this.#messages.get('steam');
+    return new Set(text && normalizeSteam(JSON.parse(text)).recent.map((game) => game.appid));
   }
 
   #setOnline(online: boolean): void {

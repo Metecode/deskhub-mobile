@@ -58,8 +58,8 @@ Phases 0 to 2 are done and verified on the phone by the user (branches `phase-0`
 Phase 3, branch `phase-3`:
 
 - [x] Plan approved and written down
-- [ ] Protocol: schemas, normalizers, portraits
-- [ ] Bridge: game covers
+- [x] Protocol: schemas, normalizers, portraits
+- [x] Bridge: game covers
 - [ ] Bridge: mock mode
 - [ ] Web: navigation bar
 - [ ] Web: games page and widget

@@ -101,7 +101,7 @@ export class CompanionEndpoint {
       );
     } else if (parsed.kind === 'unknown') {
       this.#logOnce(`unknown:${parsed.type}`, () =>
-        this.#log.info(`message type "${parsed.type}" has no schema yet, relayed as it is`),
+        this.#log.info(`message type "${parsed.type}" is unknown, relayed as it is`),
       );
     }
     this.#hub.publish(parsed.type, text);
@@ -135,13 +135,9 @@ export class CompanionEndpoint {
       return;
     }
     this.#hub.touch();
-    const what = `${frame.magic} id ${frame.id} ${frame.width}x${frame.height}`;
-    if (frame.magic === 'STM1') {
-      this.#log.info(`${what} kind ${frame.kind} (not shown yet)`);
-      return;
-    }
-    this.#log.info(what);
-    this.#hub.publishCover(frame.magic, data);
+    const kind = frame.magic === 'STM1' ? ` kind ${frame.kind}` : '';
+    this.#log.info(`${frame.magic} id ${frame.id} ${frame.width}x${frame.height}${kind}`);
+    this.#hub.publishCover(frame, data);
   }
 
   #drop(): void {
