@@ -47,32 +47,29 @@ Companion (upstream, Windows, Python) --ws /ws--> Bridge (Node, on the PC) --ws 
 
 - **0: PoC.** Bridge, protocol, PC Stats. Plan: `docs/plan-phase0.md`.
 - **1:** Home (the companion's grid), media, calendar, weather, shortcuts. Plan: `docs/plan-phase1.md`.
-- **2:** Claude/Codex, alerts, timer, internet, sleep and night mode.
+- **2:** Claude/Codex, alerts, timer, internet, sleep and night mode. Plan: `docs/plan-phase2.md`.
 - **3:** Steam, printers, GitHub: pages and Home widgets.
-- **4:** Kiosk, finishing touches.
+- **4:** Kiosk, finishing touches. OLED burn-in (the phone is a Galaxy A52, Super AMOLED): shift the
+  pixels now and then, dim static elements such as the navigation bar and the clock.
 
 ## Where we are
 
-Phase 0 is done, on branch `phase-0`, verified on the phone by the user. Phase 1, branch `phase-1`.
+Phases 0 and 1 are done and verified on the phone by the user (branches `phase-0`, `phase-1`).
+Phase 2, branch `phase-2`:
 
 - [x] Plan approved and written down
-- [x] Protocol: schemas, normalizers, grid
-- [x] Bridge: covers and weather settings
-- [x] Bridge: mock mode
-- [x] Web: navigation and layout
-- [x] Web: Media page
-- [x] Web: Weather page
-- [x] Web: Calendar page
-- [x] Web: Shortcuts page
-- [x] Web: Home page
-- [x] Optional launcher (`tools/run-companion.py`)
-- [x] README, NOTICE, docs/protocol.md
-- [x] Verified with the real companion (not the split view, see below)
-- [x] Verified on the phone (by the user)
+- [ ] Protocol: schemas and normalizers
+- [ ] Bridge: `pc_power` test, mock mode
+- [ ] Web: AI page and Home widget
+- [ ] Web: sound, alerts
+- [ ] Web: timer
+- [ ] Web: Internet view and Home widget
+- [ ] Web: dark layer
+- [ ] README, docs/protocol.md
+- [ ] Verified with the real companion
+- [ ] Verified on the phone (by the user)
 
 Update this list with every step.
-
-Phase 1 is done. Next: the phase 2 plan, for approval.
 
 Not verified yet: the split Media page with a real Plex or Jellyfin server; the binary frames `ARS1`
 and `STM1` from a real companion (covered by unit tests only); how the phone looks while the PC is
