@@ -13,8 +13,8 @@ the board, and the phone shows the result in its browser:
 Companion (Desk Hub, Python) --> Bridge (Node, on the PC) --> Web app (phone, fullscreen)
 ```
 
-There are Home, PC Stats with the Internet, AI usage, Calendar, Weather, Media, Timer and Shortcuts.
-The other pages (games, printers, GitHub) follow; until then their Home widgets are placeholders.
+It has all of the board's pages: Home, PC Stats with the Internet, AI usage, Calendar, Weather, Media, 3D
+printers, Timer, Games, GitHub and Shortcuts.
 
 ## Requirements
 
@@ -106,6 +106,10 @@ Claude Code's alerts ("needs permission", "waiting for you") and its limits need
 line in Claude Code's settings, which the companion's `install_claude.py` adds; see the Desk Hub
 README. Without them the AI page shows tokens only.
 
+Games start with one tap; after that all of them are locked for 5 seconds on that phone. GitHub needs a
+token (`deskhub-setup github`), printers are added with `deskhub-printers`; see the Desk Hub README.
+With more pages than fit on the navigation bar, it scrolls.
+
 The timer's end and new alerts come with a beep and a vibration. Browsers only allow both after a
 touch on the page, so after a reload there's only the picture until you touch it.
 
@@ -142,6 +146,7 @@ coordinates nothing is fetched.
 - **Sharper covers**: the companion sends them at 280 x 280.
 - **The agents' logos**: they are trademarks, so there's an icon in their colour.
 - **Turning the screen off**: see above.
+- **Sharper game covers**: 96 x 144, as the companion sends them.
 - **Plex and Jellyfin**: the split Media page is there, but hasn't been tried with a real server.
 
 ## Development
@@ -153,12 +158,15 @@ pnpm typecheck
 ```
 
 `pnpm dev` doesn't need the companion, only `CLIENT_TOKEN`. After `pnpm build`, restart a running
-bridge: it lists the web app's files when it starts. The made-up PC goes offline for 10
+bridge: it lists the web app's files when it starts.
+
+[tools/fake-moonraker.mjs](tools/fake-moonraker.mjs) stands in for a 3D printer; how to point the companion
+at it is at its top. The made-up PC goes offline for 10
 seconds now and then, on purpose. To open it on the phone, allow port 5173 in the firewall too.
 
 - [docs/protocol.md](docs/protocol.md): the messages
 - [docs/plan-phase0.md](docs/plan-phase0.md), [docs/plan-phase1.md](docs/plan-phase1.md),
-  [docs/plan-phase2.md](docs/plan-phase2.md): the plans
+  [docs/plan-phase2.md](docs/plan-phase2.md), [docs/plan-phase3.md](docs/plan-phase3.md): the plans
 - [CLAUDE.md](CLAUDE.md): project context, rules and phases
 
 ## License

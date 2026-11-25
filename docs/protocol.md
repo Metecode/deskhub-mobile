@@ -1,6 +1,6 @@
 # Protocol
 
-What the bridge speaks, as of phase 2. Upstream references are to commit
+What the bridge speaks, as of phase 3. Upstream references are to commit
 `b78c505279a50f80cd40bfc86f0d9de9ac79437c`. The schemas are in `packages/protocol`.
 
 ## Companion <-> bridge: `/ws`
@@ -191,10 +191,54 @@ suspends. Source: `pc_power.py`, `session()`, `on_pc_power()`.
 Every session starts with the current state, so the snapshot's copy is never out of date for longer
 than the companion is away. Phones keep `asleep` while the bridge is out of reach.
 
+### `steam` (companion -> hub)
+
+When it changes (the session's time aside) and every 60 seconds. Source: `steam.py`,
+`custom_games.py`, `on_steam()`. Not only Steam's games. The covers come as `STM1` frames.
+
+| Field | Type | |
+| --- | --- | --- |
+| `found` | boolean | false: neither Steam nor another game is set up |
+| `playing` | object or null | `appid`, `name`, `total_min`, and `session_s` when it was sent |
+| `recent[]` | array, up to 5 | `appid`, `name`, `last` (epoch seconds), `total_min`; newest first |
+| `friends[]` | array, up to 5 | `name`, `game`; friends in a game |
+
+### `printer` (companion -> hub)
+
+When it changes and every 30 seconds. Source: `printer.py`, `printer_poll.py`, `on_printer()`.
+`printers[]`, up to 4, of any brand:
+
+| Field | Type | |
+| --- | --- | --- |
+| `online` | boolean | |
+| `name`, `model`, `file`, `speed`, `error` | string | |
+| `state` | string | `IDLE`, `PREPARE`, `SLICING`, `RUNNING`, `PAUSE`, `FINISH`, `FAILED`, `OFFLINE` |
+| `pct`, `remaining_min`, `layer`, `layers` | number | |
+| `nozzle`, `nozzle_target`, `bed`, `bed_target`, `chamber` | number or null | °C |
+| `ams[]` | array, up to 8 | filament slots: `color`, `type`, `active` |
+
+### `github` (companion -> hub)
+
+When it changes; the companion asks GitHub every 15 minutes. Source: `github.py` `message()`,
+`on_github()`.
+
+| Field | Type | |
+| --- | --- | --- |
+| `login` | string | |
+| `accent` | boolean | shades of the accent colour instead of greens |
+| `levels` | string | a digit from 0 to 4 per day, oldest first, today last; the newest 378 count |
+| `start_wday` | number | weekday of the first day, 0 is Sunday |
+| `months[]` | array, up to 14 | pairs of a week column and a name |
+| `total`, `today`, `week`, `last_week` | number | contributions |
+| `streak`, `longest` | number | days |
+| `best`, `best_date` | number, string | the busiest day |
+| `week_days`, `last_week_days` | arrays of up to 7 numbers | from Sunday; this week up to today |
+| `kinds` | object | `commits`, `prs`, `reviews`, `issues`, `private` |
+| `repos[]` | array, up to 4 | `name`, `count`; most commits first |
+
 ### Everything else
 
-`printer`, `steam` and `github` have no schema yet.
-They, types nobody knows, and messages that don't fit their schema are relayed to phones unchanged.
+Types nobody knows, and messages that don't fit their schema are relayed to phones unchanged.
 
 ### Binary frames (companion -> hub)
 
@@ -206,8 +250,11 @@ Little endian, RGB565 pixels. Source: `on_binary()` and `on_steam_art()` in `hub
 | `ARS1` (media server poster) | same | same |
 | `STM1` (Steam cover) | magic, u32 appid, u16 width, u16 height, u16 kind, u16 0 | up to 400 x 240, kind 0-2 |
 
-The length must be exactly the header plus width x height x 2. `ART1` and `ARS1` go to phones as they
-are; the last of each is kept for phones that connect later. `STM1` is only checked and logged for now.
+The length must be exactly the header plus width x height x 2. They go to phones as they
+are. The last `ART1` and `ARS1`, the last `STM1` of kind 0 (header) and 1 (thumbnail), and up to 5 of
+kind 2 (portraits, one per game) are kept for phones that connect later. A new portrait replaces its
+game's; else, when there are 5, the oldest of a game that isn't in `recent` of the last `steam`; else the
+oldest.
 
 ### Commands (hub -> companion)
 
@@ -234,7 +281,7 @@ own start with `bridge.`.
 
 ### `bridge.snapshot`
 
-Always first. The last `ART1` and `ARS1` frames follow it, if there are any.
+Always first. The covers kept follow it.
 
 | Field | Type | |
 | --- | --- | --- |
