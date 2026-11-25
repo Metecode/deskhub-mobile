@@ -68,7 +68,7 @@ Phase 3, branch `phase-3`:
 - [x] `tools/fake-moonraker.mjs`
 - [x] README, docs/protocol.md
 - [x] Verified with the real companion (a custom game with covers and a launch, the fake printer, real GitHub data)
-- [ ] Verified on the phone (by the user)
+- [x] Verified on the phone (by the user)
 
 Update this list with every step.
 
@@ -88,7 +88,7 @@ Phase 4, branch `phase-4` (from `phase-3`):
 - [ ] Verified on the phone (by the user)
 - [ ] One pull request into `main`, tag `v0.2.0` (only when the user says so, after phase 3 on the phone)
 
-Next: the user tries phases 3 and 4 on the phone.
+Next: the user tries the rest of phase 4 on the phone (overnight, home screen, opening without the PC).
 
 Not verified yet:
 
