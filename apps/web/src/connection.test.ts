@@ -1,12 +1,20 @@
-import { CLOSE_BAD_ORIGIN, CLOSE_BAD_TOKEN, SILENCE_TIMEOUT_MS, STATUS_INTERVAL_MS } from '@deskhub-mobile/protocol';
+import {
+  CLOSE_BAD_ORIGIN,
+  CLOSE_BAD_TOKEN,
+  DEFAULT_LAYOUT,
+  NO_MEDIA,
+  SILENCE_TIMEOUT_MS,
+  STATUS_INTERVAL_MS,
+} from '@deskhub-mobile/protocol';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { backoffDelay, Connection, HISTORY_MS } from './connection.js';
+import { backoffDelay, Connection, HISTORY_MS, isOnline, pcMedia } from './connection.js';
 
 class FakeSocket {
   static all: FakeSocket[] = [];
   onmessage: ((e: { data: unknown }) => void) | null = null;
   onclose: ((e: { code: number }) => void) | null = null;
   closed = false;
+  readonly sent: unknown[] = [];
 
   constructor(readonly url: string) {
     FakeSocket.all.push(this);
@@ -16,12 +24,20 @@ class FakeSocket {
     this.closed = true;
   }
 
+  send(text: string): void {
+    this.sent.push(JSON.parse(text));
+  }
+
+  receiveBinary(data: ArrayBuffer): void {
+    this.onmessage?.({ data });
+  }
+
   receive(message: object | string): void {
     this.onmessage?.({ data: typeof message === 'string' ? message : JSON.stringify(message) });
   }
 
-  snapshot(pc_online: boolean, messages: object[] = []): void {
-    this.receive({ type: 'bridge.snapshot', pc_online, messages });
+  snapshot(pc_online: boolean, messages: object[] = [], weather: object | null = null): void {
+    this.receive({ type: 'bridge.snapshot', pc_online, messages, weather });
   }
 }
 
@@ -186,5 +202,92 @@ describe('data', () => {
     last().receive({ type: 'stats', cpu: 'busy' });
     expect(connection.getState().messages).toMatchObject({ weather_v9: { x: 1 } });
     expect(connection.getState().stats?.cpu).toBe(0);
+  });
+});
+
+describe('pages', () => {
+  const layout = { type: 'layout', pages: ['home', 'media'], ordered: true, nav: 'bottom' };
+  const home = { type: 'home', header: false, grid: [{ widget: 'stats', x: 0, y: 0, w: 1, h: 1 }] };
+  const media = { type: 'media', active: true, title: 'A', art_id: 3 };
+
+  it('have their data, from the snapshot and live', () => {
+    const connection = connect();
+    const events = { type: 'events', events: [{ title: 'E', start: 1, end: 2 }], days: 3 };
+    last().snapshot(true, [layout, home, media, events, { type: 'tile_state', on: [1] }]);
+    expect(connection.getState()).toMatchObject({
+      layout: { pages: ['home', 'media'], nav: 'bottom' },
+      home: { header: false },
+      media: { title: 'A', artId: 3 },
+      events: { days: 3, events: [{ title: 'E' }] },
+      lit: new Set([1]),
+    });
+    last().receive({ type: 'tiles', tiles: [{ label: 'T' }] });
+    last().receive({ type: 'media_server', configured: true, name: 'S' });
+    last().receive({ type: 'tile_state', on: [] });
+    expect(connection.getState()).toMatchObject({ tiles: [{ label: 'T' }], server: { name: 'S' }, lit: new Set() });
+  });
+
+  it('start with the bar on the left, and keep the layout when a snapshot has none', () => {
+    const connection = connect();
+    expect(connection.getState().layout).toEqual(DEFAULT_LAYOUT);
+    last().snapshot(true, [layout, home, media]);
+    // The bridge was restarted.
+    last().snapshot(false);
+    expect(connection.getState()).toMatchObject({ layout: { nav: 'bottom' }, home: { header: false }, media: NO_MEDIA });
+  });
+
+  it('keep their data while the bridge is out of reach, but nothing plays then', () => {
+    const connection = connect();
+    last().snapshot(true, [media, { type: 'events', events: [{ title: 'E' }] }]);
+    expect(pcMedia(connection.getState()).title).toBe('A');
+    last().receive({ type: 'bridge.status', pc_online: false });
+    expect(pcMedia(connection.getState())).toEqual(NO_MEDIA);
+    last().receive({ type: 'bridge.status', pc_online: true });
+    last().onclose!({ code: 1006 });
+    expect(isOnline(connection.getState())).toBe(false);
+    expect(pcMedia(connection.getState())).toEqual(NO_MEDIA);
+    expect(connection.getState().events.events).toHaveLength(1);
+  });
+
+  it('get covers as they come', () => {
+    const connection = connect();
+    last().snapshot(true, [media]);
+    const frame = new Uint8Array(14);
+    frame.set([...'ART1'].map((c) => c.charCodeAt(0)));
+    frame.set([3, 0, 0, 0, 1, 0, 1, 0], 4);
+    last().receiveBinary(frame.buffer);
+    last().receiveBinary(new ArrayBuffer(5));
+    expect(connection.getState().covers).toMatchObject({ pc: { id: 3, width: 1 }, server: null });
+  });
+
+  it('get the weather settings from the snapshot', () => {
+    const connection = connect();
+    expect(connection.getState().weather).toBeUndefined();
+    last().snapshot(true);
+    expect(connection.getState().weather).toBeNull();
+    const weather = { latitude: 1, longitude: 2, city: '', units: 'metric' };
+    last().snapshot(true, [], weather);
+    expect(connection.getState().weather).toEqual(weather);
+  });
+});
+
+describe('commands', () => {
+  it('are sent while the PC is online, and dropped otherwise', () => {
+    const connection = connect();
+    connection.send({ type: 'shortcut', id: 1 });
+    last().snapshot(false);
+    connection.send({ type: 'shortcut', id: 2 });
+    last().receive({ type: 'bridge.status', pc_online: true });
+    connection.send({ type: 'shortcut', id: 3 });
+    connection.sendMedia('media', 'toggle');
+    connection.sendMedia('media_server', 'seek', 30);
+    expect(last().sent).toEqual([
+      { type: 'shortcut', id: 3 },
+      { type: 'media', cmd: 'toggle', value: 0 },
+      { type: 'media_server', cmd: 'seek', value: 30 },
+    ]);
+    last().onclose!({ code: 1006 });
+    connection.send({ type: 'shortcut', id: 4 });
+    expect(last().sent).toHaveLength(3);
   });
 });

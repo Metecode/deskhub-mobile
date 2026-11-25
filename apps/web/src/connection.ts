@@ -1,14 +1,35 @@
 // The connection to the bridge: reconnects by itself and holds the latest data.
 import {
+  applyLayout,
   CLOSE_BAD_ORIGIN,
   CLOSE_BAD_TOKEN,
+  DEFAULT_HOME,
+  DEFAULT_LAYOUT,
+  NO_MEDIA,
+  normalizeEvents,
+  normalizeHome,
+  normalizeMedia,
+  normalizeMediaServer,
   normalizeStats,
+  normalizeTiles,
+  normalizeTileState,
   SILENCE_TIMEOUT_MS,
   TOKEN_PARAM,
   type BridgeMessage,
+  type Command,
+  type Events,
+  type Home,
+  type Layout,
+  type Media,
+  type MediaServer,
+  type MediaTarget,
   type RawMessage,
   type Stats,
+  type Tile,
+  type WeatherSettings,
 } from '@deskhub-mobile/protocol';
+import { readCover, type Cover } from './cover.js';
+import type { SavedLayout } from './layoutStore.js';
 
 /** How far back the history goes. */
 export const HISTORY_MS = 60_000;
@@ -31,16 +52,76 @@ export interface HistoryPoint {
   gpu: number | null;
 }
 
-export interface BridgeState {
-  link: Link;
-  /** As last reported. Only means something while the link is open. */
-  pcOnline: boolean;
+/** What companion messages add up to. */
+export interface HubData {
   stats: Stats | null;
+  media: Media;
+  /** When `media` arrived, ms. */
+  mediaAt: number;
+  server: MediaServer;
+  serverAt: number;
+  events: Events;
+  tiles: readonly Tile[];
+  /** Tiles that are on. */
+  lit: ReadonlySet<number>;
+  layout: Layout;
+  home: Home;
+}
+
+export interface BridgeState extends HubData {
+  link: Link;
+  /** As last reported. Only means something while the link is open; see isOnline(). */
+  pcOnline: boolean;
   /** The last minute, oldest first. */
   history: readonly HistoryPoint[];
+  /** The last cover of the PC and of the media server; see coverOf(). */
+  covers: Readonly<Record<'pc' | 'server', Cover | null>>;
+  /** undefined: the bridge hasn't said yet. null: no location is set. */
+  weather: WeatherSettings | null | undefined;
   /** The last message of every type, as received. */
   messages: Readonly<Record<string, RawMessage>>;
 }
+
+const NO_DATA: Omit<HubData, 'layout' | 'home'> = {
+  stats: null,
+  media: NO_MEDIA,
+  mediaAt: 0,
+  server: normalizeMediaServer({ type: 'media_server' }),
+  serverAt: 0,
+  events: normalizeEvents({ type: 'events' }),
+  tiles: [],
+  lit: new Set(),
+};
+
+/** What a companion message changes. */
+function read(message: RawMessage, layout: Layout): Partial<HubData> {
+  switch (message.type) {
+    case 'stats':
+      return { stats: normalizeStats(message) };
+    case 'media':
+      return { media: normalizeMedia(message), mediaAt: Date.now() };
+    case 'media_server':
+      return { server: normalizeMediaServer(message), serverAt: Date.now() };
+    case 'events':
+      return { events: normalizeEvents(message) };
+    case 'tiles':
+      return { tiles: normalizeTiles(message) };
+    case 'tile_state':
+      return { lit: normalizeTileState(message) };
+    case 'layout':
+      return { layout: applyLayout(layout, message) };
+    case 'home':
+      return { home: normalizeHome(message) };
+    default:
+      return {};
+  }
+}
+
+/** Whether the companion can be reached: what the board calls "PC online". */
+export const isOnline = (state: BridgeState): boolean => state.link === 'open' && state.pcOnline;
+
+/** What plays on the PC. The board takes nothing for granted while it is offline (tick_cb in ui.c). */
+export const pcMedia = (state: BridgeState): Media => (isOnline(state) ? state.media : NO_MEDIA);
 
 /** Delay before reconnect attempt `attempt` (0, 1, 2...): doubles, with jitter, up to a limit. */
 export function backoffDelay(attempt: number, random: () => number = Math.random): number {
@@ -49,7 +130,7 @@ export function backoffDelay(attempt: number, random: () => number = Math.random
 }
 
 export class Connection {
-  #state: BridgeState = { link: 'connecting', pcOnline: false, stats: null, history: [], messages: {} };
+  #state: BridgeState;
   readonly #listeners = new Set<() => void>();
   readonly #url: string;
   #token: string | null;
@@ -59,9 +140,24 @@ export class Connection {
   #watchdog: ReturnType<typeof setTimeout> | undefined;
 
   /** `url` is the /client address without the token. */
-  constructor(url: string, token: string | null) {
+  constructor(
+    url: string,
+    token: string | null,
+    { layout, home }: SavedLayout = { layout: DEFAULT_LAYOUT, home: DEFAULT_HOME },
+  ) {
     this.#url = url;
     this.#token = token;
+    this.#state = {
+      ...NO_DATA,
+      link: 'connecting',
+      pcOnline: false,
+      history: [],
+      covers: { pc: null, server: null },
+      weather: undefined,
+      messages: {},
+      layout,
+      home,
+    };
   }
 
   // Arrow functions, so they can go straight to useSyncExternalStore().
@@ -86,6 +182,7 @@ export class Connection {
     }
     this.#update({ link: 'connecting' });
     const socket = new WebSocket(`${this.#url}?${TOKEN_PARAM}=${encodeURIComponent(this.#token)}`);
+    socket.binaryType = 'arraybuffer';
     this.#socket = socket;
     socket.onmessage = (e) => this.#onMessage(e.data);
     socket.onclose = (e) => this.#onClose(e.code);
@@ -99,8 +196,23 @@ export class Connection {
     this.connect();
   }
 
+  /** Sends a command to the companion, unless it is offline. */
+  send(command: Command): void {
+    if (isOnline(this.#state)) this.#socket?.send(JSON.stringify(command));
+  }
+
+  /** What the media buttons send (ui_send_media and ui_send_server in ui.c). */
+  sendMedia(type: MediaTarget, cmd: 'toggle' | 'next' | 'prev' | 'seek', value = 0): void {
+    this.send({ type, cmd, value });
+  }
+
   #onMessage(data: unknown): void {
     this.#feedWatchdog();
+    if (data instanceof ArrayBuffer) {
+      const found = readCover(data);
+      if (found) this.#update({ covers: { ...this.#state.covers, [found.from]: found.cover } });
+      return;
+    }
     let message: RawMessage;
     try {
       message = JSON.parse(String(data));
@@ -113,16 +225,18 @@ export class Connection {
       this.#onBridgeMessage(message as unknown as BridgeMessage);
       return;
     }
-    const messages = { ...this.#state.messages, [message.type]: message };
-    if (message.type !== 'stats') {
-      this.#update({ messages });
-      return;
-    }
-    const stats = normalizeStats(message);
+    const change = read(message, this.#state.layout);
+    this.#update({
+      ...change,
+      messages: { ...this.#state.messages, [message.type]: message },
+      ...(change.stats ? { history: this.#historyWith(change.stats) } : {}),
+    });
+  }
+
+  #historyWith(stats: Stats): HistoryPoint[] {
     const t = Date.now();
-    const history = this.#state.history.filter((p) => p.t > t - HISTORY_MS && p.t <= t);
-    history.push({ t, cpu: stats.cpu, gpu: stats.gpu });
-    this.#update({ messages, stats, history });
+    const recent = this.#state.history.filter((p) => p.t > t - HISTORY_MS && p.t <= t);
+    return [...recent, { t, cpu: stats.cpu, gpu: stats.gpu }];
   }
 
   #onBridgeMessage(message: BridgeMessage): void {
@@ -132,13 +246,16 @@ export class Connection {
     }
     // The bridge let us in.
     this.#attempt = 0;
-    const messages = Object.fromEntries(message.messages.map((m) => [m.type, m]));
+    // Its stats aren't part of the history: there's no telling how old they are.
+    let data: HubData = { ...this.#state, ...NO_DATA };
+    for (const m of message.messages) data = { ...data, ...read(m, data.layout) };
     this.#update({
+      ...this.#state,
+      ...data,
       link: 'open',
       pcOnline: message.pc_online,
-      messages,
-      // Not part of the history: there's no telling how old it is.
-      stats: messages.stats ? normalizeStats(messages.stats) : null,
+      weather: message.weather ?? null,
+      messages: Object.fromEntries(message.messages.map((m) => [m.type, m])),
     });
   }
 
