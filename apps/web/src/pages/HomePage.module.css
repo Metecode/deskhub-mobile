@@ -1,0 +1,628 @@
+.home {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: calc(10 * var(--u));
+  min-height: 0;
+}
+
+.header {
+  display: flex;
+  flex: none;
+  align-items: baseline;
+  gap: calc(8 * var(--u));
+  height: calc(46 * var(--u));
+  border-bottom: 1px solid var(--border);
+  white-space: nowrap;
+}
+
+.headerTime {
+  font-size: calc(38 * var(--u));
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  line-height: 1;
+}
+
+.headerAmPm {
+  color: var(--muted);
+  font-size: calc(20 * var(--u));
+}
+
+.headerDate {
+  margin-left: auto;
+  overflow: hidden;
+  color: var(--muted);
+  font-size: calc(24 * var(--u));
+  text-overflow: ellipsis;
+}
+
+.hint {
+  color: var(--bad);
+  font-size: calc(16 * var(--u));
+}
+
+.grid {
+  display: grid;
+  flex: 1;
+  grid-template-rows: repeat(3, minmax(0, 1fr));
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: calc(12 * var(--u));
+  min-height: 0;
+}
+
+.cell {
+  grid-row: var(--y) / span var(--h);
+  grid-column: var(--x) / span var(--w);
+  min-width: 0;
+  min-height: 0;
+  overflow: hidden;
+}
+
+.card {
+  padding: calc(14 * var(--u)) calc(16 * var(--u));
+  border: 1px solid var(--border);
+  border-radius: calc(16 * var(--u));
+  background: var(--card);
+}
+
+.opens:active:not(:has(button:active)) {
+  background: var(--card-hi);
+}
+
+.caption {
+  height: calc(26 * var(--u));
+  color: var(--muted);
+  letter-spacing: calc(2 * var(--u));
+}
+
+/* ---- clock: as large as its cells allow ---- */
+
+.clock {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  height: 100%;
+  container-type: size;
+}
+
+.clockTime {
+  font-size: min(27cqw, 72cqh);
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  line-height: 0.95;
+  white-space: nowrap;
+}
+
+.clockAmPm {
+  margin-left: 0.2em;
+  color: var(--muted);
+  font-size: 0.28em;
+}
+
+.clockDate {
+  overflow: hidden;
+  color: var(--muted);
+  font-size: min(8cqw, 22cqh, calc(34 * var(--u)));
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* ---- AI usage ---- */
+
+.claude {
+  display: flex;
+  align-items: center;
+  gap: calc(14 * var(--u));
+  height: 100%;
+}
+
+.agent {
+  position: relative;
+  display: grid;
+  flex: none;
+  place-items: center;
+  width: calc(40 * var(--u));
+  height: calc(40 * var(--u));
+  margin-right: calc(-2 * var(--u));
+}
+
+.agent[data-narrow] {
+  width: calc(24 * var(--u));
+  margin-right: calc(-6 * var(--u));
+}
+
+.agentTint {
+  position: absolute;
+  inset: 0;
+  border-radius: calc(12 * var(--u));
+  opacity: 0.2;
+}
+
+.limit {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  justify-content: space-between;
+  min-width: 0;
+  height: 100%;
+}
+
+.limitHead {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  color: var(--muted);
+  white-space: nowrap;
+}
+
+.limitValue {
+  font-size: calc(20 * var(--u));
+  font-variant-numeric: tabular-nums;
+}
+
+.limitSub {
+  overflow: hidden;
+  color: var(--muted);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.strip {
+  z-index: 1;
+}
+
+/* ---- internet ---- */
+
+.net {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  height: 100%;
+}
+
+.netHead {
+  display: flex;
+  justify-content: space-between;
+  white-space: nowrap;
+}
+
+.netCaption {
+  color: var(--muted);
+  letter-spacing: calc(2 * var(--u));
+}
+
+.netLatency {
+  font-size: calc(32 * var(--u));
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  line-height: 1;
+  white-space: nowrap;
+}
+
+.netSub {
+  overflow: hidden;
+  color: var(--muted);
+  text-overflow: ellipsis;
+  white-space: pre;
+}
+
+/* ---- events ---- */
+
+.events {
+  height: 100%;
+  overflow: hidden;
+}
+
+.event {
+  position: relative;
+  height: calc(60 * var(--u));
+  padding: calc(4 * var(--u)) 0 0 calc(14 * var(--u));
+}
+
+.eventBar {
+  position: absolute;
+  top: calc(4 * var(--u));
+  left: 0;
+  width: calc(4 * var(--u));
+  height: calc(48 * var(--u));
+  border-radius: calc(2 * var(--u));
+}
+
+.eventTitle,
+.eventWhen,
+.eventsEnd {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: pre;
+}
+
+.eventTitle {
+  font-size: calc(20 * var(--u));
+}
+
+.eventWhen {
+  margin-top: calc(4 * var(--u));
+  color: var(--muted);
+  font-size: calc(16 * var(--u));
+}
+
+.eventsEnd {
+  color: var(--muted);
+  font-size: calc(16 * var(--u));
+}
+
+.eventsEnd[data-indent] {
+  padding-left: calc(14 * var(--u));
+}
+
+/* ---- weather ---- */
+
+.weather {
+  display: flex;
+  align-items: center;
+  gap: calc(16 * var(--u));
+  height: 100%;
+}
+
+.weatherText {
+  flex: 1;
+  min-width: 0;
+  color: var(--muted);
+  font-size: calc(16 * var(--u));
+}
+
+.weatherText > * {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.temp,
+.tinyTemp {
+  color: var(--text);
+  font-weight: 600;
+  line-height: 1.05;
+}
+
+.temp {
+  font-size: calc(44 * var(--u));
+}
+
+.tinyTemp {
+  font-size: calc(32 * var(--u));
+  text-align: right;
+}
+
+/* ---- media ---- */
+
+.media {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: calc(12 * var(--u));
+  height: 100%;
+}
+
+.cover {
+  width: calc(64 * var(--u));
+  height: calc(64 * var(--u));
+}
+
+.poster {
+  width: calc(43 * var(--u));
+  height: calc(64 * var(--u));
+  margin: 0 calc(10 * var(--u));
+}
+
+.mediaText {
+  flex: 1;
+  min-width: 0;
+}
+
+.mediaTitle,
+.mediaArtist {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.mediaTitle {
+  font-size: calc(20 * var(--u));
+}
+
+.mediaArtist {
+  min-height: 1.2em;
+  margin-top: calc(4 * var(--u));
+  color: var(--muted);
+  font-size: calc(16 * var(--u));
+}
+
+.play {
+  position: relative;
+  display: grid;
+  flex: none;
+  place-items: center;
+  width: calc(44 * var(--u));
+  height: calc(44 * var(--u));
+  border-radius: 50%;
+  background: var(--card-hi);
+}
+
+/* A larger touch area (lv_obj_set_ext_click_area). */
+.play::after {
+  position: absolute;
+  inset: calc(-8 * var(--u));
+  content: '';
+}
+
+.play:active {
+  background: var(--pressed);
+  transform: scale(0.92);
+}
+
+.play:disabled {
+  opacity: 0.4;
+}
+
+/* ---- stats ---- */
+
+.stats {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  height: 100%;
+  font-size: calc(16 * var(--u));
+}
+
+.stat {
+  display: flex;
+  align-items: center;
+  gap: calc(10 * var(--u));
+}
+
+.statName {
+  width: calc(38 * var(--u));
+  color: var(--muted);
+}
+
+.statTrack {
+  flex: 1;
+  height: calc(8 * var(--u));
+  overflow: hidden;
+  border-radius: calc(4 * var(--u));
+  background: var(--card-hi);
+}
+
+.statBar {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  transition: width 300ms ease-out;
+}
+
+.statValue {
+  min-width: calc(44 * var(--u));
+  margin-left: auto;
+  font-variant-numeric: tabular-nums;
+  text-align: right;
+}
+
+/* ---- printer, GitHub ---- */
+
+.spread {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  height: 100%;
+}
+
+.spreadHead {
+  display: flex;
+  justify-content: space-between;
+  gap: calc(12 * var(--u));
+  color: var(--muted);
+  white-space: pre;
+}
+
+.spreadCaption {
+  flex: none;
+  color: var(--muted);
+  letter-spacing: calc(2 * var(--u));
+}
+
+.ellipsis {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.spreadSub {
+  min-height: 1.2em;
+  overflow: hidden;
+  color: var(--muted);
+  text-overflow: ellipsis;
+  white-space: pre;
+}
+
+.printFile {
+  margin-bottom: calc(4 * var(--u));
+  overflow: hidden;
+  font-size: calc(20 * var(--u));
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.github {
+  display: flex;
+  gap: calc(12 * var(--u));
+  height: 100%;
+}
+
+.githubChart {
+  display: flex;
+  flex: 1;
+  align-items: center;
+  min-width: 0;
+}
+
+.githubSide {
+  display: flex;
+  flex: none;
+  flex-direction: column;
+  justify-content: space-between;
+  width: calc(100 * var(--u));
+}
+
+.githubSide[data-wide] {
+  width: calc(128 * var(--u));
+}
+
+.githubTotal {
+  font-size: calc(22 * var(--u));
+  font-weight: 600;
+  line-height: 1.1;
+}
+
+.githubTall {
+  display: flex;
+  flex: 1;
+  align-items: center;
+  justify-content: center;
+  min-height: 0;
+  margin: calc(4 * var(--u)) 0;
+  overflow: hidden;
+}
+
+.githubNumbers {
+  display: grid;
+  flex: none;
+  grid-template-columns: repeat(3, 1fr);
+  color: var(--muted);
+}
+
+.githubNumbers span {
+  display: block;
+  color: var(--text);
+  font-size: calc(24 * var(--u));
+  line-height: 1.15;
+}
+
+/* ---- game ---- */
+
+.game {
+  display: flex;
+  align-items: center;
+  gap: calc(14 * var(--u));
+  height: 100%;
+}
+
+.gameCover {
+  position: relative;
+  flex: none;
+  height: 100%;
+  max-width: 40%;
+  aspect-ratio: 2 / 3;
+}
+
+.gameArt {
+  width: 100%;
+  height: 100%;
+  border-radius: calc(8 * var(--u));
+}
+
+.gamePlay {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  width: calc(40 * var(--u));
+  height: calc(40 * var(--u));
+  margin: auto;
+  border-radius: 50%;
+  background: color-mix(in srgb, var(--accent) 90%, transparent);
+  color: var(--on-accent);
+}
+
+/* The whole cover can be tapped. */
+.gamePlay::after {
+  position: absolute;
+  inset: calc(-14 * var(--u));
+  content: '';
+}
+
+.gamePlay:active {
+  background: var(--accent-pressed);
+}
+
+.gamePlay:disabled {
+  opacity: 0.4;
+}
+
+.gameText {
+  flex: 1;
+  min-width: 0;
+}
+
+.gameText > p {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: pre;
+}
+
+.gameCaption {
+  color: var(--muted);
+  letter-spacing: calc(2 * var(--u));
+}
+
+.gameCaption[data-playing] {
+  color: var(--good);
+}
+
+.gameSub {
+  min-height: 1.2em;
+  margin-top: calc(3 * var(--u));
+  color: var(--muted);
+}
+
+.gameName {
+  margin-top: calc(3 * var(--u));
+  font-size: calc(20 * var(--u));
+}
+
+/* The bottom bar leaves less height: the board's compact layout. */
+:global([data-nav='bottom']) .grid {
+  gap: calc(8 * var(--u));
+}
+
+:global([data-nav='bottom']) .card {
+  padding-top: calc(9 * var(--u));
+  padding-bottom: calc(9 * var(--u));
+}
+
+/* Five columns don't fit: a list, in the grid's reading order. */
+@media (orientation: portrait) {
+  .header {
+    height: calc(42 * var(--u));
+  }
+
+  .headerTime {
+    font-size: calc(34 * var(--u));
+  }
+
+  .headerDate {
+    font-size: calc(18 * var(--u));
+  }
+
+  .grid {
+    display: flex;
+    flex-direction: column;
+    overflow-y: auto;
+    scrollbar-width: none;
+  }
+
+  .cell {
+    flex: none;
+    order: calc(var(--y) * 10 + var(--x));
+    height: calc((110 * var(--h) + 10 * (var(--h) - 1)) * var(--u));
+  }
+}

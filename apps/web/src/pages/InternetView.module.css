@@ -1,0 +1,243 @@
+.view {
+  display: grid;
+  flex: 1;
+  grid-template-rows: minmax(0, 130fr) minmax(0, 110fr) minmax(0, 124fr);
+  gap: calc(12 * var(--u));
+  min-height: 0;
+}
+
+.top {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: calc(12 * var(--u));
+  min-height: 0;
+}
+
+.card {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  min-width: 0;
+  min-height: 0;
+  padding: calc(12 * var(--u)) calc(16 * var(--u));
+  overflow: hidden;
+  border: 1px solid var(--border);
+  border-radius: calc(16 * var(--u));
+  background: var(--card);
+}
+
+.caption {
+  color: var(--muted);
+  font-size: inherit;
+  font-weight: 500;
+  letter-spacing: calc(2 * var(--u));
+  white-space: nowrap;
+}
+
+.latency,
+.status {
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  line-height: 1.05;
+  white-space: nowrap;
+}
+
+.latency {
+  font-size: calc(44 * var(--u));
+}
+
+.status {
+  font-size: calc(32 * var(--u));
+}
+
+.sub {
+  min-height: 1.2em;
+  overflow: hidden;
+  color: var(--muted);
+  text-overflow: ellipsis;
+  white-space: pre;
+}
+
+.sub[data-bad] {
+  color: var(--bad);
+}
+
+.data {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  white-space: nowrap;
+}
+
+.data > :first-child {
+  color: var(--muted);
+  font-size: calc(16 * var(--u));
+}
+
+.data > :last-child {
+  font-size: calc(20 * var(--u));
+  font-variant-numeric: tabular-nums;
+}
+
+.row {
+  display: flex;
+  flex: none;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: calc(12 * var(--u));
+}
+
+.dim {
+  color: var(--dim);
+  font-variant-numeric: tabular-nums;
+  white-space: pre;
+}
+
+.chartCard {
+  gap: calc(8 * var(--u));
+}
+
+.chart {
+  position: relative;
+  flex: 1;
+  min-height: 0;
+}
+
+.chart svg {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+}
+
+.division,
+.line {
+  fill: none;
+  vector-effect: non-scaling-stroke;
+}
+
+.division {
+  stroke: var(--card-hi);
+  stroke-width: 1px;
+}
+
+.line {
+  stroke: var(--gpu);
+  stroke-width: calc(2 * var(--u));
+  stroke-linejoin: round;
+}
+
+.hint {
+  position: absolute;
+  inset: 0;
+  width: max-content;
+  max-width: 100%;
+  height: max-content;
+  margin: auto;
+  padding: 0 calc(12 * var(--u));
+  background: var(--card);
+  color: var(--muted);
+  font-size: calc(16 * var(--u));
+  text-align: center;
+}
+
+.result {
+  display: flex;
+  flex: 1;
+  align-items: flex-end;
+  gap: calc(12 * var(--u));
+  min-height: 0;
+}
+
+.text {
+  flex: 1;
+  align-self: center;
+  min-width: 0;
+}
+
+.speeds {
+  display: flex;
+  gap: calc(40 * var(--u));
+  font-size: calc(32 * var(--u));
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  line-height: 1.1;
+  white-space: nowrap;
+}
+
+.speeds > span {
+  display: flex;
+  align-items: center;
+  gap: calc(4 * var(--u));
+}
+
+.run {
+  flex: none;
+  width: calc(150 * var(--u));
+  height: calc(48 * var(--u));
+  border-radius: calc(24 * var(--u));
+  background: var(--accent);
+  color: var(--on-accent);
+  font-size: calc(16 * var(--u));
+  font-variant-numeric: tabular-nums;
+}
+
+.run:active {
+  background: var(--accent-pressed);
+}
+
+.run:disabled {
+  background: var(--card-hi);
+  color: var(--muted);
+}
+
+:global([data-nav='bottom']) .card {
+  padding-top: calc(8 * var(--u));
+  padding-bottom: calc(8 * var(--u));
+}
+
+:global([data-nav='bottom']) .view {
+  grid-template-rows: minmax(0, 106fr) minmax(0, 92fr) minmax(0, 100fr);
+  gap: calc(8 * var(--u));
+}
+
+:global([data-nav='bottom']) .latency,
+:global([data-nav='bottom']) .speeds {
+  font-size: calc(28 * var(--u));
+}
+
+:global([data-nav='bottom']) .run {
+  height: calc(40 * var(--u));
+}
+
+@media (orientation: portrait) {
+  :global([data-nav='bottom']) .view {
+    grid-template-rows: minmax(0, 250fr) minmax(0, 150fr) minmax(0, 190fr);
+    gap: calc(12 * var(--u));
+  }
+
+  .top {
+    grid-template-rows: repeat(2, minmax(0, 1fr));
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .top > :last-child {
+    grid-column: 1 / -1;
+  }
+
+  .result {
+    flex-direction: column;
+    align-items: stretch;
+    justify-content: space-between;
+  }
+
+  .text {
+    flex: none;
+    align-self: auto;
+  }
+
+  .run {
+    width: 100%;
+  }
+}

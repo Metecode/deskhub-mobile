@@ -1,0 +1,10 @@
+.icon {
+  display: inline-block;
+  flex: none;
+  width: 1em;
+  height: 1em;
+  overflow: hidden;
+  font-family: 'Material Icons';
+  font-weight: 400;
+  line-height: 1;
+}

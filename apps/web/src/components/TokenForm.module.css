@@ -1,0 +1,55 @@
+/* Plain pixels: the on-screen keyboard shrinks the viewport, and --u with it. */
+.form {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 12px;
+  max-width: 480px;
+  height: 100dvh;
+  margin: 0 auto;
+  padding: 16px 20px;
+  font-size: 15px;
+  line-height: 1.4;
+}
+
+.title {
+  font-size: 22px;
+  font-weight: 600;
+}
+
+.hint {
+  color: var(--muted);
+}
+
+.row {
+  display: flex;
+  gap: 10px;
+}
+
+.input {
+  flex: 1;
+  min-width: 0;
+  padding: 10px 14px;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  background: var(--card);
+  color: var(--text);
+  font: inherit;
+  font-size: 16px;
+}
+
+.input:focus-visible,
+.button:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+.button {
+  padding: 10px 18px;
+  border: 0;
+  border-radius: 12px;
+  background: var(--accent);
+  color: var(--on-accent);
+  font: inherit;
+  font-weight: 600;
+}

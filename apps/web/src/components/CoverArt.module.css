@@ -1,0 +1,13 @@
+.frame {
+  display: grid;
+  flex: none;
+  place-items: center;
+  overflow: hidden;
+  border-radius: calc(12 * var(--u));
+  background: var(--card-hi);
+}
+
+.image {
+  width: 100%;
+  height: 100%;
+}

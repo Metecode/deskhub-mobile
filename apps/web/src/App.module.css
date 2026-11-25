@@ -1,0 +1,54 @@
+.app {
+  display: flex;
+  height: 100dvh;
+  overflow: clip;
+}
+
+.app[data-nav='right'] {
+  flex-direction: row-reverse;
+}
+
+.app[data-nav='bottom'] {
+  flex-direction: column-reverse;
+}
+
+/* Against burn-in. Not the layers above them: those have to cover everything. */
+.app > nav,
+.page {
+  position: relative;
+  top: var(--shift-y, 0);
+  left: var(--shift-x, 0);
+}
+
+.app > nav,
+.app header[data-dims] {
+  transition: opacity 1s;
+}
+
+.app[data-dim] > nav,
+.app[data-dim] header[data-dims] {
+  opacity: 0.45;
+}
+
+.page {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  min-width: 0;
+  min-height: 0;
+  padding: max(calc(10 * var(--u)), env(safe-area-inset-top)) calc(20 * var(--u))
+    max(calc(10 * var(--u)), env(safe-area-inset-bottom));
+}
+
+.app[data-nav='left'] > .page {
+  padding-right: max(calc(20 * var(--u)), env(safe-area-inset-right));
+}
+
+.app[data-nav='right'] > .page {
+  padding-left: max(calc(20 * var(--u)), env(safe-area-inset-left));
+}
+
+.app[data-nav='bottom'] > .page {
+  padding: max(calc(8 * var(--u)), env(safe-area-inset-top)) max(calc(20 * var(--u)), env(safe-area-inset-right))
+    calc(8 * var(--u)) max(calc(20 * var(--u)), env(safe-area-inset-left));
+}

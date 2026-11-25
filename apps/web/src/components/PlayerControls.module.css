@@ -1,0 +1,91 @@
+.seek {
+  width: 100%;
+}
+
+/* The touch area is higher than the track. */
+.slider {
+  display: block;
+  width: 100%;
+  height: calc(40 * var(--u));
+  margin: 0;
+  background: none;
+  appearance: none;
+  touch-action: none;
+}
+
+.slider::-webkit-slider-runnable-track {
+  height: calc(8 * var(--u));
+  border-radius: calc(4 * var(--u));
+  background: linear-gradient(to right, var(--text) var(--done), var(--track) var(--done));
+}
+
+.slider::-webkit-slider-thumb {
+  width: calc(20 * var(--u));
+  height: calc(20 * var(--u));
+  margin-top: calc(-6 * var(--u));
+  border-radius: 50%;
+  background: var(--text);
+  appearance: none;
+}
+
+.slider:disabled::-webkit-slider-thumb {
+  visibility: hidden;
+}
+
+.times {
+  display: flex;
+  justify-content: space-between;
+  color: var(--muted);
+  font-variant-numeric: tabular-nums;
+}
+
+.buttons {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: calc(28 * var(--u));
+}
+
+.buttons button {
+  display: grid;
+  place-items: center;
+  width: calc(68 * var(--u));
+  height: calc(68 * var(--u));
+  border: 1px solid var(--border);
+  border-radius: 50%;
+  background: var(--card);
+}
+
+.buttons .play {
+  width: calc(92 * var(--u));
+  height: calc(92 * var(--u));
+  border: 0;
+  background: var(--text);
+  color: var(--bg);
+}
+
+.small {
+  gap: calc(20 * var(--u));
+}
+
+.small button {
+  width: calc(52 * var(--u));
+  height: calc(52 * var(--u));
+  border: 0;
+  background: var(--card-hi);
+}
+
+.small .play {
+  width: calc(68 * var(--u));
+  height: calc(68 * var(--u));
+}
+
+.buttons button:active {
+  background: var(--pressed);
+  transform: scale(0.92);
+}
+
+.buttons button:disabled {
+  opacity: 0.4;
+  transform: none;
+}

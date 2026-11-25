@@ -1,0 +1,291 @@
+.page {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: calc(10 * var(--u));
+  min-height: 0;
+}
+
+.head {
+  display: flex;
+  flex: none;
+  align-items: center;
+  gap: calc(14 * var(--u));
+  height: max(44px, calc(44 * var(--u)));
+}
+
+.name {
+  min-width: 0;
+  height: 100%;
+  overflow: hidden;
+  font-size: calc(32 * var(--u));
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.name:active:enabled {
+  color: var(--muted);
+}
+
+.chip {
+  flex: none;
+  padding: calc(5 * var(--u)) calc(12 * var(--u));
+  border-radius: calc(14 * var(--u));
+  background: color-mix(in srgb, var(--state) 30%, transparent);
+  color: color-mix(in srgb, var(--state) 53%, white);
+  font-size: calc(16 * var(--u));
+  line-height: 1.1;
+}
+
+.count {
+  flex: none;
+  margin-left: auto;
+  color: var(--muted);
+  font-size: calc(16 * var(--u));
+  white-space: pre;
+}
+
+.body {
+  display: grid;
+  flex: 1;
+  grid-template-rows: minmax(0, 112fr) minmax(0, 120fr) minmax(0, 118fr);
+  grid-template-columns: minmax(0, 300fr) minmax(0, 360fr);
+  gap: calc(12 * var(--u));
+  min-height: 0;
+}
+
+.card {
+  min-width: 0;
+  min-height: 0;
+  padding: calc(12 * var(--u)) calc(16 * var(--u));
+  overflow: hidden;
+  border: 1px solid var(--border);
+  border-radius: calc(16 * var(--u));
+  background: var(--card);
+}
+
+.caption {
+  color: var(--muted);
+  font-size: inherit;
+  font-weight: 500;
+  letter-spacing: calc(2 * var(--u));
+}
+
+.small {
+  min-height: 1.2em;
+  overflow: hidden;
+  color: var(--muted);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* ---- progress ---- */
+
+.progress {
+  display: flex;
+  flex-direction: column;
+  grid-row: 1 / -1;
+  align-items: center;
+  text-align: center;
+}
+
+.progress > p {
+  flex: none;
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.dial {
+  position: relative;
+  flex: 1;
+  min-height: 0;
+  max-width: 100%;
+  max-height: calc(220 * var(--u));
+  aspect-ratio: 1;
+  margin: auto;
+}
+
+.dial svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+.track,
+.arc {
+  fill: none;
+  stroke-width: 16;
+  stroke-linecap: round;
+}
+
+.track {
+  stroke: var(--card-hi);
+}
+
+.pct,
+.remaining {
+  position: absolute;
+  width: 100%;
+}
+
+.pct {
+  top: calc(50% - 38 * var(--u));
+  font-size: calc(46 * var(--u));
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+
+.pct[data-text] {
+  top: calc(50% - 22 * var(--u));
+  font-size: calc(32 * var(--u));
+}
+
+.remaining {
+  top: calc(50% + 22 * var(--u));
+  color: var(--muted);
+  font-size: calc(16 * var(--u));
+}
+
+.done {
+  min-height: 1.2em;
+  font-size: calc(20 * var(--u));
+}
+
+.layer {
+  min-height: 1.2em;
+  margin-top: calc(4 * var(--u));
+  color: var(--muted);
+  font-size: calc(16 * var(--u));
+}
+
+.error {
+  min-height: 1.2em;
+  margin-top: calc(4 * var(--u));
+  color: var(--bad);
+}
+
+/* ---- job ---- */
+
+.job {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+.file {
+  overflow: hidden;
+  font-size: calc(24 * var(--u));
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* ---- temperatures ---- */
+
+.temperatures {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+}
+
+.temperatures > div {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+.tempName {
+  display: flex;
+  align-items: center;
+  gap: calc(6 * var(--u));
+  color: var(--muted);
+}
+
+.temp {
+  font-size: calc(32 * var(--u));
+  font-variant-numeric: tabular-nums;
+  line-height: 1.1;
+}
+
+/* ---- filament ---- */
+
+.filament {
+  display: flex;
+  flex-direction: column;
+}
+
+.slots {
+  display: flex;
+  flex: 1;
+  min-height: 0;
+}
+
+.slot {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: calc(6 * var(--u));
+  align-items: center;
+  justify-content: center;
+  min-width: 0;
+  color: var(--muted);
+}
+
+.slot[data-active] {
+  color: var(--text);
+}
+
+.swatch {
+  flex: none;
+  width: calc(30 * var(--u));
+  height: calc(30 * var(--u));
+  border-radius: 50%;
+}
+
+.swatch[data-dark] {
+  border: 1px solid var(--text);
+}
+
+.slot[data-active] .swatch {
+  outline: calc(2 * var(--u)) solid var(--accent);
+  outline-offset: calc(3 * var(--u));
+}
+
+.slotType {
+  max-width: 100%;
+  overflow: hidden;
+  white-space: nowrap;
+}
+
+.none {
+  margin-top: calc(10 * var(--u));
+  color: var(--dim);
+  font-size: calc(16 * var(--u));
+}
+
+:global([data-nav='bottom']) .card {
+  padding-top: calc(8 * var(--u));
+  padding-bottom: calc(8 * var(--u));
+}
+
+:global([data-nav='bottom']) .body {
+  grid-template-rows: minmax(0, 92fr) minmax(0, 100fr) minmax(0, 100fr);
+  gap: calc(8 * var(--u));
+}
+
+:global([data-nav='bottom']) .swatch {
+  width: calc(26 * var(--u));
+  height: calc(26 * var(--u));
+}
+
+@media (orientation: portrait) {
+  :global([data-nav='bottom']) .body {
+    grid-template-rows: minmax(0, 300fr) minmax(0, 100fr) minmax(0, 110fr) minmax(0, 110fr);
+    grid-template-columns: minmax(0, 1fr);
+    gap: calc(12 * var(--u));
+  }
+
+  .progress {
+    grid-row: auto;
+  }
+}

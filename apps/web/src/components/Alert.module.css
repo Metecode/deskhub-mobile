@@ -1,0 +1,162 @@
+.strip,
+.panel {
+  border: calc(2 * var(--u)) solid var(--accent);
+  border-radius: calc(16 * var(--u));
+  background: var(--card);
+}
+
+.strip {
+  display: flex;
+  align-items: center;
+  gap: calc(8 * var(--u));
+  height: 100%;
+  padding: 0 calc(14 * var(--u));
+}
+
+.badge {
+  display: grid;
+  flex: none;
+  place-items: center;
+  width: calc(40 * var(--u));
+  height: calc(40 * var(--u));
+  margin-right: calc(4 * var(--u));
+  border-radius: calc(12 * var(--u));
+  background: var(--card-hi);
+}
+
+.text {
+  flex: 1;
+  min-width: 0;
+}
+
+.text > *,
+.title,
+.detail {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.kind {
+  color: var(--accent);
+}
+
+.line {
+  margin-top: calc(5 * var(--u));
+  font-size: calc(16 * var(--u));
+}
+
+.round,
+.roundMain {
+  position: relative;
+  display: grid;
+  flex: none;
+  place-items: center;
+  width: calc(40 * var(--u));
+  height: calc(40 * var(--u));
+  border-radius: 50%;
+  background: var(--card-hi);
+}
+
+/* A larger touch area: to the middle of the gap, and further up and down. */
+.round::after,
+.roundMain::after {
+  position: absolute;
+  inset: calc(-12 * var(--u)) calc(-4 * var(--u));
+  content: '';
+}
+
+.round:active,
+.pill:active {
+  background: var(--pressed);
+}
+
+.roundMain,
+.pillMain {
+  background: var(--accent);
+  color: var(--on-accent);
+}
+
+.roundMain:active,
+.pillMain:active {
+  background: var(--accent-pressed);
+}
+
+.panel {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  padding: calc(16 * var(--u)) calc(18 * var(--u));
+  overflow: hidden;
+}
+
+.head {
+  display: flex;
+  align-items: center;
+  gap: calc(8 * var(--u));
+}
+
+.caption {
+  color: var(--accent);
+  letter-spacing: calc(2 * var(--u));
+}
+
+.project {
+  min-height: 1.2em;
+  margin-top: calc(4 * var(--u));
+  color: var(--muted);
+}
+
+.title {
+  flex: none;
+  margin-top: calc(14 * var(--u));
+  font-size: calc(24 * var(--u));
+}
+
+.detail {
+  flex: none;
+  margin-top: calc(5 * var(--u));
+  color: var(--muted);
+  font-size: calc(16 * var(--u));
+}
+
+.buttons {
+  display: flex;
+  gap: calc(12 * var(--u));
+  justify-content: flex-end;
+  margin-top: auto;
+}
+
+.pill,
+.pillMain {
+  width: calc(168 * var(--u));
+  height: calc(46 * var(--u));
+  border: 1px solid var(--border);
+  border-radius: calc(23 * var(--u));
+  font-size: calc(20 * var(--u));
+}
+
+.pill {
+  background: var(--card-hi);
+}
+
+.pillMain {
+  border: 0;
+}
+
+:global([data-nav='bottom']) .panel {
+  padding-top: calc(10 * var(--u));
+  padding-bottom: calc(10 * var(--u));
+}
+
+:global([data-nav='bottom']) .title {
+  margin-top: calc(8 * var(--u));
+}
+
+@media (orientation: portrait) {
+  .pill,
+  .pillMain {
+    flex: 1;
+    width: auto;
+  }
+}

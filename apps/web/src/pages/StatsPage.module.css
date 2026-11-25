@@ -1,0 +1,145 @@
+.page {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: calc(12 * var(--u));
+  min-height: 0;
+}
+
+.switch {
+  display: flex;
+  flex: none;
+  align-self: flex-start;
+  padding: calc(3 * var(--u));
+  border: 1px solid var(--border);
+  border-radius: calc(20 * var(--u));
+  background: var(--card);
+}
+
+.switch button {
+  position: relative;
+  width: calc(128 * var(--u));
+  height: calc(32 * var(--u));
+  border-radius: calc(16 * var(--u));
+  color: var(--muted);
+  font-size: calc(16 * var(--u));
+}
+
+/* A larger touch area. */
+.switch button::after {
+  position: absolute;
+  inset: calc(-8 * var(--u)) 0;
+  content: '';
+}
+
+.switch button[aria-pressed='true'] {
+  background: var(--accent);
+  color: var(--on-accent);
+}
+
+.gauges {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: calc(12 * var(--u));
+}
+
+.history {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: calc(10 * var(--u));
+  min-height: 0;
+  padding: calc(14 * var(--u)) calc(16 * var(--u));
+  border: 1px solid var(--border);
+  border-radius: calc(16 * var(--u));
+  background: var(--card);
+}
+
+.row {
+  display: flex;
+  align-items: baseline;
+  gap: calc(20 * var(--u));
+  min-height: calc(20 * var(--u));
+}
+
+.caption {
+  color: var(--muted);
+  font-size: inherit;
+  font-weight: 500;
+  letter-spacing: calc(2 * var(--u));
+  white-space: nowrap;
+}
+
+.cpuKey::before,
+.gpuKey::before {
+  content: '• ';
+}
+
+.cpuKey {
+  color: var(--cpu);
+}
+
+.gpuKey {
+  color: var(--gpu);
+}
+
+.network {
+  display: flex;
+  gap: calc(16 * var(--u));
+  margin-left: auto;
+  font-size: calc(16 * var(--u));
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.chart {
+  position: relative;
+  flex: 1;
+  min-height: 0;
+}
+
+.hint {
+  position: absolute;
+  inset: 0;
+  width: max-content;
+  max-width: 100%;
+  height: max-content;
+  margin: auto;
+  padding: 0 calc(12 * var(--u));
+  background: var(--card);
+  color: var(--muted);
+  font-size: calc(20 * var(--u));
+  text-align: center;
+}
+
+.names {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  color: var(--dim);
+  text-overflow: ellipsis;
+  white-space: pre;
+}
+
+.disk {
+  color: var(--muted);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+@media (orientation: portrait) {
+  .gauges {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  /* Not enough room for the legend and the network rates on one line. */
+  .history .row {
+    flex-wrap: wrap;
+    row-gap: calc(6 * var(--u));
+  }
+
+  .network {
+    width: 100%;
+    margin-left: 0;
+  }
+}

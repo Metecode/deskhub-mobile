@@ -1,0 +1,234 @@
+.page {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: calc(12 * var(--u));
+  min-height: 0;
+}
+
+.card {
+  display: flex;
+  flex: none;
+  flex-direction: column;
+  min-width: 0;
+  min-height: 0;
+  padding: calc(14 * var(--u)) calc(16 * var(--u));
+  overflow: hidden;
+  border: 1px solid var(--border);
+  border-radius: calc(16 * var(--u));
+  background: var(--card);
+}
+
+.caption {
+  flex: none;
+  color: var(--muted);
+  font-size: inherit;
+  font-weight: 500;
+  letter-spacing: calc(2 * var(--u));
+  white-space: nowrap;
+}
+
+.row {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: calc(16 * var(--u));
+}
+
+.summary {
+  min-width: 0;
+  overflow: hidden;
+  color: var(--muted);
+  text-overflow: ellipsis;
+  white-space: pre;
+}
+
+/* The newest week on the edge. */
+.year {
+  display: flex;
+  justify-content: flex-end;
+  min-height: calc(110 * var(--u));
+  margin-top: calc(6 * var(--u));
+}
+
+.cards {
+  display: grid;
+  flex: 1;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: calc(12 * var(--u));
+  min-height: 0;
+}
+
+.spread {
+  justify-content: space-between;
+}
+
+.streak {
+  font-size: calc(46 * var(--u));
+  font-weight: 600;
+  line-height: 1.1;
+  white-space: nowrap;
+}
+
+.streak span {
+  color: var(--muted);
+  font-size: calc(20 * var(--u));
+  font-weight: 500;
+}
+
+.facts {
+  font-size: calc(16 * var(--u));
+}
+
+.facts > div {
+  display: flex;
+  justify-content: space-between;
+  gap: calc(8 * var(--u));
+  white-space: nowrap;
+}
+
+.facts > div + div {
+  margin-top: calc(5 * var(--u));
+}
+
+.facts dt {
+  color: var(--muted);
+}
+
+/* ---- this week ---- */
+
+.weekCount {
+  flex: none;
+  overflow: hidden;
+  font-size: calc(32 * var(--u));
+  font-weight: 600;
+  line-height: 1.2;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.weekCount span {
+  margin-left: calc(4 * var(--u));
+  color: var(--muted);
+  font-size: calc(14 * var(--u));
+  font-weight: 500;
+}
+
+.weekCount span[data-more] {
+  color: var(--good);
+}
+
+.bars {
+  display: flex;
+  flex: 1;
+  min-height: 0;
+  margin-top: calc(6 * var(--u));
+}
+
+.day {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  align-items: center;
+  min-width: 0;
+}
+
+.pair {
+  display: flex;
+  flex: 1;
+  gap: calc(2 * var(--u));
+  align-items: flex-end;
+  min-height: 0;
+}
+
+.pair span {
+  width: calc(9 * var(--u));
+  border-radius: calc(2 * var(--u));
+}
+
+.letter {
+  flex: none;
+  margin-top: calc(3 * var(--u));
+  color: var(--dim);
+}
+
+.letter[data-today] {
+  color: var(--text);
+}
+
+/* ---- repositories ---- */
+
+.repos {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  justify-content: space-between;
+  min-height: 0;
+  margin-top: calc(8 * var(--u));
+}
+
+.repo {
+  display: flex;
+  justify-content: space-between;
+  gap: calc(10 * var(--u));
+  font-size: calc(16 * var(--u));
+}
+
+.repo > :first-child {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.repo > :last-child {
+  color: var(--muted);
+  font-variant-numeric: tabular-nums;
+}
+
+.repoBar {
+  display: block;
+  height: calc(4 * var(--u));
+  margin-top: calc(3 * var(--u));
+  border-radius: calc(2 * var(--u));
+}
+
+.none {
+  margin-top: calc(10 * var(--u));
+  color: var(--muted);
+  font-size: calc(16 * var(--u));
+}
+
+:global([data-nav='bottom']) .page,
+:global([data-nav='bottom']) .cards {
+  gap: calc(8 * var(--u));
+}
+
+:global([data-nav='bottom']) .card {
+  padding-top: calc(8 * var(--u));
+  padding-bottom: calc(8 * var(--u));
+}
+
+@media (orientation: portrait) {
+  .row {
+    flex-direction: column;
+    gap: calc(4 * var(--u));
+  }
+
+  .summary {
+    max-width: 100%;
+  }
+
+  .year {
+    min-height: calc(82 * var(--u));
+  }
+
+  .cards {
+    grid-template-rows: minmax(0, 150fr) minmax(0, 190fr) minmax(0, 190fr);
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .pair span {
+    width: calc(14 * var(--u));
+  }
+}

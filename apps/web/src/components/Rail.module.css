@@ -1,0 +1,136 @@
+/* Along a side unless App puts it at the bottom (data-nav). A tab is at least 44 px both ways. */
+.rail {
+  display: flex;
+  flex: none;
+  flex-direction: column;
+  width: calc(88 * var(--u) + env(safe-area-inset-left));
+  padding: calc(6 * var(--u)) 0 max(calc(8 * var(--u)), env(safe-area-inset-bottom)) env(safe-area-inset-left);
+  border-right: 1px solid var(--border);
+  background: var(--rail);
+}
+
+.tabs {
+  --fade: 26px;
+
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  align-items: center;
+  min-height: 0;
+  overflow: hidden auto;
+  scrollbar-width: none;
+  overscroll-behavior: contain;
+  scroll-padding: var(--fade);
+  mask-image: linear-gradient(var(--to), transparent, #000 var(--start), #000 calc(100% - var(--end)), transparent);
+  --to: to bottom;
+  --start: 0px;
+  --end: 0px;
+}
+
+.tabs[data-before] {
+  --start: var(--fade);
+}
+
+.tabs[data-after] {
+  --end: var(--fade);
+}
+
+.tab {
+  position: relative;
+  display: grid;
+  flex: 1 0 var(--tab, 44px);
+  place-items: center;
+  width: max(44px, calc(64 * var(--u)));
+  max-height: max(44px, calc(60 * var(--u)));
+  border-radius: calc(14 * var(--u));
+  color: var(--muted);
+}
+
+.tab[aria-current] {
+  background: var(--card-hi);
+  color: var(--text);
+}
+
+.tab:active {
+  background: var(--pressed);
+}
+
+.text {
+  font-size: calc(16 * var(--u));
+  font-variant-numeric: tabular-nums;
+}
+
+.badge {
+  position: absolute;
+  top: calc(5 * var(--u));
+  right: calc(8 * var(--u));
+  width: calc(12 * var(--u));
+  height: calc(12 * var(--u));
+  border: calc(2 * var(--u)) solid var(--rail);
+  border-radius: 50%;
+}
+
+/* Side by side: that leaves room for another tab. It can be touched down to the screen's edge. */
+.status {
+  display: flex;
+  flex: none;
+  gap: calc(8 * var(--u));
+  align-items: center;
+  justify-content: center;
+  min-height: 44px;
+  margin-bottom: calc(-8 * var(--u));
+}
+
+.good {
+  color: var(--good);
+}
+
+.bad {
+  color: var(--bad);
+}
+
+.off {
+  color: var(--dim);
+}
+
+:global([data-nav='right']) > .rail {
+  width: calc(88 * var(--u) + env(safe-area-inset-right));
+  padding-right: env(safe-area-inset-right);
+  padding-left: 0;
+  border-right: 0;
+  border-left: 1px solid var(--border);
+}
+
+:global([data-nav='bottom']) > .rail {
+  flex-direction: row;
+  align-items: center;
+  width: 100%;
+  height: calc(max(52px, 64 * var(--u)) + env(safe-area-inset-bottom));
+  padding: 0 max(calc(14 * var(--u)), env(safe-area-inset-right)) env(safe-area-inset-bottom)
+    max(calc(14 * var(--u)), env(safe-area-inset-left));
+  border-top: 1px solid var(--border);
+  border-right: 0;
+  border-left: 0;
+}
+
+:global([data-nav='bottom']) > .rail .tabs {
+  --to: to right;
+
+  flex-direction: row;
+  min-width: 0;
+  overflow: auto hidden;
+}
+
+:global([data-nav='bottom']) > .rail .tab {
+  width: auto;
+  max-width: max(44px, calc(84 * var(--u)));
+  height: max(44px, calc(52 * var(--u)));
+  max-height: none;
+}
+
+:global([data-nav='bottom']) > .rail .status {
+  flex-direction: column;
+  gap: calc(2 * var(--u));
+  min-width: 44px;
+  margin: 0 calc(-14 * var(--u)) 0 0;
+}

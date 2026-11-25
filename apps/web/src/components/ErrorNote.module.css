@@ -1,0 +1,38 @@
+/* Plain pixels: it has to be readable when the layout isn't. */
+.note {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: 12px;
+  align-items: center;
+  justify-content: center;
+  min-height: 100%;
+  padding: 16px;
+  font-size: 15px;
+  line-height: 1.4;
+  text-align: center;
+}
+
+.title {
+  font-size: 20px;
+  font-weight: 600;
+}
+
+.text {
+  max-width: 100%;
+  color: var(--muted);
+  overflow-wrap: anywhere;
+}
+
+.button {
+  min-height: 44px;
+  padding: 0 24px;
+  border-radius: 22px;
+  background: var(--accent);
+  color: var(--on-accent);
+  font-weight: 600;
+}
+
+.button:active {
+  background: var(--accent-pressed);
+}
