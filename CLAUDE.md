@@ -48,30 +48,29 @@ Companion (upstream, Windows, Python) --ws /ws--> Bridge (Node, on the PC) --ws 
 - **0: PoC.** Bridge, protocol, PC Stats. Plan: `docs/plan-phase0.md`.
 - **1:** Home (the companion's grid), media, calendar, weather, shortcuts. Plan: `docs/plan-phase1.md`.
 - **2:** Claude/Codex, alerts, timer, internet, sleep and night mode. Plan: `docs/plan-phase2.md`.
-- **3:** Steam, printers, GitHub: pages and Home widgets.
+- **3:** Steam, printers, GitHub: pages and Home widgets. Plan: `docs/plan-phase3.md`.
 - **4:** Kiosk, finishing touches. OLED burn-in (the phone is a Galaxy A52, Super AMOLED): shift the
   pixels now and then, dim static elements such as the navigation bar and the clock.
 
 ## Where we are
 
-Phases 0 and 1 are done and verified on the phone by the user (branches `phase-0`, `phase-1`).
-Phase 2, branch `phase-2`:
+Phases 0 to 2 are done and verified on the phone by the user (branches `phase-0` to `phase-2`).
+Phase 3, branch `phase-3`:
 
 - [x] Plan approved and written down
-- [x] Protocol: schemas and normalizers
-- [x] Bridge: `pc_power` test, mock mode
-- [x] Web: AI page and Home widget
-- [x] Web: sound, alerts
-- [x] Web: timer
-- [x] Web: Internet view and Home widget
-- [x] Web: dark layer
-- [x] README, docs/protocol.md
-- [x] Verified with the real companion (AI page, alerts and their buttons, Internet, a speed test)
-- [x] Verified on the phone (by the user)
+- [ ] Protocol: schemas, normalizers, portraits
+- [ ] Bridge: game covers
+- [ ] Bridge: mock mode
+- [ ] Web: navigation bar
+- [ ] Web: games page and widget
+- [ ] Web: printer page and widget
+- [ ] Web: GitHub page and widget
+- [ ] `tools/fake-moonraker.mjs`
+- [ ] README, docs/protocol.md
+- [ ] Verified with the real companion
+- [ ] Verified on the phone (by the user)
 
 Update this list with every step.
-
-Phase 2 is done. Next: the phase 3 plan, for approval.
 
 Not verified yet:
 
