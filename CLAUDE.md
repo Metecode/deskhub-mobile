@@ -64,12 +64,12 @@ Phase 0, branch `phase-0`.
 - [x] Web: connection and theme
 - [x] Web: PC Stats page
 - [x] README, NOTICE, LICENSE, docs/protocol.md
-- [x] Verified with the real companion (stats, connect, disconnect; media covers not, see below)
+- [x] Verified with the real companion (stats, connect, disconnect, media covers)
 - [ ] Verified on the phone (by the user)
 
 Update this list with every step.
 
 Next: the user tries it on the phone, then phase 1.
 
-Not verified yet: binary frames from a real companion (the test install had no Windows media
-session support, so it sent none; they are covered by unit tests only).
+Not verified yet: the other binary frames, `ARS1` and `STM1`, from a real companion (covered by
+unit tests only). `ART1` is verified; its id matches `art_id` in the `media` message.
