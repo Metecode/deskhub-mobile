@@ -65,11 +65,11 @@ Phase 0, branch `phase-0`.
 - [x] Web: PC Stats page
 - [x] README, NOTICE, LICENSE, docs/protocol.md
 - [x] Verified with the real companion (stats, connect, disconnect, media covers)
-- [ ] Verified on the phone (by the user)
+- [x] Verified on the phone (by the user)
 
 Update this list with every step.
 
-Next: the user tries it on the phone, then phase 1.
+Phase 0 is done. Next: the phase 1 plan, for approval.
 
 Not verified yet: the other binary frames, `ARS1` and `STM1`, from a real companion (covered by
 unit tests only). `ART1` is verified; its id matches `art_id` in the `media` message.
