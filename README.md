@@ -218,8 +218,8 @@ and it reloads after 30 seconds, under the same conditions and three times in 10
 Traffic isn't encrypted, so use a network you trust. Without `CLIENT_TOKEN` a device can't see
 anything or send commands, and only the commands the board itself can send are passed on.
 Other websites can't connect through your browser: only the PC's own addresses, on the bridge's
-port and Vite's 5173, and `CLIENT_ORIGINS` may. Only a program on the PC itself can connect as the
-companion.
+port and Vite's 5173, and `CLIENT_ORIGINS` may. Nor can they frame the app. Only a program on the PC
+itself can connect as the companion.
 
 The weather comes from [Open-Meteo](https://open-meteo.com), straight to the phone. Open-Meteo sees the
 phone's address and the coordinates in `.env` (two decimals are plenty), nothing else. Without

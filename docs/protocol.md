@@ -311,6 +311,7 @@ is refused like any unknown command.
 | Request | Answer |
 | --- | --- |
 | `GET /...` | The web app, a new build as soon as its `build.json` is there; without a build, `/` is a 200 with a hint |
+| any | With a `Content-Security-Policy` (`CONTENT_POLICY` in `apps/bridge/src/http.ts`), `nosniff` and `no-referrer`. What the web app comes to use must be allowed there. |
 | `GET /build.json` | `build`, and in `files` what the service worker keeps |
 | `POST /firmware` | 403 after reading the upload. Any other refusal makes `deskhub-flash` flash over USB. |
 | `GET /screenshot`, `/tap`, `/perf` | 403 without `?token=<HUB_TOKEN>`, else 501 |

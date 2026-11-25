@@ -7,8 +7,31 @@ import type { WebFiles } from './webFiles.js';
 
 const DEBUG_ENDPOINTS = new Set(['/screenshot', '/tap', '/perf']);
 
+/** What the web app does and nothing else: no other site may frame it or get a script into it. */
+const CONTENT_POLICY = [
+  "default-src 'none'",
+  "script-src 'self'",
+  "style-src 'self'",
+  "font-src 'self'",
+  "img-src 'self'",
+  "manifest-src 'self'",
+  "worker-src 'self'",
+  // /client is part of 'self'. Phones get the weather themselves.
+  "connect-src 'self' https://api.open-meteo.com",
+  "base-uri 'none'",
+  "form-action 'none'",
+  "frame-ancestors 'none'",
+].join('; ');
+
+const SECURITY_HEADERS: Readonly<Record<string, string>> = {
+  'Content-Security-Policy': CONTENT_POLICY,
+  'X-Content-Type-Options': 'nosniff',
+  // The link has the token in it.
+  'Referrer-Policy': 'no-referrer',
+};
+
 function text(res: ServerResponse, status: number, body: string, headers: Record<string, string> = {}): void {
-  res.writeHead(status, { 'Content-Type': 'text/plain; charset=utf-8', ...headers }).end(`${body}\n`);
+  res.writeHead(status, { ...SECURITY_HEADERS, 'Content-Type': 'text/plain; charset=utf-8', ...headers }).end(`${body}\n`);
 }
 
 /**
@@ -37,7 +60,10 @@ export function createHttpHandler(options: { hubToken: string; web: WebFiles }):
         : text(res, 403, 'bad token');
     }
     const file = web.get(pathname);
-    if (file) return void res.writeHead(200, file.headers).end(req.method === 'HEAD' ? undefined : file.body);
+    if (file) {
+      res.writeHead(200, { ...SECURITY_HEADERS, ...file.headers }).end(req.method === 'HEAD' ? undefined : file.body);
+      return;
+    }
     // deskhub-setup checks that "/" answers with a status below 500.
     if (pathname === '/' && !web.built)
       return text(res, 200, 'deskhub-mobile bridge: the web app is not built, run "pnpm build"');

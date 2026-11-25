@@ -59,6 +59,14 @@ describe('web app', () => {
     expect(manifest.headers.get('cache-control')).toBe('no-cache');
   });
 
+  it.each(['/', '/assets/app-abc123.js', '/nope', '/screenshot'])('lets no other site frame %s or add to it', async (path) => {
+    const { headers } = await fetch(url(path));
+    expect(headers.get('content-security-policy')).toContain("default-src 'none'");
+    expect(headers.get('content-security-policy')).toContain("frame-ancestors 'none'");
+    expect(headers.get('x-content-type-options')).toBe('nosniff');
+    expect(headers.get('referrer-policy')).toBe('no-referrer');
+  });
+
   it('sends headers alone for HEAD', async () => {
     const res = await fetch(url('/'), { method: 'HEAD' });
     expect(res.headers.get('content-length')).toBe('18');
