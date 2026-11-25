@@ -55,8 +55,8 @@ describe('parseCompanionMessage', () => {
     expect(parseCompanionMessage(JSON.stringify(raw))).toEqual({ kind: 'unknown', type: 'weather_v9', raw });
   });
 
-  it('treats the types without a schema, media_server included, as unknown', () => {
-    expect(TYPES_WITHOUT_SCHEMA).toContain('media_server');
+  it('treats the types without a schema as unknown', () => {
+    expect(TYPES_WITHOUT_SCHEMA).toContain('ai');
     for (const type of TYPES_WITHOUT_SCHEMA) expect(parseMessage({ type })).toMatchObject({ kind: 'unknown', type });
   });
 

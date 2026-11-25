@@ -56,7 +56,7 @@ Companion (upstream, Windows, Python) --ws /ws--> Bridge (Node, on the PC) --ws 
 Phase 0 is done, on branch `phase-0`, verified on the phone by the user. Phase 1, branch `phase-1`.
 
 - [x] Plan approved and written down
-- [ ] Protocol: schemas, normalizers, grid
+- [x] Protocol: schemas, normalizers, grid
 - [ ] Bridge: covers and weather settings
 - [ ] Bridge: mock mode
 - [ ] Web: navigation and layout

@@ -24,6 +24,13 @@ describe('parseArtFrame', () => {
     });
   });
 
+  it.each(['ART1', 'ARS1'] as const)('takes %s up to 320 x 320 and nothing larger', (magic) => {
+    expect(parseArtFrame(frame(magic, 320, 320))).toMatchObject({ width: 320, height: 320 });
+    for (const [w, h] of [[321, 320], [320, 321], [321, 1], [1, 321], [400, 240]] as const) {
+      expect(parseArtFrame(frame(magic, w, h)), `${w}x${h}`).toBeNull();
+    }
+  });
+
   it('reads STM1', () => {
     expect(parseArtFrame(frame('STM1', 400, 240, 2))).toEqual({
       magic: 'STM1',
@@ -47,7 +54,6 @@ describe('parseArtFrame', () => {
     ['a bare magic', frame('ART1', 1, 1).subarray(0, 4)],
     ['an unknown magic', frame('XYZ1', 2, 2)],
     ['no width', frame('ART1', 0, 2)],
-    ['art that is too wide', frame('ART1', 321, 1)],
     ['trailing bytes', frame('ART1', 2, 2, undefined, 1)],
     ['a cut off STM1 header', frame('STM1', 1, 1)],
     ['an unknown STM1 kind', frame('STM1', 2, 2, 3)],

@@ -1,5 +1,5 @@
 // Messages between the companion and the hub.
-// Source: firmware/main/hub_server.c (on_text, on_stats) and companion/deskhub/stats.py.
+// Source: firmware/main/hub_server.c (on_text and the on_* functions) and companion/deskhub/.
 //
 // The schemas are lenient on purpose: the board reads every field with a fallback
 // and never rejects a message, so every field is optional and nullable, and unknown
@@ -8,6 +8,7 @@ import * as z from 'zod';
 
 const num = z.number().nullish();
 const str = z.string().nullish();
+const flag = z.boolean().nullish();
 
 /** companion -> hub, the first message on a connection. */
 export const helloSchema = z.looseObject({
@@ -54,33 +55,148 @@ export const statsSchema = z.looseObject({
 });
 export type StatsMessage = z.infer<typeof statsSchema>;
 
+const nowPlaying = {
+  active: flag,
+  playing: flag,
+  title: str,
+  artist: str,
+  album: str,
+  source: str,
+  /** Seconds. */
+  pos: num,
+  dur: num,
+  can_seek: flag,
+  /** False: can't be remote controlled. Left out means it can. */
+  controls: flag,
+  /** The cover's id, 0 for none. The cover comes before the message. */
+  art_id: num,
+};
+
+/** companion -> hub, once a second (media.py). */
+export const mediaSchema = z.looseObject({ type: z.literal('media'), ...nowPlaying });
+export type MediaMessage = z.infer<typeof mediaSchema>;
+
+/** companion -> hub, once a second with a Plex or Jellyfin server (media_server.py), else on connecting. */
+export const mediaServerSchema = z.looseObject({
+  type: z.literal('media_server'),
+  configured: flag,
+  online: flag,
+  streams: num,
+  transcoding: num,
+  name: str,
+  /** "plex" or "jellyfin" */
+  kind: str,
+  version: str,
+  library: str,
+  ...nowPlaying,
+});
+export type MediaServerMessage = z.infer<typeof mediaServerSchema>;
+
+/** companion -> hub, on connecting and after every calendar refresh (calendar_feed.py). */
+export const eventsSchema = z.looseObject({
+  type: z.literal('events'),
+  events: z
+    .array(
+      z.looseObject({
+        title: str,
+        loc: str,
+        cal: str,
+        /** Epoch seconds. */
+        start: num,
+        end: num,
+        all_day: flag,
+        /** "#rrggbb" */
+        color: str,
+      }),
+    )
+    .nullish(),
+  /** How many days ahead it looked. */
+  days: num,
+});
+export type EventsMessage = z.infer<typeof eventsSchema>;
+
+/** companion -> hub, on connecting (shortcuts.py, hub_view). */
+export const tilesSchema = z.looseObject({
+  type: z.literal('tiles'),
+  tiles: z.array(z.looseObject({ label: str, icon: str, color: str })).nullish(),
+});
+export type TilesMessage = z.infer<typeof tilesSchema>;
+
+/** companion -> hub, when it changes: the indices of the tiles that are on. */
+export const tileStateSchema = z.looseObject({
+  type: z.literal('tile_state'),
+  on: z.array(z.number()).nullish(),
+});
+export type TileStateMessage = z.infer<typeof tileStateSchema>;
+
+/** companion -> hub, on connecting (pages.py, layout_message). */
+export const layoutSchema = z.looseObject({
+  type: z.literal('layout'),
+  pages: z.array(z.string()).nullish(),
+  /** "pages" is in the navigation bar's order. */
+  ordered: flag,
+  /** "left", "right" or "bottom" */
+  nav: str,
+  /** "off", "clock" or "none" */
+  pc_sleep: str,
+  /** Minutes after midnight, -1: off. */
+  night_start: num,
+  night_end: num,
+  /** "off" or "clock" */
+  night_style: str,
+});
+export type LayoutMessage = z.infer<typeof layoutSchema>;
+
+/** companion -> hub, on connecting (pages.py, home_message). */
+export const homeSchema = z.looseObject({
+  type: z.literal('home'),
+  header: flag,
+  /** Cells of the 5 x 3 grid. */
+  grid: z.array(z.looseObject({ widget: str, x: num, y: num, w: num, h: num })).nullish(),
+  /** The same as two columns, for boards from before the grid. */
+  left: z.array(z.string()).nullish(),
+  right: z.array(z.string()).nullish(),
+});
+export type HomeMessage = z.infer<typeof homeSchema>;
+
 const schemas = {
   hello: helloSchema,
   hello_ok: helloOkSchema,
   ping: pingSchema,
   stats: statsSchema,
+  media: mediaSchema,
+  media_server: mediaServerSchema,
+  events: eventsSchema,
+  tiles: tilesSchema,
+  tile_state: tileStateSchema,
+  layout: layoutSchema,
+  home: homeSchema,
 } as const;
 
 /** Types the board handles that don't have a schema yet. They parse as "unknown". */
 export const TYPES_WITHOUT_SCHEMA: ReadonlySet<string> = new Set([
-  'media',
-  'media_server',
-  'events',
-  'tiles',
   'ai',
   'claude',
   'printer',
-  'layout',
   'pc_power',
-  'home',
   'alert',
-  'tile_state',
   'steam',
   'net',
   'github',
 ]);
 
-export type KnownMessage = HelloMessage | HelloOkMessage | PingMessage | StatsMessage;
+export type KnownMessage =
+  | HelloMessage
+  | HelloOkMessage
+  | PingMessage
+  | StatsMessage
+  | MediaMessage
+  | MediaServerMessage
+  | EventsMessage
+  | TilesMessage
+  | TileStateMessage
+  | LayoutMessage
+  | HomeMessage;
 export type RawMessage = { type: string; [key: string]: unknown };
 
 export type ParsedMessage =

@@ -16,5 +16,11 @@ export const ONLINE_TIMEOUT_MS = 5000;
 /** Shortcut tiles (hub_model.h, HUB_MAX_TILES; shortcuts.py, MAX_TILES). */
 export const MAX_TILES = 16;
 
+/** Calendar events (hub_model.h, HUB_MAX_EVENTS; calendar_feed.py, MAX_EVENTS). */
+export const MAX_EVENTS = 16;
+
+/** Covers, in pixels per side (hub_server.c, on_binary). */
+export const MAX_COVER = 320;
+
 /** Longest alert id the board echoes back: char id[64] (hub_model.h, hub_alert_t). */
 export const ALERT_ID_MAX = 63;

@@ -4,6 +4,8 @@
 //   ART1 / ARS1: magic | u32 art_id | u16 w | u16 h | pixels
 //   STM1:        magic | u32 appid  | u16 w | u16 h | u16 kind | u16 0 | pixels
 
+import { MAX_COVER } from './limits.js';
+
 export type ArtFrame =
   | { magic: 'ART1' | 'ARS1'; id: number; width: number; height: number; pixelOffset: 12 }
   | { magic: 'STM1'; id: number; width: number; height: number; kind: number; pixelOffset: 16 };
@@ -26,7 +28,7 @@ export function parseArtFrame(data: Uint8Array): ArtFrame | null {
     return { magic, id, width, height, kind, pixelOffset: 16 };
   }
   if (magic === 'ART1' || magic === 'ARS1') {
-    if (width > 320 || height > 320) return null;
+    if (width > MAX_COVER || height > MAX_COVER) return null;
     if (data.byteLength !== 12 + width * height * 2) return null;
     return { magic, id, width, height, pixelOffset: 12 };
   }
