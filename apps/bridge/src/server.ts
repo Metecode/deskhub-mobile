@@ -2,6 +2,7 @@
 import { createServer, type IncomingMessage, type Server } from 'node:http';
 import type { AddressInfo } from 'node:net';
 import type { Duplex } from 'node:stream';
+import type { WeatherSettings } from '@deskhub-mobile/protocol';
 import { ClientEndpoint } from './clientEndpoint.js';
 import { CompanionEndpoint } from './companionEndpoint.js';
 import { createHttpHandler } from './http.js';
@@ -15,6 +16,8 @@ export interface BridgeOptions {
   clientToken: string;
   /** Origins allowed on /client besides this PC's own. */
   clientOrigins: readonly string[];
+  /** For phones to get the weather with. null: not set. */
+  weather: WeatherSettings | null;
   /** The built web app. */
   webRoot: string;
   log: Logger;
@@ -27,12 +30,13 @@ export class Bridge {
   readonly #server: Server;
 
   constructor(options: BridgeOptions) {
-    const { hubToken, clientToken, clientOrigins, webRoot, log } = options;
+    const { hubToken, clientToken, clientOrigins, weather, webRoot, log } = options;
     this.companion = new CompanionEndpoint(this.hub, hubToken, log);
     this.clients = new ClientEndpoint({
       hub: this.hub,
       token: clientToken,
       originAllowed: (origin) => allowedOrigins(this.port, clientOrigins).has(origin),
+      weather,
       sendCommand: (command) => this.companion.send(command),
       log,
     });

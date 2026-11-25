@@ -1,4 +1,5 @@
 import { randomBytes } from 'node:crypto';
+import type { WeatherSettings } from '@deskhub-mobile/protocol';
 import { parseOrigins } from './origins.js';
 
 export interface Config {
@@ -7,7 +8,28 @@ export interface Config {
   port: number;
   clientToken: string;
   clientOrigins: string[];
+  weather: WeatherSettings | null;
   warnings: string[];
+}
+
+function readWeather(value: (key: string) => string): WeatherSettings | null {
+  const coordinate = (key: string, max: number) => {
+    const text = value(key);
+    if (!text) throw new Error(`${key} is not set. The weather needs both WEATHER_LATITUDE and WEATHER_LONGITUDE.`);
+    const n = Number(text);
+    if (!(Math.abs(n) <= max)) throw new Error(`${key}: "${text}" is not a number from -${max} to ${max}.`);
+    return n;
+  };
+  const units = value('WEATHER_UNITS') || 'metric';
+  if (units !== 'metric' && units !== 'imperial')
+    throw new Error(`WEATHER_UNITS: "${units}" is neither "metric" nor "imperial".`);
+  if (!value('WEATHER_LATITUDE') && !value('WEATHER_LONGITUDE')) return null;
+  return {
+    latitude: coordinate('WEATHER_LATITUDE', 90),
+    longitude: coordinate('WEATHER_LONGITUDE', 180),
+    city: value('WEATHER_CITY'),
+    units,
+  };
 }
 
 /** Reads the settings. Throws an Error with a message for the user when one is missing or wrong. */
@@ -32,5 +54,13 @@ export function readConfig(env: Record<string, string | undefined>, mock: boolea
   const port = Number(portText);
   if (!Number.isInteger(port) || port < 1 || port > 65535) throw new Error(`HUB_PORT: "${portText}" is not a port.`);
 
-  return { mock, hubToken, port, clientToken, clientOrigins: parseOrigins(value('CLIENT_ORIGINS')), warnings };
+  return {
+    mock,
+    hubToken,
+    port,
+    clientToken,
+    clientOrigins: parseOrigins(value('CLIENT_ORIGINS')),
+    weather: readWeather(value),
+    warnings,
+  };
 }

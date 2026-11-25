@@ -182,6 +182,8 @@ describe('online', () => {
     ['a broken ART1', artFrame('ART1', 1)],
     ['a broken ARS1', artFrame('ARS1', 1)],
     ['a broken STM1', artFrame('STM1', 1)],
+    ['an ART1 over 320 x 320', artFrame('ART1', 0, 321, 320)],
+    ['an ARS1 over 320 x 320', artFrame('ARS1', 0, 320, 321)],
     ['an unknown magic', Buffer.from('XYZ1 and then some more')],
     ['a truncated frame', Buffer.from('ART1')],
   ])('%s neither keeps the PC online nor breaks the connection', async (_name, message) => {

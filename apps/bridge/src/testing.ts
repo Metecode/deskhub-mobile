@@ -17,6 +17,7 @@ export async function startBridge(options: Partial<BridgeOptions> = {}): Promise
     hubToken: HUB_TOKEN,
     clientToken: CLIENT_TOKEN,
     clientOrigins: [],
+    weather: null,
     webRoot: 'no-such-folder',
     log: silentLogger,
     ...options,
@@ -34,14 +35,17 @@ export interface Closed {
 export class TestSocket {
   readonly ws: WebSocket;
   readonly received: string[] = [];
+  /** Binary frames, apart from the messages. */
+  readonly binary: Buffer[] = [];
   readonly closed: Promise<Closed>;
   #waiting: (() => void)[] = [];
 
   constructor(port: number, path: string, options?: ClientOptions) {
     this.ws = new WebSocket(`ws://127.0.0.1:${port}${path}`, options);
     this.ws.on('error', () => {});
-    this.ws.on('message', (data) => {
-      this.received.push(String(data));
+    this.ws.on('message', (data: Buffer, isBinary) => {
+      if (isBinary) this.binary.push(data);
+      else this.received.push(String(data));
       for (const wake of this.#waiting.splice(0)) wake();
     });
     this.closed = new Promise((resolve) =>
@@ -103,8 +107,7 @@ export function paddedMessage(type: string, bytes: number): string {
 }
 
 /** A picture frame with the given magic. `extra` bytes make it invalid. */
-export function artFrame(magic: 'ART1' | 'ARS1' | 'STM1', extra = 0): Uint8Array {
-  const [w, h] = [4, 4];
+export function artFrame(magic: 'ART1' | 'ARS1' | 'STM1', extra = 0, w = 4, h = 4): Buffer {
   const data = Buffer.alloc((magic === 'STM1' ? 16 : 12) + w * h * 2 + extra);
   data.write(magic, 'latin1');
   data.writeUInt32LE(7, 4);

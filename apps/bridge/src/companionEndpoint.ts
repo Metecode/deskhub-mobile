@@ -135,8 +135,13 @@ export class CompanionEndpoint {
       return;
     }
     this.#hub.touch();
-    const kind = frame.magic === 'STM1' ? ` kind ${frame.kind}` : '';
-    this.#log.info(`${frame.magic} id ${frame.id} ${frame.width}x${frame.height}${kind} (not shown yet)`);
+    const what = `${frame.magic} id ${frame.id} ${frame.width}x${frame.height}`;
+    if (frame.magic === 'STM1') {
+      this.#log.info(`${what} kind ${frame.kind} (not shown yet)`);
+      return;
+    }
+    this.#log.info(what);
+    this.#hub.publishCover(frame.magic, data);
   }
 
   #drop(): void {

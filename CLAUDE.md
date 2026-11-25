@@ -57,7 +57,7 @@ Phase 0 is done, on branch `phase-0`, verified on the phone by the user. Phase 1
 
 - [x] Plan approved and written down
 - [x] Protocol: schemas, normalizers, grid
-- [ ] Bridge: covers and weather settings
+- [x] Bridge: covers and weather settings
 - [ ] Bridge: mock mode
 - [ ] Web: navigation and layout
 - [ ] Web: Media page

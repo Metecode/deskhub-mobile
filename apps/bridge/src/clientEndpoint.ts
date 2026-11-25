@@ -1,5 +1,5 @@
-// /client: phones and browsers. They get a snapshot, then live messages, and may
-// send whitelisted commands.
+// /client: phones and browsers. They get a snapshot and the covers, then live messages,
+// and may send whitelisted commands.
 import type { IncomingMessage } from 'node:http';
 import type { Duplex } from 'node:stream';
 import {
@@ -10,6 +10,7 @@ import {
   TOKEN_PARAM,
   type Command,
   type StatusMessage,
+  type WeatherSettings,
 } from '@deskhub-mobile/protocol';
 import { WebSocketServer, type WebSocket } from 'ws';
 import type { Hub } from './hub.js';
@@ -27,6 +28,8 @@ export interface ClientEndpointOptions {
   token: string;
   /** Called for every connection that has an Origin header. */
   originAllowed: (origin: string) => boolean;
+  /** For phones to get the weather with. null: not set. */
+  weather: WeatherSettings | null;
   /** Passes a command on. False when there's no companion to take it. */
   sendCommand: (command: Command) => boolean;
   log: Logger;
@@ -43,6 +46,7 @@ export class ClientEndpoint {
     this.#options = options;
     this.#wss.on('connection', (ws, req) => this.#onConnection(ws, req));
     options.hub.on('message', (text) => this.#broadcast(text));
+    options.hub.on('cover', (frame) => this.#broadcast(frame));
     options.hub.on('status', () => this.#broadcast(this.#status()));
     // Also while the PC is offline, so phones can tell that from losing the bridge.
     this.#heartbeat = setInterval(() => this.#broadcast(this.#status()), STATUS_INTERVAL_MS);
@@ -59,7 +63,7 @@ export class ClientEndpoint {
   }
 
   #onConnection(ws: WebSocket, req: IncomingMessage): void {
-    const { hub, log, originAllowed, token } = this.#options;
+    const { hub, log, originAllowed, token, weather } = this.#options;
     ws.on('error', (e) => log.warn(`client socket: ${e.message}`));
 
     // Refused with a close code rather than an HTTP status, because a page can't
@@ -87,7 +91,11 @@ export class ClientEndpoint {
       if (ws.readyState === ws.OPEN && !isBinary) this.#onCommand(data.toString('utf8'));
     });
     // The messages are JSON texts already.
-    ws.send(`{"type":"bridge.snapshot","pc_online":${hub.online},"messages":[${hub.messages.join(',')}]}`);
+    const messages = hub.messages.join(',');
+    ws.send(
+      `{"type":"bridge.snapshot","pc_online":${hub.online},"messages":[${messages}],"weather":${JSON.stringify(weather)}}`,
+    );
+    for (const frame of hub.covers) ws.send(frame);
   }
 
   #onCommand(text: string): void {
@@ -105,10 +113,10 @@ export class ClientEndpoint {
     return JSON.stringify({ type: 'bridge.status', pc_online: this.#options.hub.online } satisfies StatusMessage);
   }
 
-  #broadcast(text: string): void {
+  #broadcast(data: string | Buffer): void {
     for (const ws of this.#clients) {
       if (ws.bufferedAmount > MAX_BUFFERED) ws.terminate();
-      else if (ws.readyState === ws.OPEN) ws.send(text);
+      else if (ws.readyState === ws.OPEN) ws.send(data);
     }
   }
 }

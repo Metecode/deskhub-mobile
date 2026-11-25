@@ -10,6 +10,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { lanAddresses } from './origins.js';
 import type { Bridge } from './server.js';
 import {
+  artFrame,
   CLIENT_TOKEN,
   connectClient,
   connectCompanion,
@@ -93,7 +94,7 @@ describe('origin', () => {
 describe('snapshot', () => {
   it('is empty and offline without a companion', async () => {
     const client = await connectClient(bridge);
-    expect(await client.next()).toEqual({ type: 'bridge.snapshot', pc_online: false, messages: [] });
+    expect(await client.next()).toEqual({ type: 'bridge.snapshot', pc_online: false, messages: [], weather: null });
   });
 
   it('has the last message of every type, then live messages follow', async () => {
@@ -115,6 +116,7 @@ describe('snapshot', () => {
         { type: 'alert', clear: true },
         { type: 'weather_v9', x: [1] },
       ],
+      weather: null,
     });
     companion.send({ type: 'ping' });
     companion.send({ type: 'stats', cpu: 3 });
@@ -131,7 +133,72 @@ describe('snapshot', () => {
       type: 'bridge.snapshot',
       pc_online: false,
       messages: [{ type: 'stats', cpu: 1 }],
+      weather: null,
     });
+  });
+
+  it('has the weather settings', async () => {
+    const weather = { latitude: 41.01, longitude: 28.98, city: 'İstanbul', units: 'metric' } as const;
+    const other = await startBridge({ weather });
+    try {
+      expect(await (await connectClient(other)).next()).toMatchObject({ type: 'bridge.snapshot', weather });
+    } finally {
+      await other.close();
+    }
+  });
+});
+
+describe('covers', () => {
+  it('are relayed unchanged', async () => {
+    const companion = await connectCompanion(bridge);
+    const client = await connectClient(bridge);
+    const frames = [artFrame('ART1', 0, 280, 280), artFrame('ARS1', 0, 320, 320)];
+    for (const frame of frames) companion.send(frame);
+    await companion.flush();
+    await client.flush();
+    expect(client.binary).toEqual(frames);
+  });
+
+  it('follow the snapshot, the last of each kind, also while the PC is offline', async () => {
+    const companion = await connectCompanion(bridge);
+    const [old, latest, server] = [artFrame('ART1'), artFrame('ART1', 0, 8, 2), artFrame('ARS1')];
+    for (const frame of [old, server, latest]) companion.send(frame);
+    await companion.flush();
+    await vi.advanceTimersByTimeAsync(ONLINE_TIMEOUT_MS);
+    const client = await connectClient(bridge);
+    expect(await client.next()).toMatchObject({ type: 'bridge.snapshot', pc_online: false });
+    await client.flush();
+    expect(client.binary).toEqual([latest, server]);
+  });
+
+  it.each([
+    ['ART1 wider than 320', artFrame('ART1', 0, 321, 1)],
+    ['ART1 taller than 320', artFrame('ART1', 0, 1, 321)],
+    ['ARS1 wider than 320', artFrame('ARS1', 0, 321, 320)],
+    ['ARS1 taller than 320', artFrame('ARS1', 0, 320, 321)],
+    ['a frame with trailing bytes', artFrame('ART1', 1)],
+    ['STM1, until it has a page', artFrame('STM1')],
+  ])('leave out %s', async (_name, frame) => {
+    const companion = await connectCompanion(bridge);
+    const client = await connectClient(bridge);
+    companion.send(frame);
+    await companion.flush();
+    await client.flush();
+    expect(client.binary).toEqual([]);
+    expect(bridge.hub.covers).toEqual([]);
+  });
+
+  it('do not go to a refused client, or come from one', async () => {
+    const companion = await connectCompanion(bridge);
+    const client = await connectClient(bridge);
+    companion.send(artFrame('ART1'));
+    await companion.flush();
+    const refused = await new TestSocket(bridge.port, '/client?token=wrong').open();
+    await refused.closed;
+    expect(refused.binary).toEqual([]);
+    client.send(artFrame('ARS1'));
+    await client.flush();
+    expect(bridge.hub.covers).toHaveLength(1);
   });
 });
 
