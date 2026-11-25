@@ -1,10 +1,13 @@
 import react from '@vitejs/plugin-react';
 import { defineConfig, loadEnv } from 'vite';
 
-export default defineConfig(({ mode }) => {
+export default defineConfig(({ mode, command }) => {
   const env = loadEnv(mode, '../..', 'HUB_');
   return {
     plugins: [react()],
+    define: {
+      __BUILD__: JSON.stringify(command === 'build' ? new Date().toISOString() : 'dev'),
+    },
     server: {
       // All interfaces, so a phone can open it.
       host: true,

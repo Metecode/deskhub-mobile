@@ -70,13 +70,15 @@
   border-radius: 50%;
 }
 
-/* Side by side: that leaves room for another tab. */
+/* Side by side: that leaves room for another tab. It can be touched down to the screen's edge. */
 .status {
   display: flex;
   flex: none;
   gap: calc(8 * var(--u));
+  align-items: center;
   justify-content: center;
-  padding-top: calc(6 * var(--u));
+  min-height: 44px;
+  margin-bottom: calc(-8 * var(--u));
 }
 
 .good {
@@ -129,6 +131,6 @@
 :global([data-nav='bottom']) > .rail .status {
   flex-direction: column;
   gap: calc(2 * var(--u));
-  padding-top: 0;
-  padding-left: calc(6 * var(--u));
+  min-width: 44px;
+  margin: 0 calc(-14 * var(--u)) 0 0;
 }

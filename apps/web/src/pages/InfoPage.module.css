@@ -1,0 +1,85 @@
+/* Plain pixels, and it scrolls: it has to be readable when the layout isn't. */
+.page {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  font-size: 15px;
+  line-height: 1.4;
+}
+
+.header {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+}
+
+.header h1 {
+  flex: 1;
+  font-size: 20px;
+  font-weight: 600;
+}
+
+.button {
+  min-height: 44px;
+  padding: 0 14px;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  background: var(--card);
+}
+
+.button:active {
+  background: var(--pressed);
+}
+
+.rows {
+  margin-top: 8px;
+}
+
+.row {
+  display: flex;
+  gap: 12px;
+  padding: 5px 0;
+  border-bottom: 1px solid var(--border);
+}
+
+.row dt {
+  flex: none;
+  width: 120px;
+  color: var(--muted);
+}
+
+.row dd {
+  min-width: 0;
+  overflow-wrap: anywhere;
+  user-select: text;
+}
+
+.row dd[data-mark='good'] {
+  color: var(--good);
+}
+
+.row dd[data-mark='bad'] {
+  color: var(--bad);
+}
+
+.hint {
+  margin-top: 10px;
+  color: var(--muted);
+}
+
+/* To be copied. */
+.hint code {
+  color: var(--text);
+  font: inherit;
+  overflow-wrap: anywhere;
+  user-select: all;
+}
+
+/* Without the navigation bar (the token form is under it). */
+.alone {
+  display: flex;
+  height: 100dvh;
+  padding: max(12px, env(safe-area-inset-top)) 20px 12px;
+}

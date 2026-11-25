@@ -75,7 +75,7 @@ Update this list with every step.
 Phase 4, branch `phase-4` (from `phase-3`):
 
 - [x] Plan approved and written down
-- [ ] Web: diagnostics page
+- [x] Web: diagnostics page
 - [ ] Way A (Chrome's flag) tried on the phone (by the user): decides about HTTPS
 - [ ] Web: wake lock
 - [ ] Web: service worker, manifest, saved calendar

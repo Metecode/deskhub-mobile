@@ -9,6 +9,7 @@ import { AlertStore } from './alerts.js';
 import { App } from './App.js';
 import { Connection } from './connection.js';
 import { DarkStore } from './dark.js';
+import { ErrorStore, InfoRoute } from './diagnostics.js';
 import { goFullscreenOnTap } from './fullscreen.js';
 import { LaunchStore } from './games.js';
 import { loadLayout, saveLayout } from './layoutStore.js';
@@ -16,7 +17,11 @@ import { Sound } from './sound.js';
 import { SpeedTestStore } from './speedTest.js';
 import { TimerStore } from './timer.js';
 import { loadToken, takeTokenFromUrl } from './token.js';
+import { wakeLockEnvironment, WakeLockStore } from './wakeLock.js';
 import { WeatherStore } from './weather.js';
+
+const errors = new ErrorStore();
+errors.listen();
 
 takeTokenFromUrl();
 
@@ -26,6 +31,8 @@ const weather = new WeatherStore();
 const sound = new Sound();
 const speedTest = new SpeedTestStore();
 const launches = new LaunchStore();
+const wakeLock = new WakeLockStore(wakeLockEnvironment());
+const info = new InfoRoute();
 
 const darkReasons = () => {
   const { asleep, layout } = connection.getState();
@@ -59,6 +66,7 @@ function wake(): void {
   weather.wake();
   timer.tick();
   dark.tick();
+  void wakeLock.update();
 }
 document.addEventListener('visibilitychange', () => {
   if (document.visibilityState === 'visible') wake();
@@ -89,6 +97,9 @@ createRoot(document.getElementById('root')!).render(
       speedTest={speedTest}
       launches={launches}
       sound={sound}
+      wakeLock={wakeLock}
+      errors={errors}
+      info={info}
     />
   </StrictMode>,
 );

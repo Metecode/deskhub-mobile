@@ -9,6 +9,7 @@ import { TimesUp } from './components/TimesUp.js';
 import { TokenForm } from './components/TokenForm.js';
 import { isOnline, type Connection } from './connection.js';
 import type { DarkStore } from './dark.js';
+import type { ErrorStore, InfoRoute } from './diagnostics.js';
 import type { LaunchStore } from './games.js';
 import { useNow, usePortrait } from './hooks.js';
 import { pageToShow, tabsOf } from './nav.js';
@@ -17,6 +18,8 @@ import { CalendarPage } from './pages/CalendarPage.js';
 import { GamesPage } from './pages/GamesPage.js';
 import { GitHubPage } from './pages/GitHubPage.js';
 import { HomePage } from './pages/HomePage.js';
+import { InfoPage } from './pages/InfoPage.js';
+import infoStyles from './pages/InfoPage.module.css';
 import { MediaPage } from './pages/MediaPage.js';
 import { PrinterPage } from './pages/PrinterPage.js';
 import { ShortcutsPage } from './pages/ShortcutsPage.js';
@@ -28,6 +31,7 @@ import type { SpeedTestStore } from './speedTest.js';
 import { formatDuration } from './time.js';
 import type { TimerStore } from './timer.js';
 import { saveToken } from './token.js';
+import type { WakeLockStore } from './wakeLock.js';
 import type { WeatherStore } from './weather.js';
 
 export interface Stores {
@@ -39,9 +43,13 @@ export interface Stores {
   speedTest: SpeedTestStore;
   launches: LaunchStore;
   sound: Sound;
+  wakeLock: WakeLockStore;
+  errors: ErrorStore;
+  info: InfoRoute;
 }
 
-export function App({ connection, weather, alerts, timer, dark, speedTest, launches, sound }: Stores) {
+export function App(stores: Stores) {
+  const { connection, weather, alerts, timer, dark, speedTest, launches, sound, wakeLock, errors, info } = stores;
   const state = useSyncExternalStore(connection.subscribe, connection.getState);
   const forecast = useSyncExternalStore(weather.subscribe, weather.getState);
   const alert = useSyncExternalStore(alerts.subscribe, alerts.getState);
@@ -51,8 +59,13 @@ export function App({ connection, weather, alerts, timer, dark, speedTest, launc
   const [statsView, setStatsView] = useState<StatsView>('pc');
   const now = Math.floor(useNow(1000) / 1000);
   const portrait = usePortrait();
+  const infoOpen = useSyncExternalStore(info.subscribe, info.getState);
+  const infoPage = infoOpen && (
+    <InfoPage state={state} wakeLock={wakeLock} errors={errors} now={now} onClose={info.close} />
+  );
 
   if (state.link === 'bad_token') {
+    if (infoPage) return <div className={infoStyles.alone}>{infoPage}</div>;
     return (
       <TokenForm
         onSubmit={(token) => {
@@ -65,6 +78,7 @@ export function App({ connection, weather, alerts, timer, dark, speedTest, launc
 
   // The Internet is a view of the stats page (ui_show_page in ui.c).
   const open = (target: Page) => {
+    info.close();
     if (target === 'network') setStatsView('net');
     setPage(target === 'network' ? 'stats' : target);
   };
@@ -129,7 +143,10 @@ export function App({ connection, weather, alerts, timer, dark, speedTest, launc
       <Rail
         tabs={tabsOf(pages)}
         current={current}
-        onSelect={setPage}
+        onSelect={(tab) => {
+          info.close();
+          setPage(tab);
+        }}
         badges={{
           calendar: homeHasEvents ? null : calendarBadge(state.events.events, now),
           ai: alert && 'var(--accent)',
@@ -137,8 +154,9 @@ export function App({ connection, weather, alerts, timer, dark, speedTest, launc
         texts={{ timer: timerState.status === 'idle' ? null : formatDuration(timerState.left) }}
         link={state.link}
         online={isOnline(state)}
+        onStatus={infoOpen ? info.close : info.open}
       />
-      <div className={styles.page}>{show()}</div>
+      <div className={styles.page}>{infoPage || show()}</div>
       {darkStyle && <DarkLayer style={darkStyle} now={now} onWake={dark.wake} />}
       {timerState.done && <TimesUp timer={timer} total={timerState.total} sound={sound} onTouch={dark.wake} />}
     </div>

@@ -15,9 +15,11 @@ interface RailProps {
   texts: Readonly<Partial<Record<Tab, string | null>>>;
   link: Link;
   online: boolean;
+  /** The status icons were touched. */
+  onStatus: () => void;
 }
 
-export function Rail({ tabs, current, onSelect, badges, texts, link, online }: RailProps) {
+export function Rail({ tabs, current, onSelect, badges, texts, link, online, onStatus }: RailProps) {
   const list = useRef<HTMLDivElement>(null);
   /** Whether there are tabs beyond the list's start and end. */
   const [more, setMore] = useState({ before: false, after: false });
@@ -67,18 +69,21 @@ export function Rail({ tabs, current, onSelect, badges, texts, link, online }: R
           </button>
         ))}
       </div>
-      <div className={styles.status}>
-        <span role="img" aria-label={online ? 'PC online' : 'PC offline'} className={online ? styles.good : styles.off}>
+      <button
+        type="button"
+        className={styles.status}
+        aria-label={`Diagnostics. ${online ? 'PC online' : 'PC offline'}. ${
+          link === 'open' ? 'Connected to the bridge' : 'Not connected to the bridge'
+        }`}
+        onClick={onStatus}
+      >
+        <span className={online ? styles.good : styles.off}>
           <Icon name="desktop_windows" size={24} />
         </span>
-        <span
-          role="img"
-          aria-label={link === 'open' ? 'Connected to the bridge' : 'Not connected to the bridge'}
-          className={link === 'open' ? styles.good : styles.bad}
-        >
+        <span className={link === 'open' ? styles.good : styles.bad}>
           <Icon name={link === 'open' ? 'wifi' : 'wifi_off'} size={24} />
         </span>
-      </div>
+      </button>
     </nav>
   );
 }
