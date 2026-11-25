@@ -157,7 +157,8 @@ describe('covers', () => {
     for (const frame of frames) companion.send(frame);
     await companion.flush();
     await client.flush();
-    expect(client.binary).toEqual(frames);
+    // toEqual() goes through them byte by byte, which takes seconds.
+    expect(client.binary.map((frame, i) => frame.equals(frames[i]!))).toEqual([true, true]);
   });
 
   it('follow the snapshot, the last of each kind, also while the PC is offline', async () => {
