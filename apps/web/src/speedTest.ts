@@ -3,6 +3,7 @@
 import type { Net } from '@deskhub-mobile/protocol';
 import { loadJson, saveJson } from './saved.js';
 import { Store } from './store.js';
+import { T } from './text.js';
 import { formatDuration } from './time.js';
 
 /** SPEEDTEST_MIN_GAP_S in companion/deskhub/__main__.py. */
@@ -32,10 +33,10 @@ export function lockLeft(requestedAt: number, now: number): number {
 
 /** `netAt` and `now` in ms. */
 export function speedTestButton(net: Net, netAt: number, requestedAt: number, now: number, online: boolean) {
-  if (net.testing) return { label: 'Testing...', disabled: true };
+  if (net.testing) return { label: T.net.testingShort, disabled: true };
   const left = lockLeft(requestedAt, now);
   // Until the next message, as on the board.
-  if (left && requestedAt > netAt) return { label: 'Starting...', disabled: true };
-  if (left) return { label: `Again in ${formatDuration(Math.ceil(left / 1000))}`, disabled: true };
-  return { label: 'Run test', disabled: !online };
+  if (left && requestedAt > netAt) return { label: T.net.starting, disabled: true };
+  if (left) return { label: T.net.again(formatDuration(Math.ceil(left / 1000))), disabled: true };
+  return { label: T.net.run, disabled: !online };
 }

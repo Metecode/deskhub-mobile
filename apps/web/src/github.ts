@@ -1,6 +1,7 @@
 // What the GitHub page and the Home card show (firmware/main/ui_github.c, layout_github and
 // home_refresh_github in ui_home.c). Sizes are board pixels.
 import type { GitHub } from '@deskhub-mobile/protocol';
+import { formatNumber, monthDay, monthName, T } from './text.js';
 
 /** Between squares. */
 export const GAP = 2;
@@ -50,7 +51,7 @@ export function monthLabels(github: GitHub | null, weeks: number, pitch: number)
     const x = (column - first) * pitch;
     if (x < 0 || column - first >= weeks || x < end + 6 || x + MONTH_WIDTH > weeks * pitch) return [];
     end = x + MONTH_WIDTH;
-    return [{ x, name }];
+    return [{ x, name: monthName(name) }];
   });
 }
 
@@ -84,37 +85,36 @@ export function wideChart(github: GitHub | null, width: number, height: number):
   return { pitch, weeks: clampWeeks(width, pitch, github) };
 }
 
-/** "1,033" */
-export const formatCount = (n: number) => n.toLocaleString('en-US');
+/** "1.033" */
+export const formatCount = (n: number) => formatNumber(n);
 
-const days = (n: number) => `${n} day${n === 1 ? '' : 's'}`;
-
-/** "1,033 contributions  •  120 commits  •  907 private" */
+/** "1.033 katkı, 120 commit, 907 gizli" */
 export function summary(github: GitHub): string {
   const kinds = [
-    [github.commits, 'commits'],
-    [github.privateCount, 'private'],
-    [github.prs, 'PRs'],
-    [github.reviews, 'reviews'],
-    [github.issues, 'issues'],
+    [github.commits, T.github.commits],
+    [github.privateCount, T.github.private],
+    [github.prs, T.github.prs],
+    [github.reviews, T.github.reviews],
+    [github.issues, T.github.issues],
   ] as const;
-  const parts = kinds.filter(([n]) => n > 0).map(([n, what]) => `${formatCount(n)} ${what}`);
-  return [`${formatCount(github.total)} contributions`, ...parts].join('  •  ');
+  const parts = kinds.filter(([n]) => n > 0).map(([n, what]) => what(formatCount(n)));
+  return [T.github.contributions(formatCount(github.total)), ...parts].join(', ');
 }
 
-export const longestText = (github: GitHub) => days(github.longest);
+export const longestText = (github: GitHub) => T.days(github.longest);
 
-export const bestText = ({ best, bestDate }: GitHub) => (best > 0 ? `${best} on ${bestDate}` : '--');
+export const bestText = ({ best, bestDate }: GitHub) => (best > 0 ? T.github.bestOn(best, monthDay(bestDate)) : T.none);
 
 /** This week against last week. */
 export function weekChange({ week, lastWeek }: GitHub): { text: string; more: boolean } {
   const diff = week - lastWeek;
   if (week === 0 && lastWeek === 0) return { text: '', more: false };
-  if (diff === 0) return { text: 'same as last week', more: false };
-  return { text: `${diff > 0 ? '+' : ''}${diff} vs last week`, more: diff > 0 };
+  if (diff === 0) return { text: T.github.same, more: false };
+  return { text: diff > 0 ? T.github.more(diff) : T.github.less(-diff), more: diff > 0 };
 }
 
 export const homeTotal = (github: GitHub) =>
-  `${formatCount(github.total)} in the last year${github.privateCount > 0 ? `  •  ${formatCount(github.privateCount)} private` : ''}`;
+  T.github.homeTotal(formatCount(github.total)) +
+  (github.privateCount > 0 ? `, ${T.github.private(formatCount(github.privateCount))}` : '');
 
-export const homeStreak = ({ streak, today }: GitHub) => (streak > 0 ? `${streak}-day streak` : `${today} today`);
+export const homeStreak = ({ streak, today }: GitHub) => (streak > 0 ? T.github.homeStreak(streak) : T.github.homeToday(today));

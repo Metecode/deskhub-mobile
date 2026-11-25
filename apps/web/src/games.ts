@@ -2,25 +2,26 @@
 // ui_home.c). `now` is in epoch seconds.
 import type { Steam } from '@deskhub-mobile/protocol';
 import { Store } from './store.js';
+import { formatNumber, T } from './text.js';
 
-/** "41 h", "5.0 h", "48 min" */
+/** "41 sa", "5,0 sa", "48 dk" */
 export function formatPlaytime(minutes: number): string {
-  if (minutes >= 600) return `${Math.trunc(minutes / 60)} h`;
-  if (minutes >= 60) return `${(minutes / 60).toFixed(1)} h`;
-  return `${minutes} min`;
+  if (minutes >= 600) return T.hours(Math.trunc(minutes / 60));
+  if (minutes >= 60) return T.hours(formatNumber(minutes / 60, 1));
+  return T.minutes(minutes);
 }
 
 const formatSession = (s: number) =>
-  s >= 3600 ? `${Math.trunc(s / 3600)}h ${String(Math.trunc(s / 60) % 60).padStart(2, '0')}m` : `${Math.trunc(s / 60)}m`;
+  s >= 3600 ? T.hoursMinutes(Math.trunc(s / 3600), Math.trunc(s / 60) % 60) : T.minutes(Math.trunc(s / 60));
 
 export function formatLastPlayed(t: number, now: number): string {
   const d = Math.trunc(now - t);
   if (t <= 0) return '';
-  if (d < 3600) return 'Just now';
-  if (d < 86_400) return `${Math.trunc(d / 3600)}h ago`;
-  if (d < 2 * 86_400) return 'Yesterday';
-  if (d < 60 * 86_400) return `${Math.trunc(d / 86_400)} days ago`;
-  return `${Math.trunc(d / (30 * 86_400))} months ago`;
+  if (d < 3600) return T.games.justNow;
+  if (d < 86_400) return T.games.hoursAgo(Math.trunc(d / 3600));
+  if (d < 2 * 86_400) return T.yesterday;
+  if (d < 60 * 86_400) return T.games.daysAgo(Math.trunc(d / 86_400));
+  return T.games.monthsAgo(Math.trunc(d / (30 * 86_400)));
 }
 
 /** A total only adds something once it is clearly more than this session. */
@@ -42,26 +43,26 @@ export function sessionSeconds(steam: Steam, { steamAt, offlineSince }: SteamTim
   return steam.playing.session + Math.max(0, Math.trunc((until - steamAt) / 1000));
 }
 
-const dots = (...parts: string[]) => parts.filter(Boolean).join('  •  ');
+const joined = (...parts: string[]) => parts.filter(Boolean).join(', ');
 
 /** Under the name of the game being played. */
 export function playingText(steam: Steam, session: number): { time: string; total: string } {
   const friends = steam.friends.length;
   const total = steam.playing?.total ?? 0;
   return {
-    time: `Playing for ${formatSession(session)}`,
-    total: dots(
-      isTotalWorthShowing(total, session) ? `${formatPlaytime(total)} played` : '',
-      friends ? `${friends} friend${friends === 1 ? '' : 's'} in game` : '',
+    time: T.games.playing(formatSession(session)),
+    total: joined(
+      isTotalWorthShowing(total, session) ? T.games.total(formatPlaytime(total)) : '',
+      friends ? T.games.friendsInGame(friends) : '',
     ),
   };
 }
 
-const waiting = (online: boolean) => (online ? 'Waiting for the PC' : 'PC offline');
+const waiting = (online: boolean) => (online ? T.waitingForPc : T.pcOffline);
 
 export function idleText(steam: Steam | null, online: boolean): string {
   if (!steam) return waiting(online);
-  return steam.found ? 'Start a game, or pick one below' : "Steam isn't installed on the PC";
+  return steam.found ? T.games.startOne : T.games.noSteam;
 }
 
 /** The Home card. */
@@ -70,15 +71,15 @@ export function homeGame(steam: Steam | null, session: number, online: boolean, 
   if (steam?.playing) {
     const { name, total } = steam.playing;
     const worth = isTotalWorthShowing(total, session);
-    return { caption: 'PLAYING', sub: dots(formatSession(session), worth ? formatPlaytime(total) : ''), name };
+    return { caption: T.games.nowPlaying, sub: joined(formatSession(session), worth ? formatPlaytime(total) : ''), name };
   }
   if (recent) {
     const total = recent.total > 0 ? formatPlaytime(recent.total) : '';
     const ago = formatLastPlayed(recent.last, now);
-    return { caption: 'RECENT', sub: dots(ago, total), name: recent.name };
+    return { caption: T.games.recentShort, sub: joined(ago, total), name: recent.name };
   }
-  const sub = !steam ? waiting(online) : steam.found ? 'No games played yet' : 'Steam not found';
-  return { caption: 'STEAM', sub, name: '' };
+  const sub = !steam ? waiting(online) : steam.found ? T.games.noneYet : T.games.noSteamShort;
+  return { caption: T.games.steam, sub, name: '' };
 }
 
 /** How long no other game can be started from this phone. */

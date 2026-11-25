@@ -1,60 +1,61 @@
 // What the Internet view and the Home card say (firmware/main/ui_net.c, home_refresh_net
 // in ui_home.c). `now` is in epoch seconds.
 import { NET_HISTORY, type Net } from '@deskhub-mobile/protocol';
+import { formatNumber, T } from './text.js';
 
 export function formatBytes(b: number): string {
-  if (b >= 1e12) return `${(b / 1e12).toFixed(2)} TB`;
-  if (b >= 1e9) return `${(b / 1e9).toFixed(1)} GB`;
-  if (b >= 1e6) return `${(b / 1e6).toFixed(0)} MB`;
-  return `${(b / 1e3).toFixed(0)} KB`;
+  if (b >= 1e12) return `${formatNumber(b / 1e12, 2)} TB`;
+  if (b >= 1e9) return `${formatNumber(b / 1e9, 1)} GB`;
+  if (b >= 1e6) return `${formatNumber(b / 1e6)} MB`;
+  return `${formatNumber(b / 1e3)} KB`;
 }
 
-/** "5m ago" */
+/** "5 dk önce" */
 export function formatAgo(t: number, now: number): string {
   const d = Math.trunc(now - t);
-  if (t <= 0) return 'never';
-  if (d < 60) return 'just now';
-  if (d < 3600) return `${Math.trunc(d / 60)}m ago`;
-  if (d < 86_400) return `${Math.trunc(d / 3600)}h ago`;
-  return `${Math.trunc(d / 86_400)}d ago`;
+  if (t <= 0) return T.net.never;
+  if (d < 60) return T.net.justNow;
+  if (d < 3600) return T.net.minutesAgo(Math.trunc(d / 60));
+  if (d < 86_400) return T.net.hoursAgo(Math.trunc(d / 3600));
+  return T.net.daysAgo(Math.trunc(d / 86_400));
 }
 
-/** "3d 5h", "1h 02m", "45s" */
+/** "3 gün 5 sa", "1 sa 2 dk", "45 sn" */
 export function formatSpan(seconds: number): string {
   const s = Math.max(0, Math.trunc(seconds));
-  if (s >= 86_400) return `${Math.trunc(s / 86_400)}d ${Math.trunc(s / 3600) % 24}h`;
-  if (s >= 3600) return `${Math.trunc(s / 3600)}h ${String(Math.trunc(s / 60) % 60).padStart(2, '0')}m`;
-  if (s >= 60) return `${Math.trunc(s / 60)}m`;
-  return `${s}s`;
+  if (s >= 86_400) return T.daysHours(Math.trunc(s / 86_400), Math.trunc(s / 3600) % 24);
+  if (s >= 3600) return T.hoursMinutes(Math.trunc(s / 3600), Math.trunc(s / 60) % 60);
+  if (s >= 60) return T.minutes(Math.trunc(s / 60));
+  return T.seconds(s);
 }
 
-export const formatLatency = (ms: number | null) => (ms === null ? '--' : `${Math.trunc(ms + 0.5)} ms`);
+export const formatLatency = (ms: number | null) => (ms === null ? T.none : `${Math.trunc(ms + 0.5)} ms`);
 
 export function latencyColor(ms: number | null): string {
   if (ms === null) return 'var(--dim)';
   return ms < 40 ? 'var(--text)' : ms < 100 ? 'var(--warn)' : 'var(--bad)';
 }
 
-export const jitterText = ({ jitter, loss }: Net) => `Jitter ${jitter.toFixed(1)} ms  •  Loss ${loss}%`;
+export const jitterText = ({ jitter, loss }: Net) => T.net.quality(formatNumber(jitter, 1), loss);
 
 /** Uptime, then the last outage (or the IP address). */
 export function statusText(net: Net, now: number): string {
-  const up = net.online && net.upSince > 0 ? `Up ${formatSpan(now - net.upSince)}` : '';
+  const up = net.online && net.upSince > 0 ? T.net.up(formatSpan(now - net.upSince)) : '';
   const drop = net.lastDrop
-    ? `Last drop ${formatAgo(net.lastDrop.at, now)}, ${formatSpan(net.lastDrop.seconds)}`
-    : net.ip || 'No drops seen';
-  return up ? `${up}  •  ${drop}` : drop;
+    ? T.net.lastDrop(formatAgo(net.lastDrop.at, now), formatSpan(net.lastDrop.seconds))
+    : net.ip || T.net.noDrops;
+  return up ? `${up}, ${drop}` : drop;
 }
 
 export function homeText(net: Net, now: number): string {
-  if (net.testing) return 'Speed test running...';
+  if (net.testing) return T.net.testing;
   if (!net.speed) return jitterText(net);
   const { down, up, at } = net.speed;
-  return `↓ ${down.toFixed(0)}  ↑ ${up.toFixed(0)} Mbps  •  ${formatAgo(at, now)}`;
+  return `↓ ${formatNumber(down)}  ↑ ${formatNumber(up)} Mbps, ${formatAgo(at, now)}`;
 }
 
 /** A rate in KB/s (1024 bytes) as Mbps. */
-export const formatMbps = (kbps: number) => ((kbps * 8.192) / 1000).toFixed(1);
+export const formatMbps = (kbps: number) => formatNumber((kbps * 8.192) / 1000, 1);
 
 /** The top of the latency chart, ms. */
 export const chartPeak = (history: Net['history']) => Math.max(50, ...history.map((ms) => ms ?? 0));

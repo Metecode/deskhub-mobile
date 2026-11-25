@@ -1,21 +1,11 @@
 // What the printer page and the Home card say (firmware/main/ui_printer.c,
 // home_refresh_printer in ui_home.c).
 import type { Printer } from '@deskhub-mobile/protocol';
+import { percent, PRINTER_STATES, printerSpeed, T } from './text.js';
 import { formatClock, formatWeekday } from './time.js';
 
-const STATES: Readonly<Record<string, string>> = {
-  RUNNING: 'Printing',
-  PREPARE: 'Preparing',
-  SLICING: 'Slicing',
-  PAUSE: 'Paused',
-  FINISH: 'Finished',
-  FAILED: 'Failed',
-  IDLE: 'Idle',
-  OFFLINE: 'Offline',
-};
-
 export const stateText = (state: string): string =>
-  Object.hasOwn(STATES, state) ? STATES[state]! : state || 'Unknown';
+  Object.hasOwn(PRINTER_STATES, state) ? PRINTER_STATES[state]! : state || T.printer.unknown;
 
 export function stateColor(state: string): string {
   switch (state) {
@@ -43,19 +33,17 @@ export function shownPrinter(printers: readonly Printer[], picked: number | null
 }
 
 export const formatTemp = (celsius: number | null) =>
-  celsius === null ? '--' : `${Math.sign(celsius) * Math.round(Math.abs(celsius)) || 0}°`;
+  celsius === null ? T.none : `${Math.sign(celsius) * Math.round(Math.abs(celsius)) || 0}°`;
 
 export function formatRemaining(minutes: number): string {
-  return minutes >= 60
-    ? `${Math.trunc(minutes / 60)}h ${String(minutes % 60).padStart(2, '0')}m left`
-    : `${minutes}m left`;
+  return T.printer.left(minutes >= 60 ? T.hoursMinutes(Math.trunc(minutes / 60), minutes % 60) : T.minutes(minutes));
 }
 
-/** "Done at 9:49 AM", with the day when it is far off. `at`: when the message arrived, ms. */
-export function formatDone(minutes: number, at: number, hour12?: boolean): string {
+/** "Bitiş 09:49", with the day when it is far off. `at`: when the message arrived, ms. */
+export function formatDone(minutes: number, at: number): string {
   const done = Math.trunc(at / 1000) + minutes * 60;
-  const clock = formatClock(done, hour12);
-  return minutes >= 18 * 60 ? `Done ${formatWeekday(done)} ${clock}` : `Done at ${clock}`;
+  const clock = formatClock(done);
+  return minutes >= 18 * 60 ? T.printer.doneOn(formatWeekday(done), clock) : T.printer.doneAt(clock);
 }
 
 export interface PrinterView {
@@ -76,11 +64,11 @@ export function printerView(printer: Printer, at: number): PrinterView {
   return {
     pct: finished ? 100 : active ? printer.pct : null,
     remaining: counting ? formatRemaining(printer.remaining) : '',
-    done: counting ? formatDone(printer.remaining, at) : finished ? 'Ready to remove' : '',
-    layer: printer.layers > 0 && (active || finished) ? `Layer ${printer.layer} of ${printer.layers}` : '',
-    fileCaption: active ? 'PRINTING' : finished ? 'LAST PRINT' : 'LAST FILE',
-    file: printer.file || '--',
-    speed: printer.speed && active ? `${printer.speed} speed` : '',
+    done: counting ? formatDone(printer.remaining, at) : finished ? T.printer.ready : '',
+    layer: printer.layers > 0 && (active || finished) ? T.printer.layer(printer.layer, printer.layers) : '',
+    fileCaption: active ? T.printer.printing : finished ? T.printer.lastPrint : T.printer.lastFile,
+    file: printer.file || T.none,
+    speed: printer.speed && active ? T.printer.speed(printerSpeed(printer.speed)) : '',
   };
 }
 
@@ -89,21 +77,21 @@ export const printerName = ({ name, model }: Printer) => name || model;
 /** The Home card: the printer at work, else the first. Slicing counts as idle here. */
 export function homePrinter(printers: readonly Printer[]) {
   const printer = printers[shownPrinter(printers, null)];
-  if (!printer) return { state: '', color: 'var(--dim)', file: 'No printer connected', pct: 0, info: '' };
+  if (!printer) return { state: '', color: 'var(--dim)', file: T.printer.none, pct: 0, info: '' };
   const active = isActive(printer);
   const finished = printer.state === 'FINISH';
   const pct = finished ? 100 : active ? printer.pct : 0;
   const known = active || finished || printer.state === 'FAILED' || printer.state === 'OFFLINE';
   return {
-    state: `${printerName(printer)}  •  ${known ? stateText(printer.state) : 'Idle'}`,
+    state: `${printerName(printer)}, ${stateText(known ? printer.state : 'IDLE')}`,
     color: known ? stateColor(printer.state) : 'var(--dim)',
-    file: printer.file || (active ? 'Printing' : 'Not printing'),
+    file: printer.file || (active ? T.printer.printing : T.printer.notPrinting),
     pct,
     info:
       active && printer.remaining > 0
-        ? `${pct}%  •  ${formatRemaining(printer.remaining)}`
+        ? `${percent(pct)}, ${formatRemaining(printer.remaining)}`
         : finished
-          ? 'Done  •  ready to remove'
+          ? T.printer.homeDone
           : '',
   };
 }

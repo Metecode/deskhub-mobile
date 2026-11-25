@@ -1,12 +1,13 @@
-// Number formats of the board's stats page (firmware/main/ui_stats.c).
+// Number formats of the board's stats page (firmware/main/ui_stats.c), in Turkish.
+import { formatNumber, percent } from './text.js';
 
 /** A network rate in KB/s. */
 export function formatRate(kbps: number): string {
-  return kbps >= 1024 ? `${(kbps / 1024).toFixed(1)} MB/s` : `${Math.trunc(kbps)} KB/s`;
+  return kbps >= 1024 ? `${formatNumber(kbps / 1024, 1)} MB/s` : `${Math.trunc(kbps)} KB/s`;
 }
 
 export function formatPercent(pct: number): string {
-  return `${Math.trunc(pct + 0.5)}%`;
+  return percent(Math.trunc(pct + 0.5));
 }
 
 /** "" when unknown. */
@@ -15,5 +16,5 @@ export function formatTemperature(celsius: number | null): string {
 }
 
 export function formatMemory(used: number, total: number): string {
-  return `${used.toFixed(1)} / ${total.toFixed(0)} GB`;
+  return `${formatNumber(used, 1)} / ${formatNumber(total)} GB`;
 }

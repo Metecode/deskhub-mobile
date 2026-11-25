@@ -36,6 +36,24 @@ export interface StatusMessage {
 
 export type BridgeMessage = SnapshotMessage | StatusMessage;
 
+/** From a phone, to see how long an answer takes. The bridge answers it itself. */
+export interface PingMessage {
+  type: 'bridge.ping';
+  id: number;
+}
+
+export interface PongMessage {
+  type: 'bridge.pong';
+  id: number;
+}
+
+/** null when it isn't one: exactly these fields. */
+export function parsePing(text: string): PingMessage | null {
+  // Short of a JSON parser for what comes every few seconds.
+  const found = /^\{"type":"bridge\.ping","id":(\d{1,15})\}$/.exec(text);
+  return found ? { type: 'bridge.ping', id: Number(found[1]) } : null;
+}
+
 /** The heartbeat's interval. It keeps coming while the PC is offline. */
 export const STATUS_INTERVAL_MS = 5000;
 
