@@ -1,6 +1,6 @@
 # Protocol
 
-What the bridge speaks, as of phase 0. Upstream references are to commit
+What the bridge speaks, as of phase 1. Upstream references are to commit
 `b78c505279a50f80cd40bfc86f0d9de9ac79437c`. The schemas are in `packages/protocol`.
 
 ## Companion <-> bridge: `/ws`
@@ -62,10 +62,80 @@ Once a second. Source: `companion/deskhub/stats.py`, `on_stats()` in `hub_server
 Without an NVIDIA GPU, `gpu`, `gpu_temp`, `vram_used` and `vram_total` are left out and `gpu_name`
 is `""`. `normalizeStats()` applies the last column.
 
+### `media` (companion -> hub)
+
+Once a second. Source: `companion/deskhub/media.py`, `on_media()`. With nothing playing only `active`
+is there.
+
+| Field | Type | |
+| --- | --- | --- |
+| `active`, `playing`, `can_seek` | boolean | false if missing |
+| `controls` | boolean | false: can't be remote controlled. Missing means it can. |
+| `title`, `artist`, `album`, `source` | string | |
+| `pos`, `dur` | number | seconds; `dur` 0 is unknown |
+| `art_id` | number | the id of the cover that came before, 0 for none |
+
+### `media_server` (companion -> hub)
+
+Once a second with a Plex or Jellyfin server, else `{"configured": false}` on connecting. Source:
+`media_server.py`, `on_media_server()`. The fields of `media` for what plays there, and:
+
+| Field | Type | |
+| --- | --- | --- |
+| `configured`, `online` | boolean | |
+| `streams`, `transcoding` | number | how many |
+| `name`, `version`, `library` | string | |
+| `kind` | string | `plex` or `jellyfin` |
+
+### `events` (companion -> hub)
+
+On connecting and after every calendar refresh. Source: `calendar_feed.py`, `on_events()`.
+
+| Field | Type | |
+| --- | --- | --- |
+| `days` | number | how far ahead it looked, 7 if missing |
+| `events` | array, up to 16 | |
+| `events[].start`, `.end` | number | epoch seconds |
+| `events[].all_day` | boolean | from local midnight |
+| `events[].title`, `.loc`, `.cal` | string | |
+| `events[].color` | string | `#rrggbb`, `#7c9cff` if missing |
+
+### `tiles` and `tile_state` (companion -> hub)
+
+`tiles` on connecting, `tile_state` when it changes. Source: `shortcuts.py`, `on_tiles()`,
+`on_tile_state()`.
+
+| Field | Type | |
+| --- | --- | --- |
+| `tiles[]` | array, up to 16 | `label`, `icon` (a name from `icons.h`, else `apps`), `color` (`#2a2f3a` if missing) |
+| `on` | array of numbers | the indices of the tiles that are on |
+
+### `layout` (companion -> hub)
+
+On connecting. Source: `pages.py` `layout_message()`, `on_layout()`. Phones keep the last one.
+
+| Field | Type | |
+| --- | --- | --- |
+| `pages` | array of strings | the enabled pages; Home is always on |
+| `ordered` | boolean | `pages` is in the bar's order; otherwise the order stays |
+| `nav` | string | `left`, `right` or `bottom`; otherwise the bar stays, at first on the left |
+| `pc_sleep`, `night_start`, `night_end`, `night_style` | | not used yet |
+
+### `home` (companion -> hub)
+
+On connecting. Source: `pages.py` `home_message()`, `on_home()`, `place_grid()` in `ui_home.c`. Phones
+keep the last one.
+
+| Field | Type | |
+| --- | --- | --- |
+| `header` | boolean | time and date in a bar on top, and no clock widget |
+| `grid[]` | array | `widget`, and the cells `x`, `y`, `w`, `h` of a grid of 5 columns by 3 rows |
+| `left`, `right` | arrays of strings | two columns, for firmware from before the grid; used when `grid` is missing |
+
 ### Everything else
 
-`media`, `media_server`, `events`, `tiles`, `ai` (`claude` from older companions), `printer`,
-`layout`, `pc_power`, `home`, `alert`, `tile_state`, `steam`, `net` and `github` have no schema yet.
+`ai` (`claude` from older companions), `printer`, `pc_power`, `alert`, `steam`, `net` and `github` have
+no schema yet.
 They, types nobody knows, and messages that don't fit their schema are relayed to phones unchanged.
 
 ### Binary frames (companion -> hub)
@@ -78,8 +148,8 @@ Little endian, RGB565 pixels. Source: `on_binary()` and `on_steam_art()` in `hub
 | `ARS1` (media server poster) | same | same |
 | `STM1` (Steam cover) | magic, u32 appid, u16 width, u16 height, u16 kind, u16 0 | up to 400 x 240, kind 0-2 |
 
-The length must be exactly the header plus width x height x 2. For now the bridge checks and logs
-them and doesn't pass them on.
+The length must be exactly the header plus width x height x 2. `ART1` and `ARS1` go to phones as they
+are; the last of each is kept for phones that connect later. `STM1` is only checked and logged for now.
 
 ### Commands (hub -> companion)
 
@@ -96,7 +166,7 @@ The only things a phone can send. Everything else is refused, and unknown fields
 
 ## Phone <-> bridge: `/client?token=<CLIENT_TOKEN>`
 
-JSON text frames, up to 4 KiB from the phone. Companion messages arrive as they are; the bridge's
+JSON text frames, up to 4 KiB from the phone, and binary cover frames to it. Companion messages arrive as they are; the bridge's
 own start with `bridge.`.
 
 | Close code | Meaning |
@@ -106,12 +176,13 @@ own start with `bridge.`.
 
 ### `bridge.snapshot`
 
-Always first.
+Always first. The last `ART1` and `ARS1` frames follow it, if there are any.
 
 | Field | Type | |
 | --- | --- | --- |
 | `pc_online` | boolean | |
 | `messages` | array | The last message of every type, without `hello`, `hello_ok` and `ping`. Kept while the PC is offline. A cleared alert is there as `{"type":"alert","clear":true}`. |
+| `weather` | object or null | `latitude`, `longitude`, `city`, `units` (`metric` or `imperial`). Phones fetch the weather themselves. null: no location is set. |
 
 ### `bridge.status`
 
