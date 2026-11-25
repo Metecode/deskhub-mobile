@@ -56,7 +56,7 @@ Companion (upstream, Windows, Python) --ws /ws--> Bridge (Node, on the PC) --ws 
 
 ## Where we are
 
-Phases 0 to 4 are in `main`, tag `v0.2.0`. Phase 5, branch `phase-5` (from `main`):
+Phases 0 to 5 are in `main`, tag `v0.3.0`. Phase 5, branch `phase-5` (from `main`):
 
 - [x] Plan approved and written down
 - [x] Web: Turkish
@@ -71,7 +71,14 @@ Phases 0 to 4 are in `main`, tag `v0.2.0`. Phase 5, branch `phase-5` (from `main
 - [x] Swiping between the dock's pages (`swipe.ts`, asked for by the user)
 - [x] Verified with the mock and the real companion, at all sizes
 - [x] Verified on the phone (by the user)
-- [ ] Pull request into `main`, tag `v0.3.0` (the user opens and merges it)
+- [x] Pull request into `main`, tag `v0.3.0` (the user opens and merges it)
+
+Security review (Cloudflare's `security-audit` skill, asked for by the user), branch `security` (from `main`):
+
+- [x] `/ws` for this PC only, refused sockets, the log, headers, short `CLIENT_TOKEN`, `.env`
+- [x] README, docs/protocol.md
+- [ ] The headers (CSP) verified on the phone (by the user)
+- [ ] Pull request into `main` (the user opens and merges it)
 
 Phases 0 to 2 are done and verified on the phone by the user (branches `phase-0` to `phase-2`).
 Phase 3, branch `phase-3`:
