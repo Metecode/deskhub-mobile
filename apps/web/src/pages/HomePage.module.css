@@ -407,28 +407,186 @@
   text-align: right;
 }
 
-/* ---- widgets that come later ---- */
+/* ---- printer, GitHub ---- */
 
-.placeholder {
+.spread {
   display: flex;
   flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: calc(4 * var(--u));
+  justify-content: space-between;
   height: 100%;
-  color: var(--muted);
-  text-align: center;
 }
 
-.placeholder p {
-  max-width: 100%;
+.spreadHead {
+  display: flex;
+  justify-content: space-between;
+  gap: calc(12 * var(--u));
+  color: var(--muted);
+  white-space: pre;
+}
+
+.spreadCaption {
+  flex: none;
+  color: var(--muted);
+  letter-spacing: calc(2 * var(--u));
+}
+
+.ellipsis {
+  min-width: 0;
   overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.spreadSub {
+  min-height: 1.2em;
+  overflow: hidden;
+  color: var(--muted);
+  text-overflow: ellipsis;
+  white-space: pre;
+}
+
+.printFile {
+  margin-bottom: calc(4 * var(--u));
+  overflow: hidden;
+  font-size: calc(20 * var(--u));
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 
-.later {
-  font-size: calc(12 * var(--u));
+.github {
+  display: flex;
+  gap: calc(12 * var(--u));
+  height: 100%;
+}
+
+.githubChart {
+  display: flex;
+  flex: 1;
+  align-items: center;
+  min-width: 0;
+}
+
+.githubSide {
+  display: flex;
+  flex: none;
+  flex-direction: column;
+  justify-content: space-between;
+  width: calc(100 * var(--u));
+}
+
+.githubSide[data-wide] {
+  width: calc(128 * var(--u));
+}
+
+.githubTotal {
+  font-size: calc(22 * var(--u));
+  font-weight: 600;
+  line-height: 1.1;
+}
+
+.githubTall {
+  display: flex;
+  flex: 1;
+  align-items: center;
+  justify-content: center;
+  min-height: 0;
+  margin: calc(4 * var(--u)) 0;
+  overflow: hidden;
+}
+
+.githubNumbers {
+  display: grid;
+  flex: none;
+  grid-template-columns: repeat(3, 1fr);
+  color: var(--muted);
+}
+
+.githubNumbers span {
+  display: block;
+  color: var(--text);
+  font-size: calc(24 * var(--u));
+  line-height: 1.15;
+}
+
+/* ---- game ---- */
+
+.game {
+  display: flex;
+  align-items: center;
+  gap: calc(14 * var(--u));
+  height: 100%;
+}
+
+.gameCover {
+  position: relative;
+  flex: none;
+  height: 100%;
+  max-width: 40%;
+  aspect-ratio: 2 / 3;
+}
+
+.gameArt {
+  width: 100%;
+  height: 100%;
+  border-radius: calc(8 * var(--u));
+}
+
+.gamePlay {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  width: calc(40 * var(--u));
+  height: calc(40 * var(--u));
+  margin: auto;
+  border-radius: 50%;
+  background: color-mix(in srgb, var(--accent) 90%, transparent);
+  color: var(--on-accent);
+}
+
+/* The whole cover can be tapped. */
+.gamePlay::after {
+  position: absolute;
+  inset: calc(-14 * var(--u));
+  content: '';
+}
+
+.gamePlay:active {
+  background: var(--accent-pressed);
+}
+
+.gamePlay:disabled {
+  opacity: 0.4;
+}
+
+.gameText {
+  flex: 1;
+  min-width: 0;
+}
+
+.gameText > p {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: pre;
+}
+
+.gameCaption {
+  color: var(--muted);
+  letter-spacing: calc(2 * var(--u));
+}
+
+.gameCaption[data-playing] {
+  color: var(--good);
+}
+
+.gameSub {
+  min-height: 1.2em;
+  margin-top: calc(3 * var(--u));
+  color: var(--muted);
+}
+
+.gameName {
+  margin-top: calc(3 * var(--u));
+  font-size: calc(20 * var(--u));
 }
 
 /* The bottom bar leaves less height: the board's compact layout. */

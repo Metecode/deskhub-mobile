@@ -10,6 +10,7 @@ import { App } from './App.js';
 import { Connection } from './connection.js';
 import { DarkStore } from './dark.js';
 import { goFullscreenOnTap } from './fullscreen.js';
+import { LaunchStore } from './games.js';
 import { loadLayout, saveLayout } from './layoutStore.js';
 import { Sound } from './sound.js';
 import { SpeedTestStore } from './speedTest.js';
@@ -24,6 +25,7 @@ const connection = new Connection(`${scheme}//${location.host}/client`, loadToke
 const weather = new WeatherStore();
 const sound = new Sound();
 const speedTest = new SpeedTestStore();
+const launches = new LaunchStore();
 
 const darkReasons = () => {
   const { asleep, layout } = connection.getState();
@@ -85,6 +87,7 @@ createRoot(document.getElementById('root')!).render(
       timer={timer}
       dark={dark}
       speedTest={speedTest}
+      launches={launches}
       sound={sound}
     />
   </StrictMode>,

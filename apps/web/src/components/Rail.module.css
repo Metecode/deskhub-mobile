@@ -1,23 +1,47 @@
-/* Along a side unless App puts it at the bottom (--dock). */
+/* Along a side unless App puts it at the bottom (data-nav). A tab is at least 44 px both ways. */
 .rail {
   display: flex;
   flex: none;
   flex-direction: column;
-  align-items: center;
-  gap: calc(2 * var(--u));
   width: calc(88 * var(--u) + env(safe-area-inset-left));
-  padding: calc(10 * var(--u)) 0 max(calc(10 * var(--u)), env(safe-area-inset-bottom)) env(safe-area-inset-left);
+  padding: calc(6 * var(--u)) 0 max(calc(8 * var(--u)), env(safe-area-inset-bottom)) env(safe-area-inset-left);
   border-right: 1px solid var(--border);
   background: var(--rail);
+}
+
+.tabs {
+  --fade: 26px;
+
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  align-items: center;
+  min-height: 0;
+  overflow: hidden auto;
+  scrollbar-width: none;
+  overscroll-behavior: contain;
+  scroll-padding: var(--fade);
+  mask-image: linear-gradient(var(--to), transparent, #000 var(--start), #000 calc(100% - var(--end)), transparent);
+  --to: to bottom;
+  --start: 0px;
+  --end: 0px;
+}
+
+.tabs[data-before] {
+  --start: var(--fade);
+}
+
+.tabs[data-after] {
+  --end: var(--fade);
 }
 
 .tab {
   position: relative;
   display: grid;
-  flex: 1;
+  flex: 1 0 var(--tab, 44px);
   place-items: center;
-  width: calc(64 * var(--u));
-  max-height: calc(60 * var(--u));
+  width: max(44px, calc(64 * var(--u)));
+  max-height: max(44px, calc(60 * var(--u)));
   border-radius: calc(14 * var(--u));
   color: var(--muted);
 }
@@ -46,13 +70,13 @@
   border-radius: 50%;
 }
 
+/* Side by side: that leaves room for another tab. */
 .status {
   display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: calc(6 * var(--u));
-  margin-top: auto;
-  padding-top: calc(8 * var(--u));
+  flex: none;
+  gap: calc(8 * var(--u));
+  justify-content: center;
+  padding-top: calc(6 * var(--u));
 }
 
 .good {
@@ -77,8 +101,9 @@
 
 :global([data-nav='bottom']) > .rail {
   flex-direction: row;
+  align-items: center;
   width: 100%;
-  height: calc(64 * var(--u) + env(safe-area-inset-bottom));
+  height: calc(max(52px, 64 * var(--u)) + env(safe-area-inset-bottom));
   padding: 0 max(calc(14 * var(--u)), env(safe-area-inset-right)) env(safe-area-inset-bottom)
     max(calc(14 * var(--u)), env(safe-area-inset-left));
   border-top: 1px solid var(--border);
@@ -86,15 +111,24 @@
   border-left: 0;
 }
 
+:global([data-nav='bottom']) > .rail .tabs {
+  --to: to right;
+
+  flex-direction: row;
+  min-width: 0;
+  overflow: auto hidden;
+}
+
 :global([data-nav='bottom']) > .rail .tab {
   width: auto;
-  max-width: calc(84 * var(--u));
-  height: calc(52 * var(--u));
+  max-width: max(44px, calc(84 * var(--u)));
+  height: max(44px, calc(52 * var(--u)));
+  max-height: none;
 }
 
 :global([data-nav='bottom']) > .rail .status {
+  flex-direction: column;
   gap: calc(2 * var(--u));
-  margin-top: 0;
   padding-top: 0;
-  margin-left: auto;
+  padding-left: calc(6 * var(--u));
 }

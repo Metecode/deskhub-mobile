@@ -61,10 +61,10 @@ Phase 3, branch `phase-3`:
 - [x] Protocol: schemas, normalizers, portraits
 - [x] Bridge: game covers
 - [x] Bridge: mock mode
-- [ ] Web: navigation bar
-- [ ] Web: games page and widget
-- [ ] Web: printer page and widget
-- [ ] Web: GitHub page and widget
+- [x] Web: navigation bar
+- [x] Web: games page and widget
+- [x] Web: printer page and widget
+- [x] Web: GitHub page and widget
 - [ ] `tools/fake-moonraker.mjs`
 - [ ] README, docs/protocol.md
 - [ ] Verified with the real companion

@@ -5,7 +5,7 @@ import { agenda, calendarBadge, eventsSummary, eventWhen, isLive } from './agend
 import { coverOf, readCover, rgb565ToRgba } from './cover.js';
 import { glyph, tileIcon } from './icons.js';
 import { loadLayout, saveLayout } from './layoutStore.js';
-import { pageToShow, tabsOf } from './nav.js';
+import { pageToShow, scrolledTab, TAB_MIN, tabsOf } from './nav.js';
 import { positionAt } from './position.js';
 import { amPm, formatClock, formatDate, formatDigits, formatDuration, formatHour, formatShortDate, startOfDay } from './time.js';
 import { formatPrecip, formatTemp, isDaytime, weatherColor, weatherIcon, weatherText } from './weatherLook.js';
@@ -136,8 +136,8 @@ describe('media', () => {
   };
 
   it('reads covers', () => {
-    expect(readCover(frame('ART1', 7, 2, 1))).toMatchObject({ from: 'pc', cover: { id: 7, width: 2, height: 1 } });
-    expect(readCover(frame('ARS1', 8, 320, 320))).toMatchObject({ from: 'server', cover: { id: 8 } });
+    expect(readCover(frame('ART1', 7, 2, 1))).toMatchObject({ art: { magic: 'ART1' }, cover: { id: 7, width: 2, height: 1 } });
+    expect(readCover(frame('ARS1', 8, 320, 320))).toMatchObject({ art: { magic: 'ARS1' }, cover: { id: 8 } });
     for (const bad of [frame('ART1', 7, 321, 1), frame('ARS1', 7, 1, 321), frame('XXX1', 7, 1, 1), new ArrayBuffer(3)])
       expect(readCover(bad)).toBeNull();
   });
@@ -214,15 +214,33 @@ describe('navigation', () => {
       'weather',
       'media',
       'timer',
+      'games',
       'shortcuts',
     ]);
-    expect(tabsOf(['home', 'media', 'ai', 'stats', 'network', 'github'])).toEqual(['home', 'media', 'ai', 'stats']);
+    expect(tabsOf(['home', 'media', 'ai', 'stats', 'network', 'github'])).toEqual(['home', 'media', 'ai', 'stats', 'github']);
   });
 
   it('goes Home when a page is off or missing', () => {
     expect(pageToShow('media', ['home', 'media'])).toBe('media');
     expect(pageToShow('media', ['home', 'stats'])).toBe('home');
-    expect(pageToShow('printer', ['home', 'printer'])).toBe('home');
+    expect(pageToShow('network', ['home', 'network'])).toBe('home');
+  });
+});
+
+describe('bar', () => {
+  it('needs no scrolling while tabs of 44 px fit', () => {
+    expect(scrolledTab(484, 11)).toBeNull();
+    expect(scrolledTab(2000, 11)).toBeNull();
+  });
+
+  it('shows half a tab more than fits, with tabs of at least 44 px', () => {
+    expect(scrolledTab(483, 11)! * 10.5).toBeCloseTo(483);
+    expect(scrolledTab(352, 11)! * 7.5).toBeCloseTo(352);
+    for (let length = 70; length < 484; length++) {
+      const tab = scrolledTab(length, 11)!;
+      expect(tab).toBeGreaterThanOrEqual(TAB_MIN);
+      expect((length / tab) % 1).toBeCloseTo(0.5);
+    }
   });
 });
 

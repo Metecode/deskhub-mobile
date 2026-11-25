@@ -1,17 +1,20 @@
 // Home: the companion's widgets on a 5 x 3 grid (firmware/main/ui_home.c).
 import { GRID_COLS, visibleWidgets, WIDGET_PAGES, type Alert, type GridItem, type Page } from '@deskhub-mobile/protocol';
-import { useRef, type CSSProperties, type ReactNode } from 'react';
+import { useRef, useSyncExternalStore, type CSSProperties, type ReactNode } from 'react';
 import { eventsSummary, eventWhen, notOver } from '../agenda.js';
 import { AlertStrip } from '../components/Alert.js';
 import { Bar } from '../components/Bar.js';
+import { ContributionChart } from '../components/ContributionChart.js';
 import { CoverArt } from '../components/CoverArt.js';
 import { Icon } from '../components/Icon.js';
 import { isOnline, pcMedia, type BridgeState, type Connection } from '../connection.js';
 import { coverOf } from '../cover.js';
 import { formatPercent } from '../format.js';
-import { useInnerHeight } from '../hooks.js';
-import type { IconName } from '../icons.js';
+import { homeGame, sessionSeconds, type LaunchStore } from '../games.js';
+import { formatCount, homeStreak, homeTotal, tallChart, wideChart } from '../github.js';
+import { useInnerSize } from '../hooks.js';
 import { formatLatency, homeText, latencyColor } from '../internet.js';
+import { homePrinter } from '../printers.js';
 import { statusHint } from '../status.js';
 import { amPm, formatDate, formatDigits, HOUR12 } from '../time.js';
 import { agentColor, homeLimits } from '../usage.js';
@@ -27,6 +30,7 @@ interface HomeProps {
   /** Epoch seconds. */
   now: number;
   connection: Connection;
+  launches: LaunchStore;
   onOpen: (page: Page) => void;
 }
 
@@ -117,7 +121,7 @@ const EVENT_LINE = 20;
 
 function EventsWidget({ state, now }: { state: BridgeState; now: number }) {
   const box = useRef<HTMLDivElement>(null);
-  const height = useInnerHeight(box);
+  const { height } = useInnerSize(box);
   const fit = Math.floor((height - EVENT_HEADER + 4) / EVENT_PITCH);
   const shown = notOver(state.events.events, now).slice(0, Math.min(EVENT_ROWS_MAX, Math.max(1, fit)));
   const room = height - EVENT_HEADER - shown.length * EVENT_PITCH >= EVENT_LINE;
@@ -227,20 +231,123 @@ function StatsWidget({ state, tiny }: { state: BridgeState; tiny: boolean }) {
   );
 }
 
-// Their pages come later. Labels from HOME_WIDGETS in pages.py.
-const LATER: Readonly<Partial<Record<GridItem['widget'], readonly [IconName, string]>>> = {
-  printer: ['view_in_ar', '3D print progress'],
-  game: ['sports_esports', 'Steam game'],
-  github: ['commit', 'GitHub contributions'],
-};
-
-function Placeholder({ widget }: { widget: GridItem['widget'] }) {
-  const [icon, label] = LATER[widget] ?? ['apps', widget];
+function PrinterWidget({ state, narrow }: { state: BridgeState; narrow: boolean }) {
+  const { state: text, color, file, pct, info } = homePrinter(state.printers);
   return (
-    <div className={styles.placeholder}>
-      <Icon name={icon} size={24} />
-      <p>{label}</p>
-      <p className={styles.later}>Not available yet</p>
+    <div className={styles.spread}>
+      <p className={styles.spreadHead}>
+        {!narrow && <span className={styles.spreadCaption}>3D PRINT</span>}
+        <span className={styles.ellipsis} style={{ color }}>
+          {text}
+        </span>
+      </p>
+      <div>
+        <p className={styles.printFile}>{file}</p>
+        <Bar value={pct} color={color} height={10} />
+      </div>
+      <p className={styles.spreadSub}>{info}</p>
+    </div>
+  );
+}
+
+interface GameWidgetProps {
+  state: BridgeState;
+  connection: Connection;
+  launches: LaunchStore;
+  now: number;
+}
+
+function GameWidget({ state, connection, launches, now }: GameWidgetProps) {
+  const launching = useSyncExternalStore(launches.subscribe, launches.getState);
+  const { steam, gameCovers } = state;
+  const online = isOnline(state);
+  const session = steam ? sessionSeconds(steam, state, now) : 0;
+  const { caption, sub, name } = homeGame(steam, session, online, now);
+  const last = steam && !steam.playing ? steam.recent[0] : undefined;
+  const shown = steam?.playing ?? last;
+  const { thumb } = gameCovers;
+  const cover = shown && thumb?.id === shown.appid ? thumb : null;
+  return (
+    <div className={styles.game}>
+      <div className={styles.gameCover} style={cover ? { aspectRatio: `${cover.width} / ${cover.height}` } : undefined}>
+        <CoverArt cover={cover} icon="sports_esports" iconSize={32} className={styles.gameArt} />
+        {last && (
+          <button
+            type="button"
+            className={styles.gamePlay}
+            aria-label={`Play ${last.name}`}
+            disabled={!online || launching !== null}
+            onClick={(e) => {
+              e.stopPropagation();
+              launches.launch(last.appid, () => connection.send({ type: 'steam_launch', appid: last.appid }));
+            }}
+          >
+            <Icon name="play_arrow" size={24} />
+          </button>
+        )}
+      </div>
+      <div className={styles.gameText}>
+        <p className={styles.gameCaption} data-playing={steam?.playing ? true : undefined}>
+          {last && launching === last.appid ? 'STARTING' : caption}
+        </p>
+        <p className={styles.gameSub}>{sub}</p>
+        <p className={styles.gameName}>{name}</p>
+      </div>
+    </div>
+  );
+}
+
+const githubWhy = (state: BridgeState) => (isOnline(state) ? 'Waiting for the PC' : 'PC offline');
+
+/** One row: the chart as high as the card, the numbers on its right. */
+function WideGitHubWidget({ state, wide }: { state: BridgeState; wide: boolean }) {
+  const { github } = state;
+  const box = useRef<HTMLDivElement>(null);
+  const { width, height } = useInnerSize(box);
+  return (
+    <div className={styles.github}>
+      <div ref={box} className={styles.githubChart}>
+        {height > 0 && <ContributionChart github={github} {...wideChart(github, width - 2, height - 2)} />}
+      </div>
+      <div className={styles.githubSide} data-wide={wide || undefined}>
+        <p className={styles.spreadCaption}>GITHUB</p>
+        <p className={styles.githubTotal}>{github ? formatCount(github.total) : '--'}</p>
+        <p className={styles.spreadSub}>{github ? homeStreak(github) : githubWhy(state)}</p>
+        {github && github.privateCount > 0 && (
+          <p className={styles.spreadSub}>{formatCount(github.privateCount)} private</p>
+        )}
+      </div>
+    </div>
+  );
+}
+
+/** Two rows: months over the chart, numbers under it. */
+function TallGitHubWidget({ state }: { state: BridgeState }) {
+  const { github } = state;
+  const box = useRef<HTMLDivElement>(null);
+  const { width, height } = useInnerSize(box);
+  const numbers = [
+    ['today', github?.today],
+    ['this week', github?.week],
+    ['day streak', github?.streak],
+  ] as const;
+  return (
+    <div className={styles.spread}>
+      <p className={styles.spreadHead}>
+        <span className={styles.spreadCaption}>GITHUB</span>
+        <span className={styles.ellipsis}>{github ? homeTotal(github) : githubWhy(state)}</span>
+      </p>
+      <div ref={box} className={styles.githubTall}>
+        {height > 0 && <ContributionChart github={github} {...tallChart(github, width - 2, height - 22)} months />}
+      </div>
+      <div className={styles.githubNumbers}>
+        {numbers.map(([what, n]) => (
+          <p key={what}>
+            <span>{n === undefined ? '--' : formatCount(n)}</span>
+            {what}
+          </p>
+        ))}
+      </div>
     </div>
   );
 }
@@ -251,11 +358,11 @@ const STRIP_CELLS = 3;
 const place = ({ x, y, w, h }: Pick<GridItem, 'x' | 'y' | 'w' | 'h'>) =>
   ({ '--x': x + 1, '--y': y + 1, '--w': w, '--h': h }) as CSSProperties;
 
-export function HomePage({ state, weather, alert, onAlertAction, now, connection, onOpen }: HomeProps) {
+export function HomePage({ state, weather, alert, onAlertAction, now, connection, launches, onOpen }: HomeProps) {
   const { home, layout } = state;
   const hint = state.link === 'bad_origin' ? statusHint(state) : '';
 
-  function content({ widget, w }: GridItem): ReactNode {
+  function content({ widget, w, h }: GridItem): ReactNode {
     switch (widget) {
       case 'clock':
         return <ClockWidget now={now} />;
@@ -271,8 +378,12 @@ export function HomePage({ state, weather, alert, onAlertAction, now, connection
         return <StatsWidget state={state} tiny={w === 1} />;
       case 'net':
         return <NetWidget state={state} now={now} tiny={w === 1} />;
-      default:
-        return <Placeholder widget={widget} />;
+      case 'printer':
+        return <PrinterWidget state={state} narrow={w < 3} />;
+      case 'game':
+        return <GameWidget state={state} connection={connection} launches={launches} now={now} />;
+      case 'github':
+        return h > 1 ? <TallGitHubWidget state={state} /> : <WideGitHubWidget state={state} wide={w >= 4} />;
     }
   }
 
@@ -283,7 +394,7 @@ export function HomePage({ state, weather, alert, onAlertAction, now, connection
       <div className={styles.grid}>
         {visibleWidgets(home, layout.pages).map((item) => {
           const page = WIDGET_PAGES[item.widget];
-          const opens = page && !LATER[item.widget] ? page : null;
+          const opens = page ?? (item.widget === 'github' && layout.pages.includes('github') ? 'github' : null);
           if (alert && item.widget === 'claude') {
             const w = Math.max(item.w, STRIP_CELLS);
             const strip = { ...item, w, x: Math.min(item.x, GRID_COLS - w) };

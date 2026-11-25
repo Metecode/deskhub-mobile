@@ -1,0 +1,266 @@
+.page {
+  display: grid;
+  flex: 1;
+  grid-template-rows: minmax(0, 191fr) minmax(0, 227fr);
+  gap: calc(12 * var(--u));
+  min-height: 0;
+}
+
+.top,
+.recent {
+  display: flex;
+  min-width: 0;
+  min-height: 0;
+  padding: calc(14 * var(--u)) calc(16 * var(--u));
+  overflow: hidden;
+  border: 1px solid var(--border);
+  border-radius: calc(16 * var(--u));
+  background: var(--card);
+}
+
+.caption,
+.playing {
+  flex: none;
+  color: var(--muted);
+  font-size: inherit;
+  font-weight: 500;
+  letter-spacing: calc(2 * var(--u));
+  white-space: pre;
+}
+
+.playing {
+  color: var(--good);
+}
+
+/* ---- now playing ---- */
+
+.top {
+  gap: calc(20 * var(--u));
+}
+
+.header {
+  flex: none;
+  height: 100%;
+  max-width: 60%;
+  aspect-ratio: 340 / 159;
+  border-radius: calc(12 * var(--u));
+}
+
+.now {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  min-width: 0;
+  padding: calc(2 * var(--u)) 0;
+}
+
+.name {
+  font-size: calc(24 * var(--u));
+}
+
+.now .name {
+  display: -webkit-box;
+  flex: none;
+  margin-top: calc(6 * var(--u));
+  overflow: hidden;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+}
+
+.time {
+  margin-top: auto;
+  font-size: calc(20 * var(--u));
+}
+
+.total {
+  min-height: 1.2em;
+  margin-top: calc(4 * var(--u));
+  overflow: hidden;
+  color: var(--muted);
+  font-size: calc(16 * var(--u));
+  text-overflow: ellipsis;
+}
+
+.now .total {
+  white-space: pre;
+}
+
+.idle {
+  display: flex;
+  flex: 372;
+  align-items: center;
+  gap: calc(32 * var(--u));
+  min-width: 0;
+  padding-left: calc(24 * var(--u));
+}
+
+.friends {
+  display: flex;
+  flex: 268;
+  flex-direction: column;
+  gap: calc(7 * var(--u));
+  min-width: 0;
+}
+
+.friend {
+  display: flex;
+  align-items: baseline;
+  gap: calc(8 * var(--u));
+}
+
+.friend > * {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.friend > :first-child {
+  flex: 2;
+  font-size: calc(16 * var(--u));
+}
+
+.friend > :last-child {
+  flex: 3;
+  color: var(--good);
+}
+
+/* ---- recent games ---- */
+
+.recent {
+  position: relative;
+  flex-direction: column;
+}
+
+.tiles {
+  display: grid;
+  flex: 1;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: calc(8 * var(--u));
+  min-height: 0;
+  margin-top: calc(8 * var(--u));
+}
+
+.tile {
+  display: flex;
+  flex-direction: column;
+  gap: calc(6 * var(--u));
+  align-items: center;
+  min-width: 0;
+  min-height: 0;
+}
+
+.tile:active:enabled {
+  transform: scale(0.94);
+}
+
+.tile:disabled {
+  opacity: 0.45;
+}
+
+.tile[data-launching] {
+  opacity: 1;
+}
+
+.portrait {
+  position: relative;
+  display: block;
+  flex: 1;
+  min-height: 0;
+  max-height: calc(150 * var(--u));
+  aspect-ratio: 2 / 3;
+}
+
+.cover {
+  width: 100%;
+  height: 100%;
+  border-radius: calc(10 * var(--u));
+}
+
+.hours {
+  position: absolute;
+  right: calc(4 * var(--u));
+  bottom: calc(4 * var(--u));
+  padding: calc(2 * var(--u)) calc(6 * var(--u));
+  border-radius: calc(8 * var(--u));
+  background: rgb(0 0 0 / 70%);
+  white-space: nowrap;
+}
+
+.tileName {
+  flex: none;
+  max-width: 100%;
+  overflow: hidden;
+  color: var(--muted);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.tile[data-launching] .tileName {
+  color: var(--good);
+}
+
+.empty {
+  position: absolute;
+  inset: 0;
+  height: max-content;
+  margin: auto;
+  color: var(--dim);
+  font-size: calc(16 * var(--u));
+  text-align: center;
+}
+
+:global([data-nav='bottom']) .page {
+  grid-template-rows: minmax(0, 134fr) minmax(0, 227fr);
+}
+
+:global([data-nav='bottom']) .now .name {
+  -webkit-line-clamp: 1;
+  margin-top: calc(2 * var(--u));
+}
+
+:global([data-nav='bottom']) .top,
+:global([data-nav='bottom']) .recent {
+  padding-top: calc(10 * var(--u));
+  padding-bottom: calc(10 * var(--u));
+}
+
+:global([data-nav='bottom']) .friends {
+  gap: calc(3 * var(--u));
+}
+
+@media (orientation: portrait) {
+  :global([data-nav='bottom']) .page {
+    grid-template-rows: auto minmax(0, 1fr);
+  }
+
+  .top {
+    flex-direction: column;
+    gap: calc(14 * var(--u));
+  }
+
+  .header {
+    width: 100%;
+    max-width: none;
+    height: auto;
+  }
+
+  .now,
+  .idle,
+  .friends {
+    flex: none;
+  }
+
+  .idle {
+    gap: calc(20 * var(--u));
+    padding-left: 0;
+  }
+
+  .time {
+    margin-top: calc(10 * var(--u));
+  }
+
+  .tiles {
+    grid-template-rows: repeat(2, minmax(0, 1fr));
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}

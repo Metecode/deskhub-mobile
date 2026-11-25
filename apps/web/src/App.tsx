@@ -9,12 +9,16 @@ import { TimesUp } from './components/TimesUp.js';
 import { TokenForm } from './components/TokenForm.js';
 import { isOnline, type Connection } from './connection.js';
 import type { DarkStore } from './dark.js';
+import type { LaunchStore } from './games.js';
 import { useNow, usePortrait } from './hooks.js';
 import { pageToShow, tabsOf } from './nav.js';
 import { AiPage } from './pages/AiPage.js';
 import { CalendarPage } from './pages/CalendarPage.js';
+import { GamesPage } from './pages/GamesPage.js';
+import { GitHubPage } from './pages/GitHubPage.js';
 import { HomePage } from './pages/HomePage.js';
 import { MediaPage } from './pages/MediaPage.js';
+import { PrinterPage } from './pages/PrinterPage.js';
 import { ShortcutsPage } from './pages/ShortcutsPage.js';
 import { StatsPage, type StatsView } from './pages/StatsPage.js';
 import { TimerPage } from './pages/TimerPage.js';
@@ -33,10 +37,11 @@ export interface Stores {
   timer: TimerStore;
   dark: DarkStore;
   speedTest: SpeedTestStore;
+  launches: LaunchStore;
   sound: Sound;
 }
 
-export function App({ connection, weather, alerts, timer, dark, speedTest, sound }: Stores) {
+export function App({ connection, weather, alerts, timer, dark, speedTest, launches, sound }: Stores) {
   const state = useSyncExternalStore(connection.subscribe, connection.getState);
   const forecast = useSyncExternalStore(weather.subscribe, weather.getState);
   const alert = useSyncExternalStore(alerts.subscribe, alerts.getState);
@@ -83,6 +88,7 @@ export function App({ connection, weather, alerts, timer, dark, speedTest, sound
             onAlertAction={alertAction}
             now={now}
             connection={connection}
+            launches={launches}
             onOpen={open}
           />
         );
@@ -99,6 +105,12 @@ export function App({ connection, weather, alerts, timer, dark, speedTest, sound
         );
       case 'ai':
         return <AiPage state={state} alert={alert} onAlertAction={alertAction} now={now} />;
+      case 'printer':
+        return <PrinterPage state={state} />;
+      case 'games':
+        return <GamesPage state={state} connection={connection} launches={launches} now={now} />;
+      case 'github':
+        return <GitHubPage state={state} />;
       case 'timer':
         return <TimerPage timer={timer} sound={sound} />;
       case 'calendar':

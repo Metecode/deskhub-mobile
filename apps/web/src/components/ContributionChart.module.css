@@ -1,0 +1,15 @@
+.chart {
+  display: block;
+  flex: none;
+  max-width: 100%;
+}
+
+.chart text {
+  fill: var(--dim);
+  font-size: 14px;
+}
+
+.today {
+  fill: none;
+  stroke: var(--text);
+}
