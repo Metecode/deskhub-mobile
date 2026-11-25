@@ -67,13 +67,13 @@ Phase 0 is done, on branch `phase-0`, verified on the phone by the user. Phase 1
 - [x] Web: Home page
 - [x] Optional launcher (`tools/run-companion.py`)
 - [x] README, NOTICE, docs/protocol.md
-- [x] Verified with the real companion (not its media commands and the split view, see below)
-- [ ] Verified on the phone (by the user)
+- [x] Verified with the real companion (not the split view, see below)
+- [x] Verified on the phone (by the user)
 
 Update this list with every step.
 
-Next: the user tries it on the phone, then the phase 2 plan.
+Phase 1 is done. Next: the phase 2 plan, for approval.
 
-Not verified yet: media commands against a real player (checked up to the companion's socket); the
-split Media page with a real Plex or Jellyfin server; the other binary frames, `ARS1` and `STM1`, from a real companion (covered by
-unit tests only). `ART1` is verified; its id matches `art_id` in the `media` message.
+Not verified yet: the split Media page with a real Plex or Jellyfin server; the binary frames `ARS1`
+and `STM1` from a real companion (covered by unit tests only); how the phone looks while the PC is
+offline (tests and a desktop browser only).
