@@ -1,0 +1,61 @@
+.page {
+  display: grid;
+  flex: 1;
+  grid-auto-rows: minmax(calc(84 * var(--u)), 1fr);
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: calc(8 * var(--u));
+  min-height: 0;
+  overflow-y: auto;
+  scrollbar-width: none;
+}
+
+.tile {
+  display: flex;
+  flex-direction: column;
+  gap: calc(8 * var(--u));
+  justify-content: space-between;
+  min-width: 0;
+  padding: calc(14 * var(--u)) calc(16 * var(--u));
+  border-radius: calc(20 * var(--u));
+  background: var(--card);
+  text-align: left;
+}
+
+.tile:active {
+  background: var(--pressed);
+}
+
+.text {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.name {
+  font-size: calc(18 * var(--u));
+  font-weight: 600;
+}
+
+.line {
+  overflow: hidden;
+  color: var(--muted);
+  font-size: calc(14 * var(--u));
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* Upright, or with more than two rows: side by side. */
+.tile:nth-last-child(n + 9),
+.tile:nth-last-child(n + 9) ~ .tile {
+  flex-direction: row;
+  gap: calc(12 * var(--u));
+  align-items: center;
+  justify-content: flex-start;
+}
+
+@media (orientation: portrait) {
+  .page {
+    grid-auto-rows: minmax(calc(84 * var(--u)), calc(130 * var(--u)));
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}

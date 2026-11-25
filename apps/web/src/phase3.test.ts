@@ -53,21 +53,21 @@ describe('games', () => {
   const idle = { ...steam, playing: null };
 
   it.each([
-    [0, '0 min'],
-    [59, '59 min'],
-    [60, '1.0 h'],
-    [300, '5.0 h'],
-    [599, '10.0 h'],
-    [600, '10 h'],
-    [2490, '41 h'],
+    [0, '0 dk'],
+    [59, '59 dk'],
+    [60, '1,0 sa'],
+    [300, '5,0 sa'],
+    [599, '10,0 sa'],
+    [600, '10 sa'],
+    [2490, '41 sa'],
   ])('%d minutes: %s', (m, text) => expect(formatPlaytime(m)).toBe(text));
 
   it.each([
-    [10, 'Just now'],
-    [3600, '1h ago'],
-    [86_400, 'Yesterday'],
-    [2 * 86_400, '2 days ago'],
-    [60 * 86_400, '2 months ago'],
+    [10, 'Az önce'],
+    [3600, '1 saat önce'],
+    [86_400, 'Dün'],
+    [2 * 86_400, '2 gün önce'],
+    [60 * 86_400, '2 ay önce'],
   ])('%d s ago: %s', (s, text) => expect(formatLastPlayed(NOW - s, NOW)).toBe(text));
 
   it('never played', () => expect(formatLastPlayed(0, NOW)).toBe(''));
@@ -93,26 +93,26 @@ describe('games', () => {
   });
 
   it('what is being played', () => {
-    expect(playingText(steam, 2880)).toEqual({ time: 'Playing for 48m', total: '128 h played  •  2 friends in game' });
-    expect(playingText({ ...steam, friends: steam.friends.slice(1) }, 3720).total).toContain('1 friend in game');
-    expect(playingText({ ...steam, friends: [] }, 3720)).toEqual({ time: 'Playing for 1h 02m', total: '128 h played' });
+    expect(playingText(steam, 2880)).toEqual({ time: '48 dk süredir oynanıyor', total: 'toplam 128 sa, 2 arkadaş oyunda' });
+    expect(playingText({ ...steam, friends: steam.friends.slice(1) }, 3720).total).toContain('1 arkadaş oyunda');
+    expect(playingText({ ...steam, friends: [] }, 3720)).toEqual({ time: '1 sa 2 dk süredir oynanıyor', total: 'toplam 128 sa' });
     expect(playingText({ ...steam, friends: [] }, 7680 * 60).total).toBe('');
   });
 
   it('nothing being played', () => {
-    expect(idleText(null, true)).toBe('Waiting for the PC');
-    expect(idleText(null, false)).toBe('PC offline');
-    expect(idleText(idle, true)).toBe('Start a game, or pick one below');
-    expect(idleText({ ...idle, found: false }, true)).toBe("Steam isn't installed on the PC");
+    expect(idleText(null, true)).toBe('PC bekleniyor');
+    expect(idleText(null, false)).toBe('PC çevrimdışı');
+    expect(idleText(idle, true)).toBe('Bir oyun başlat ya da aşağıdan seç');
+    expect(idleText({ ...idle, found: false }, true)).toBe('PC’de Steam kurulu değil');
   });
 
   it('the Home card', () => {
-    expect(homeGame(steam, 2880, true, NOW)).toEqual({ caption: 'PLAYING', sub: '48m  •  128 h', name: 'Starfall' });
-    expect(homeGame(idle, 0, true, NOW)).toEqual({ caption: 'RECENT', sub: '2h ago  •  41 h', name: 'Harbor' });
+    expect(homeGame(steam, 2880, true, NOW)).toEqual({ caption: 'Oynanıyor', sub: '48 dk, 128 sa', name: 'Starfall' });
+    expect(homeGame(idle, 0, true, NOW)).toEqual({ caption: 'Son oynanan', sub: '2 saat önce, 41 sa', name: 'Harbor' });
     const empty = { ...idle, recent: [] };
-    expect(homeGame(empty, 0, true, NOW)).toEqual({ caption: 'STEAM', sub: 'No games played yet', name: '' });
-    expect(homeGame({ ...empty, found: false }, 0, true, NOW).sub).toBe('Steam not found');
-    expect(homeGame(null, 0, false, NOW).sub).toBe('PC offline');
+    expect(homeGame(empty, 0, true, NOW)).toEqual({ caption: 'Steam', sub: 'Henüz oynanan oyun yok', name: '' });
+    expect(homeGame({ ...empty, found: false }, 0, true, NOW).sub).toBe('Steam bulunamadı');
+    expect(homeGame(null, 0, false, NOW).sub).toBe('PC çevrimdışı');
   });
 });
 
@@ -144,16 +144,16 @@ describe('printers', () => {
   const at = new Date('2026-11-20T09:01:00').getTime();
 
   it.each([
-    ['RUNNING', 'Printing', 'var(--accent)'],
-    ['PREPARE', 'Preparing', 'var(--accent)'],
-    ['SLICING', 'Slicing', 'var(--accent)'],
-    ['PAUSE', 'Paused', 'var(--warn)'],
-    ['FINISH', 'Finished', 'var(--good)'],
-    ['FAILED', 'Failed', 'var(--bad)'],
-    ['IDLE', 'Idle', 'var(--dim)'],
-    ['OFFLINE', 'Offline', 'var(--dim)'],
+    ['RUNNING', 'Basıyor', 'var(--accent)'],
+    ['PREPARE', 'Hazırlanıyor', 'var(--accent)'],
+    ['SLICING', 'Dilimleniyor', 'var(--accent)'],
+    ['PAUSE', 'Duraklatıldı', 'var(--warn)'],
+    ['FINISH', 'Bitti', 'var(--good)'],
+    ['FAILED', 'Başarısız', 'var(--bad)'],
+    ['IDLE', 'Boşta', 'var(--dim)'],
+    ['OFFLINE', 'Çevrimdışı', 'var(--dim)'],
     ['DANCING', 'DANCING', 'var(--dim)'],
-    ['', 'Unknown', 'var(--dim)'],
+    ['', 'Bilinmiyor', 'var(--dim)'],
     ['toString', 'toString', 'var(--dim)'],
   ])('state %s', (state, text, color) => {
     expect([stateText(state), stateColor(state)]).toEqual([text, color]);
@@ -171,22 +171,22 @@ describe('printers', () => {
 
   it('formats', () => {
     expect([null, 0, 219.6, 219.4, -0.4, -2.5].map(formatTemp)).toEqual(['--', '0°', '220°', '219°', '0°', '-3°']);
-    expect([0, 59, 60, 125].map(formatRemaining)).toEqual(['0m left', '59m left', '1h 00m left', '2h 05m left']);
-    expect(formatDone(48, at, true)).toBe('Done at 9:49 AM');
-    expect(formatDone(18 * 60 - 1, at, false)).toBe('Done at 03:00');
-    expect(formatDone(18 * 60, at, false)).toBe('Done Sat 03:01');
+    expect([0, 59, 60, 125].map(formatRemaining)).toEqual(['0 dk kaldı', '59 dk kaldı', '1 sa 0 dk kaldı', '2 sa 5 dk kaldı']);
+    expect(formatDone(48, at)).toBe('Bitiş 09:49');
+    expect(formatDone(18 * 60 - 1, at)).toBe('Bitiş 03:00');
+    expect(formatDone(18 * 60, at)).toBe('Bitiş Cmt 03:01');
     expect([isDarkFilament('#101010'), isDarkFilament('#202020'), isDarkFilament('#ffb224')]).toEqual([true, false, false]);
   });
 
   it('a print', () => {
     expect(printerView(running, at)).toEqual({
       pct: 47,
-      remaining: '48m left',
+      remaining: '48 dk kaldı',
       done: formatDone(48, at),
-      layer: 'Layer 112 of 240',
-      fileCaption: 'PRINTING',
+      layer: 'Katman 112 / 240',
+      fileCaption: 'Basılıyor',
       file: 'Box',
-      speed: '100% speed',
+      speed: '%100 hız',
     });
     expect(printerView({ ...running, remaining: 0 }, at)).toMatchObject({ remaining: '', done: '' });
   });
@@ -204,33 +204,33 @@ describe('printers', () => {
     expect(printerView({ ...running, state: 'FINISH', pct: 99 }, at)).toMatchObject({
       pct: 100,
       remaining: '',
-      done: 'Ready to remove',
-      layer: 'Layer 112 of 240',
-      fileCaption: 'LAST PRINT',
+      done: 'Alınmaya hazır',
+      layer: 'Katman 112 / 240',
+      fileCaption: 'Son baskı',
       speed: '',
     });
-    expect(printerView({ ...running, state: 'FAILED' }, at)).toMatchObject({ pct: null, layer: '', fileCaption: 'LAST FILE' });
+    expect(printerView({ ...running, state: 'FAILED' }, at)).toMatchObject({ pct: null, layer: '', fileCaption: 'Son dosya' });
     expect(printerView(printer({}), at)).toMatchObject({ pct: null, file: '--' });
   });
 
   it('the Home card', () => {
-    expect(homePrinter([])).toMatchObject({ file: 'No printer connected', state: '', pct: 0 });
+    expect(homePrinter([])).toMatchObject({ file: 'Yazıcı bağlı değil', state: '', pct: 0 });
     expect(homePrinter([printer({}), running])).toEqual({
-      state: 'P  •  Printing',
+      state: 'P, Basıyor',
       color: 'var(--accent)',
       file: 'Box',
       pct: 47,
-      info: '47%  •  48m left',
+      info: '%47, 48 dk kaldı',
     });
     expect(homePrinter([printer({ name: '', state: 'FINISH', pct: 3 })])).toMatchObject({
-      state: 'M  •  Finished',
+      state: 'M, Bitti',
       pct: 100,
-      info: 'Done  •  ready to remove',
+      info: 'Bitti, alınmaya hazır',
     });
-    expect(homePrinter([printer({ state: 'SLICING', pct: 5 })])).toMatchObject({ state: 'P  •  Idle', color: 'var(--dim)', pct: 0 });
-    expect(homePrinter([printer({ state: 'OFFLINE' })])).toMatchObject({ state: 'P  •  Offline', file: 'Not printing' });
+    expect(homePrinter([printer({ state: 'SLICING', pct: 5 })])).toMatchObject({ state: 'P, Boşta', color: 'var(--dim)', pct: 0 });
+    expect(homePrinter([printer({ state: 'OFFLINE' })])).toMatchObject({ state: 'P, Çevrimdışı', file: 'Baskı yok' });
     expect(homePrinter([printer({ state: 'FAILED' })]).color).toBe('var(--bad)');
-    expect(homePrinter([printer({ state: 'PREPARE' })]).file).toBe('Printing');
+    expect(homePrinter([printer({ state: 'PREPARE' })]).file).toBe('Basılıyor');
   });
 });
 
@@ -285,8 +285,8 @@ describe('GitHub', () => {
 
   it('leaves out month labels that crowd or stick out', () => {
     // Nov at 0, Dec at 12 would crowd; Jan at 60; Oct at 600 fits, Nov at 624 doesn't.
-    expect(monthLabels(github, 53, 12).map((m) => m.name)).toEqual(['Nov', 'Jan', 'Oct']);
-    expect(monthLabels(github, 10, 12)).toEqual([{ x: 84, name: 'Oct' }]);
+    expect(monthLabels(github, 53, 12).map((m) => m.name)).toEqual(['Kas', 'Oca', 'Eki']);
+    expect(monthLabels(github, 10, 12)).toEqual([{ x: 84, name: 'Eki' }]);
     expect(monthLabels(null, 53, 12)).toEqual([]);
   });
 
@@ -311,23 +311,23 @@ describe('GitHub', () => {
   });
 
   it('texts', () => {
-    expect(formatCount(1234567)).toBe('1,234,567');
-    expect(summary(github)).toBe('1,033 contributions  •  120 commits  •  907 private  •  1 issues');
-    expect(longestText(github)).toBe('10 days');
-    expect(longestText({ ...github, longest: 1 })).toBe('1 day');
-    expect(bestText(github)).toBe('75 on Nov 16');
+    expect(formatCount(1234567)).toBe('1.234.567');
+    expect(summary(github)).toBe('1.033 katkı, 120 commit, 907 gizli, 1 issue');
+    expect(longestText(github)).toBe('10 gün');
+    expect(longestText({ ...github, longest: 1 })).toBe('1 gün');
+    expect(bestText(github)).toBe('16 Kas, 75');
     expect(bestText({ ...github, best: 0 })).toBe('--');
-    expect(homeTotal(github)).toBe('1,033 in the last year  •  907 private');
-    expect(homeTotal({ ...github, privateCount: 0 })).toBe('1,033 in the last year');
-    expect(homeStreak(github)).toBe('5-day streak');
-    expect(homeStreak({ ...github, streak: 0 })).toBe('3 today');
+    expect(homeTotal(github)).toBe('son bir yılda 1.033, 907 gizli');
+    expect(homeTotal({ ...github, privateCount: 0 })).toBe('son bir yılda 1.033');
+    expect(homeStreak(github)).toBe('5 günlük seri');
+    expect(homeStreak({ ...github, streak: 0 })).toBe('bugün 3');
   });
 
   it('this week against last week', () => {
     const change = (week: number, lastWeek: number) => weekChange({ ...github, week, lastWeek });
-    expect(change(281, 101)).toEqual({ text: '+180 vs last week', more: true });
-    expect(change(1, 3)).toEqual({ text: '-2 vs last week', more: false });
-    expect(change(3, 3).text).toBe('same as last week');
+    expect(change(281, 101)).toEqual({ text: 'geçen haftadan 180 fazla', more: true });
+    expect(change(1, 3)).toEqual({ text: 'geçen haftadan 2 az', more: false });
+    expect(change(3, 3).text).toBe('geçen haftayla aynı');
     expect(change(0, 0).text).toBe('');
   });
 });

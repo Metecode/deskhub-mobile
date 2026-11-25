@@ -1,6 +1,7 @@
 import type { Alert } from '@deskhub-mobile/protocol';
 import { describe, expect, it, vi } from 'vitest';
-import { AlertStore, panelText, shortDetail } from './alerts.js';
+import { AlertStore, panelText } from './alerts.js';
+import { alertText } from './text.js';
 
 const A: Alert = { id: 'a', permission: true, title: 'Claude wants to use Bash', detail: 'npm test', project: 'hub' };
 const B: Alert = { ...A, id: 'b', permission: false };
@@ -83,17 +84,9 @@ describe('AlertStore', () => {
 });
 
 describe('texts', () => {
-  it.each([
-    [{ detail: 'Claude wants to use Bash' }, 'Wants to use Bash'],
-    [{ detail: 'Finished. the tests pass' }, 'The tests pass'],
-    [{ detail: 'Claude Finished. ok' }, 'Ok'],
-    [{ detail: '', title: 'Claude is waiting' }, 'Is waiting'],
-    [{ detail: 'ığdır' }, 'ığdır'],
-  ])('the strip: %j', (change, text) => expect(shortDetail({ ...A, ...change })).toBe(text));
-
   it('the panel does not say the same twice', () => {
-    expect(panelText(A)).toEqual({ title: A.title, detail: 'npm test' });
+    expect(panelText(A)).toEqual({ title: alertText(A.title), detail: 'npm test' });
     expect(panelText({ ...A, detail: A.title }).detail).toBe('');
-    expect(panelText({ ...A, title: '', detail: '' }).title).toBe('Claude is waiting for you');
+    expect(panelText({ ...A, title: '', detail: '' }).title).toBe('Claude seni bekliyor');
   });
 });

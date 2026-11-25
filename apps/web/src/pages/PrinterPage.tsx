@@ -3,18 +3,17 @@ import type { Printer } from '@deskhub-mobile/protocol';
 import { useState, type CSSProperties } from 'react';
 import { Empty } from '../components/Empty.js';
 import { Icon } from '../components/Icon.js';
+import { Ring } from '../components/Ring.js';
 import { isOnline, type BridgeState } from '../connection.js';
 import type { IconName } from '../icons.js';
 import { formatTemp, isDarkFilament, printerName, printerView, shownPrinter, stateColor, stateText } from '../printers.js';
+import { printerError, T } from '../text.js';
 import styles from './PrinterPage.module.css';
 
-// 220 px, 16 px thick, 270 degrees from 135.
-const ARC = 'M37.88 182.12 A102 102 0 1 1 182.12 182.12';
-
 const TEMPERATURES = (p: Printer): [IconName, string, string, number | null, number | null][] => [
-  ['local_fire_department', 'var(--warn)', 'Nozzle', p.nozzle, p.nozzleTarget],
-  ['layers', 'var(--cpu)', 'Bed', p.bed, p.bedTarget],
-  ['device_thermostat', 'var(--gpu)', 'Chamber', p.chamber, null],
+  ['local_fire_department', 'var(--warn)', T.printer.nozzle, p.nozzle, p.nozzleTarget],
+  ['layers', 'var(--cpu)', T.printer.bed, p.bed, p.bedTarget],
+  ['device_thermostat', 'var(--gpu)', T.printer.chamber, p.chamber, null],
 ];
 
 export function PrinterPage({ state }: { state: BridgeState }) {
@@ -23,17 +22,16 @@ export function PrinterPage({ state }: { state: BridgeState }) {
   const index = shownPrinter(printers, picked);
   const printer = printers[index];
   if (!printer) {
-    const hint = isOnline(state) ? 'Add one with deskhub-printers on your PC' : 'Start the companion app on your PC';
+    const hint = isOnline(state) ? T.printer.add : T.status.startCompanion;
     return (
       <main className={styles.page}>
-        <Empty icon="view_in_ar" title="No printer connected" hint={hint} />
+        <Empty icon="view_in_ar" title={T.printer.none} hint={hint} />
       </main>
     );
   }
 
   const view = printerView(printer, state.printersAt);
   const color = stateColor(printer.state);
-  const value = Math.min(100, Math.max(0, view.pct ?? 0));
   const many = printers.length > 1;
   return (
     <main className={styles.page}>
@@ -49,50 +47,46 @@ export function PrinterPage({ state }: { state: BridgeState }) {
         <span className={styles.chip} style={{ '--state': color } as CSSProperties}>
           {stateText(printer.state)}
         </span>
-        <span className={styles.count}>{many ? `${index + 1} of ${printers.length}  ›` : printer.model}</span>
+        <span className={styles.count}>{many ? `${T.printer.of(index + 1, printers.length)}  ›` : printer.model}</span>
       </header>
 
       <div className={styles.body}>
-        <section className={`${styles.card} ${styles.progress}`}>
-          <div className={styles.dial}>
-            <svg viewBox="0 0 220 220" aria-hidden="true">
-              <path className={styles.track} d={ARC} />
-              {value > 0 && (
-                <path className={styles.arc} d={ARC} stroke={color} pathLength={100} strokeDasharray={`${value} 200`} />
-              )}
-            </svg>
-            <p className={styles.pct} data-text={view.pct === null || undefined}>
-              {view.pct === null ? stateText(printer.state) : `${view.pct}%`}
+        <section className={`${styles.progress} card`}>
+          {view.pct === null ? (
+            <p className={styles.state} style={{ color }}>
+              {stateText(printer.state)}
             </p>
-            <p className={styles.remaining}>{view.remaining}</p>
-          </div>
+          ) : (
+            <Ring percent={view.pct} color={color} size={136} />
+          )}
+          <p className={styles.remaining}>{view.remaining}</p>
           <p className={styles.done}>{view.done}</p>
           <p className={styles.layer}>{view.layer}</p>
-          <p className={styles.error}>{printer.error}</p>
+          <p className={styles.error}>{printerError(printer.error)}</p>
         </section>
 
-        <section className={`${styles.card} ${styles.job}`}>
-          <h2 className={styles.caption}>{view.fileCaption}</h2>
+        <section className={`${styles.job} card`}>
+          <h2 className={styles.muted}>{view.fileCaption}</h2>
           <p className={styles.file}>{view.file}</p>
           <p className={styles.small}>{view.speed}</p>
         </section>
 
-        <section className={`${styles.card} ${styles.temperatures}`}>
+        <section className={`${styles.temperatures} card`}>
           {TEMPERATURES(printer).map(([icon, tint, name, value, target]) => (
             <div key={name}>
               <p className={styles.tempName}>
-                <Icon name={icon} size={24} color={tint} />
+                <Icon name={icon} size={20} color={tint} />
                 {name}
               </p>
               <p className={styles.temp}>{formatTemp(value)}</p>
-              <p className={styles.small}>{target !== null && target > 0 && `target ${formatTemp(target)}`}</p>
+              <p className={styles.small}>{target !== null && target > 0 && T.printer.target(formatTemp(target))}</p>
             </div>
           ))}
         </section>
 
-        <section className={`${styles.card} ${styles.filament}`}>
-          <h2 className={styles.caption}>FILAMENT</h2>
-          {printer.filaments.length === 0 && <p className={styles.none}>No AMS data</p>}
+        <section className={`${styles.filament} card`}>
+          <h2 className={styles.muted}>{T.printer.filament}</h2>
+          {printer.filaments.length === 0 && <p className={styles.none}>{T.printer.noAms}</p>}
           <div className={styles.slots}>
             {printer.filaments.map(({ color: filament, type, active }, i) => (
               <div key={i} className={styles.slot} data-active={active || undefined}>

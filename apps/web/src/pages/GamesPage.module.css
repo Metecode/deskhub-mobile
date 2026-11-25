@@ -1,156 +1,151 @@
 .page {
   display: grid;
   flex: 1;
-  grid-template-rows: minmax(0, 191fr) minmax(0, 227fr);
-  gap: calc(12 * var(--u));
+  grid-template-rows: minmax(0, 112fr) minmax(0, 210fr);
+  gap: calc(8 * var(--u));
   min-height: 0;
 }
 
-.top,
-.recent {
+.top {
   display: flex;
-  min-width: 0;
-  min-height: 0;
-  padding: calc(14 * var(--u)) calc(16 * var(--u));
-  overflow: hidden;
-  border: 1px solid var(--border);
-  border-radius: calc(16 * var(--u));
-  background: var(--card);
+  gap: calc(16 * var(--u));
+  align-items: center;
+  padding: calc(10 * var(--u)) calc(18 * var(--u)) calc(10 * var(--u)) calc(10 * var(--u));
 }
 
-.caption,
-.playing {
-  flex: none;
-  color: var(--muted);
-  font-size: inherit;
-  font-weight: 500;
-  letter-spacing: calc(2 * var(--u));
-  white-space: pre;
+.header {
+  height: 100%;
+  border-radius: calc(12 * var(--u));
+  aspect-ratio: 460 / 215;
+}
+
+.now {
+  min-width: 0;
 }
 
 .playing {
   color: var(--good);
-}
-
-/* ---- now playing ---- */
-
-.top {
-  gap: calc(20 * var(--u));
-}
-
-.header {
-  flex: none;
-  height: 100%;
-  max-width: 60%;
-  aspect-ratio: 340 / 159;
-  border-radius: calc(12 * var(--u));
-}
-
-.now {
-  display: flex;
-  flex: 1;
-  flex-direction: column;
-  min-width: 0;
-  padding: calc(2 * var(--u)) 0;
+  font-size: calc(14 * var(--u));
+  font-weight: 600;
 }
 
 .name {
-  font-size: calc(24 * var(--u));
-}
-
-.now .name {
-  display: -webkit-box;
-  flex: none;
-  margin-top: calc(6 * var(--u));
   overflow: hidden;
-  -webkit-box-orient: vertical;
-  -webkit-line-clamp: 2;
+  font-size: calc(21 * var(--u));
+  font-weight: 600;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
-.time {
-  margin-top: auto;
-  font-size: calc(20 * var(--u));
-}
-
+.time,
 .total {
-  min-height: 1.2em;
-  margin-top: calc(4 * var(--u));
   overflow: hidden;
   color: var(--muted);
-  font-size: calc(16 * var(--u));
   text-overflow: ellipsis;
-}
-
-.now .total {
-  white-space: pre;
+  white-space: nowrap;
 }
 
 .idle {
   display: flex;
-  flex: 372;
+  flex: 1;
+  gap: calc(16 * var(--u));
   align-items: center;
-  gap: calc(32 * var(--u));
   min-width: 0;
-  padding-left: calc(24 * var(--u));
+  padding-left: calc(10 * var(--u));
+}
+
+.idle > div {
+  min-width: 0;
 }
 
 .friends {
-  display: flex;
-  flex: 268;
-  flex-direction: column;
-  gap: calc(7 * var(--u));
+  flex: 0 1 calc(230 * var(--u));
   min-width: 0;
+  font-size: calc(14 * var(--u));
 }
 
 .friend {
   display: flex;
-  align-items: baseline;
-  gap: calc(8 * var(--u));
+  gap: calc(10 * var(--u));
+  justify-content: space-between;
 }
 
-.friend > * {
+.friend span {
+  min-width: 0;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 
-.friend > :first-child {
-  flex: 2;
-  font-size: calc(16 * var(--u));
+.friend span + span,
+.muted {
+  color: var(--muted);
 }
 
-.friend > :last-child {
-  flex: 3;
-  color: var(--good);
+.muted {
+  flex: none;
+  font-size: calc(14 * var(--u));
+  font-weight: 500;
 }
-
-/* ---- recent games ---- */
 
 .recent {
-  position: relative;
+  display: flex;
   flex-direction: column;
+  gap: calc(6 * var(--u));
+  min-height: 0;
+  padding: 0 calc(4 * var(--u));
 }
 
 .tiles {
   display: grid;
   flex: 1;
   grid-template-columns: repeat(5, minmax(0, 1fr));
-  gap: calc(8 * var(--u));
+  gap: calc(10 * var(--u));
   min-height: 0;
-  margin-top: calc(8 * var(--u));
 }
 
 .tile {
   display: flex;
   flex-direction: column;
-  gap: calc(6 * var(--u));
+  gap: calc(5 * var(--u));
   align-items: center;
   min-width: 0;
   min-height: 0;
 }
 
-.tile:active:enabled {
-  transform: scale(0.94);
+.portrait {
+  position: relative;
+  flex: 1;
+  min-height: 0;
+  max-width: 100%;
+  aspect-ratio: 2 / 3;
+}
+
+.cover {
+  width: 100%;
+  height: 100%;
+}
+
+.hours {
+  position: absolute;
+  right: calc(4 * var(--u));
+  bottom: calc(4 * var(--u));
+  padding: calc(1 * var(--u)) calc(6 * var(--u));
+  border-radius: calc(8 * var(--u));
+  background: rgb(0 0 0 / 75%);
+  font-size: max(12px, calc(13 * var(--u)));
+}
+
+.tileName {
+  max-width: 100%;
+  overflow: hidden;
+  font-size: calc(14 * var(--u));
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.tile:active .portrait {
+  opacity: 0.6;
 }
 
 .tile:disabled {
@@ -159,104 +154,43 @@
 
 .tile[data-launching] {
   opacity: 1;
-}
-
-.portrait {
-  position: relative;
-  display: block;
-  flex: 1;
-  min-height: 0;
-  max-height: calc(150 * var(--u));
-  aspect-ratio: 2 / 3;
-}
-
-.cover {
-  width: 100%;
-  height: 100%;
-  border-radius: calc(10 * var(--u));
-}
-
-.hours {
-  position: absolute;
-  right: calc(4 * var(--u));
-  bottom: calc(4 * var(--u));
-  padding: calc(2 * var(--u)) calc(6 * var(--u));
-  border-radius: calc(8 * var(--u));
-  background: rgb(0 0 0 / 70%);
-  white-space: nowrap;
-}
-
-.tileName {
-  flex: none;
-  max-width: 100%;
-  overflow: hidden;
-  color: var(--muted);
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.tile[data-launching] .tileName {
   color: var(--good);
 }
 
 .empty {
   position: absolute;
-  inset: 0;
-  height: max-content;
-  margin: auto;
-  color: var(--dim);
-  font-size: calc(16 * var(--u));
-  text-align: center;
-}
-
-:global([data-nav='bottom']) .page {
-  grid-template-rows: minmax(0, 134fr) minmax(0, 227fr);
-}
-
-:global([data-nav='bottom']) .now .name {
-  -webkit-line-clamp: 1;
-  margin-top: calc(2 * var(--u));
-}
-
-:global([data-nav='bottom']) .top,
-:global([data-nav='bottom']) .recent {
-  padding-top: calc(10 * var(--u));
-  padding-bottom: calc(10 * var(--u));
-}
-
-:global([data-nav='bottom']) .friends {
-  gap: calc(3 * var(--u));
+  align-self: center;
+  margin-top: calc(80 * var(--u));
+  color: var(--muted);
 }
 
 @media (orientation: portrait) {
-  :global([data-nav='bottom']) .page {
-    grid-template-rows: auto minmax(0, 1fr);
+  .page {
+    grid-template-rows: minmax(0, 150fr) minmax(0, 470fr);
   }
 
   .top {
-    flex-direction: column;
-    gap: calc(14 * var(--u));
+    flex-wrap: wrap;
   }
 
   .header {
-    width: 100%;
-    max-width: none;
+    flex: none;
+    width: 46%;
     height: auto;
   }
 
-  .now,
-  .idle,
-  .friends {
-    flex: none;
+  .now {
+    flex: 1;
   }
 
-  .idle {
-    gap: calc(20 * var(--u));
-    padding-left: 0;
-  }
-
+  .name,
+  .total,
   .time {
-    margin-top: calc(10 * var(--u));
+    white-space: normal;
+  }
+
+  .friends {
+    flex: 1 1 100%;
   }
 
   .tiles {

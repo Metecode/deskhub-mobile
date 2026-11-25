@@ -3,68 +3,74 @@
   flex: 1;
   grid-template-rows: repeat(var(--rows), minmax(0, 1fr));
   grid-template-columns: repeat(var(--cols), minmax(0, 1fr));
-  gap: calc(14 * var(--u));
+  gap: calc(8 * var(--u));
   min-height: 0;
 }
 
-/* A plain card with the icon in the tile's colour. lv_color_lighten(tint, 140) and so on
-   mix in that many 255ths of white or black. */
 .tile {
+  --on: color-mix(in srgb, var(--tint) 26%, var(--card));
+
   display: flex;
   flex-direction: column;
+  gap: calc(6 * var(--u));
   align-items: center;
   justify-content: center;
-  gap: calc(8 * var(--u));
   min-width: 0;
-  min-height: 0;
-  padding: calc(8 * var(--u));
-  border: 1px solid var(--border);
-  border-radius: calc(16 * var(--u));
-  background: var(--card);
-  font-size: calc(20 * var(--u));
-}
-
-.compact .tile {
-  gap: calc(4 * var(--u));
-  font-size: calc(16 * var(--u));
+  padding: calc(10 * var(--u));
+  overflow: hidden;
+  border-radius: calc(20 * var(--u));
+  background: var(--on);
 }
 
 .icon {
-  display: flex;
-  color: color-mix(in srgb, white 55%, var(--tint));
+  color: color-mix(in srgb, var(--tint) 55%, #fff);
+  line-height: 0;
 }
 
 .label {
+  display: -webkit-box;
   max-width: 100%;
   overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+  font-size: calc(17 * var(--u));
+  font-weight: 600;
+  text-align: center;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
 }
 
-.tile:active {
-  background: color-mix(in srgb, var(--tint) 35%, var(--card));
-  transform: scale(0.94);
-}
-
-/* On, for example while the microphone is muted. */
+/* It is on. */
 .lit {
-  border: 2px solid color-mix(in srgb, white 47%, var(--tint));
-  background: color-mix(in srgb, black 16%, var(--tint));
+  background: var(--tint);
 }
 
 .lit .icon {
-  color: white;
+  color: #fff;
+}
+
+.tile:active {
+  background: color-mix(in srgb, var(--tint) 60%, var(--card));
 }
 
 .tile:disabled {
   opacity: 0.4;
-  transform: none;
+}
+
+.compact .tile {
+  gap: calc(2 * var(--u));
+  padding: calc(6 * var(--u));
+}
+
+.compact .label {
+  font-size: calc(15 * var(--u));
+  -webkit-line-clamp: 1;
 }
 
 @media (orientation: portrait) {
   .grid {
+    grid-auto-rows: minmax(calc(90 * var(--u)), 1fr);
     grid-template-rows: none;
     grid-template-columns: repeat(2, minmax(0, 1fr));
-    grid-auto-rows: minmax(0, 1fr);
+    overflow-y: auto;
+    scrollbar-width: none;
   }
 }

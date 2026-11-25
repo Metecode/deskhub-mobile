@@ -2,6 +2,7 @@
 import { Component, useEffect, useState, type ReactNode } from 'react';
 import { describeError } from '../diagnostics.js';
 import { ERROR_MS, takeErrorReload } from '../reload.js';
+import { T } from '../text.js';
 import styles from './ErrorNote.module.css';
 
 interface NoteProps {
@@ -25,12 +26,12 @@ function Note({ error, calm }: NoteProps) {
   }, [calm]);
   return (
     <div className={styles.note} role="alert">
-      <p className={styles.title}>Something went wrong here</p>
+      <p className={styles.title}>{T.error.title}</p>
       <p className={styles.text}>{describeError(error)}</p>
       <button type="button" className={styles.button} onClick={() => location.reload()}>
-        Reload
+        {T.error.reload}
       </button>
-      {given && <p className={styles.text}>It reloaded several times already and won&apos;t by itself for now.</p>}
+      {given && <p className={styles.text}>{T.error.given}</p>}
     </div>
   );
 }

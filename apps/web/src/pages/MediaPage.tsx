@@ -9,6 +9,7 @@ import { isOnline, pcMedia, type BridgeState, type Connection } from '../connect
 import { coverOf, type Cover } from '../cover.js';
 import type { IconName } from '../icons.js';
 import { statusHint } from '../status.js';
+import { libraryText, T } from '../text.js';
 import styles from './MediaPage.module.css';
 
 interface PlayerProps {
@@ -19,8 +20,6 @@ interface PlayerProps {
   online: boolean;
   connection: Connection;
 }
-
-const upper = (text: string) => text.toLocaleUpperCase('en-US');
 
 function usePlayer(type: MediaTarget, connection: Connection) {
   const seek = useCallback((seconds: number) => connection.sendMedia(type, 'seek', seconds), [type, connection]);
@@ -33,7 +32,7 @@ function FullPlayer({ type, media, at, cover, online, connection }: PlayerProps)
     <main className={styles.full}>
       <CoverArt cover={cover} icon="music_note" iconSize={80} className={styles.bigCover} />
       <div className={styles.column}>
-        <p className={styles.source}>{upper(media.source)}</p>
+        <p className={styles.source}>{media.source}</p>
         <h1 className={styles.title}>{media.title}</h1>
         <p className={styles.artist}>{media.artist}</p>
         <p className={styles.album}>{media.album}</p>
@@ -55,7 +54,7 @@ function PlayerCard({ type, media, at, cover, online, connection, icon, source, 
   const { seek, command } = usePlayer(type, connection);
   const [title, artist, album] = media.active ? [media.title, media.artist, media.album] : idle;
   return (
-    <section className={`${styles.card} ${media.active ? '' : styles.idle}`}>
+    <section className={`${styles.player} card`} data-idle={!media.active || undefined}>
       <div className={styles.top}>
         <CoverArt
           cover={cover}
@@ -64,7 +63,7 @@ function PlayerCard({ type, media, at, cover, online, connection, icon, source, 
           className={type === 'media_server' ? styles.poster : styles.smallCover}
         />
         <div className={styles.lines}>
-          <p className={styles.source}>{upper(source)}</p>
+          <p className={styles.source}>{source}</p>
           <h1>{title}</h1>
           <p className={styles.cardArtist}>{artist}</p>
           <p className={styles.cardAlbum}>{album}</p>
@@ -78,11 +77,11 @@ function PlayerCard({ type, media, at, cover, online, connection, icon, source, 
   );
 }
 
-/** "Beans - Plex", or just "Plex" when the server kept its default name. */
+/** "Beans, Plex", or just "Plex" when the server kept its default name. */
 function serverSource({ name, kind, now, transcoding }: MediaServer): string {
   const brand = kind === 'plex' ? 'Plex' : kind === 'jellyfin' ? 'Jellyfin' : '';
   const both = brand !== '' && brand.toLowerCase() !== name.toLowerCase();
-  return `${name}${both ? ` - ${brand}` : ''}${now.active && transcoding > 0 ? ' - transcoding' : ''}`;
+  return `${name}${both ? `, ${brand}` : ''}${now.active && transcoding > 0 ? `, ${T.media.transcoding}` : ''}`;
 }
 
 export function MediaPage({ state, connection }: { state: BridgeState; connection: Connection }) {
@@ -94,15 +93,15 @@ export function MediaPage({ state, connection }: { state: BridgeState; connectio
 
   if (!server.configured) {
     if (media.active) return <FullPlayer {...pc} />;
-    return <Empty icon="music_note" title="Nothing playing" hint={statusHint(state) || 'Play something on your PC'} />;
+    return <Empty icon="music_note" title={T.media.nothing} hint={statusHint(state) || T.media.playOnPc} />;
   }
   return (
     <main className={styles.split}>
       <PlayerCard
         {...pc}
         icon="music_note"
-        source={media.active ? media.source : 'This PC'}
-        idle={[online ? 'Nothing playing on this PC' : 'PC offline', statusHint(state), '']}
+        source={media.active ? media.source : T.media.thisPc}
+        idle={[online ? T.media.nothingHere : T.pcOffline, statusHint(state), '']}
       />
       <PlayerCard
         {...common}
@@ -113,8 +112,8 @@ export function MediaPage({ state, connection }: { state: BridgeState; connectio
         icon="movie"
         source={serverSource(server)}
         idle={[
-          server.online ? 'Nothing playing right now' : `Can't reach ${server.name || 'the server'}`,
-          server.online ? server.library : '',
+          server.online ? T.media.nothing : T.media.cantReach(server.name),
+          server.online ? libraryText(server.library) : '',
           server.version,
         ]}
       />

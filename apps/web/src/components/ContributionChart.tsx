@@ -3,6 +3,7 @@
 import type { GitHub } from '@deskhub-mobile/protocol';
 import { memo } from 'react';
 import { GAP, levelColor, monthLabels, squares, type ChartSize } from '../github.js';
+import { CHART_WEEKDAYS, T } from '../text.js';
 import styles from './ContributionChart.module.css';
 
 interface ContributionChartProps extends ChartSize {
@@ -37,7 +38,7 @@ export const ContributionChart = memo(function ContributionChart({
       viewBox={`${-left - 1} ${-top - 1} ${width} ${height}`}
       style={{ width: `calc(${width} * var(--u))`, height: `calc(${height} * var(--u))` }}
       role="img"
-      aria-label="Contributions by day"
+      aria-label={T.github.chart}
     >
       {months &&
         monthLabels(github, weeks, pitch).map(({ x, name }) => (
@@ -46,7 +47,7 @@ export const ContributionChart = memo(function ContributionChart({
           </text>
         ))}
       {weekdays &&
-        ['Mon', 'Wed', 'Fri'].map((name, i) => (
+        CHART_WEEKDAYS.map((name, i) => (
           <text key={name} x={-left} y={(1 + 2 * i) * pitch + size / 2 + 5}>
             {name}
           </text>

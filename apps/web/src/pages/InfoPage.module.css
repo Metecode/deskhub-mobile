@@ -1,6 +1,7 @@
 /* Plain pixels, and it scrolls: it has to be readable when the layout isn't. */
 .page {
   flex: 1;
+  padding: 4px 10px;
   min-height: 0;
   overflow-y: auto;
   overscroll-behavior: contain;
@@ -24,9 +25,8 @@
 .button {
   min-height: 44px;
   padding: 0 14px;
-  border: 1px solid var(--border);
-  border-radius: 12px;
-  background: var(--card);
+  border-radius: 14px;
+  background: var(--selected);
 }
 
 .button:active {
@@ -46,7 +46,7 @@
 
 .row dt {
   flex: none;
-  width: 120px;
+  width: 150px;
   color: var(--muted);
 }
 

@@ -6,6 +6,7 @@ import { Icon } from '../components/Icon.js';
 import { isOnline, type BridgeState, type Connection } from '../connection.js';
 import { tileIcon } from '../icons.js';
 import { statusHint } from '../status.js';
+import { T } from '../text.js';
 import styles from './ShortcutsPage.module.css';
 
 /** Columns for `n` tiles. */
@@ -14,7 +15,7 @@ const columns = (n: number) => (n <= 4 ? 2 : n <= 6 ? 3 : 4);
 export function ShortcutsPage({ state, connection }: { state: BridgeState; connection: Connection }) {
   const { tiles, lit } = state;
   if (tiles.length === 0)
-    return <Empty icon="grid_view" title="No shortcuts yet" hint={statusHint(state) || "Add some to the companion's config.toml"} />;
+    return <Empty icon="grid_view" title={T.shortcuts.none} hint={statusHint(state) || T.shortcuts.add} />;
 
   const cols = columns(tiles.length);
   const rows = Math.ceil(tiles.length / cols);
@@ -34,7 +35,7 @@ export function ShortcutsPage({ state, connection }: { state: BridgeState; conne
           onClick={() => connection.send({ type: 'shortcut', id })}
         >
           <span className={styles.icon}>
-            <Icon name={tileIcon(tile.icon)} size={rows > 2 ? 48 : 80} />
+            <Icon name={tileIcon(tile.icon)} size={rows > 2 ? 40 : 56} />
           </span>
           <span className={styles.label}>{tile.label}</span>
         </button>

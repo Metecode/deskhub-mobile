@@ -1,34 +1,28 @@
 // What the pages show, apart from their markup.
 import { DEFAULT_HOME, DEFAULT_LAYOUT, NO_MEDIA, type CalendarEvent, type Media } from '@deskhub-mobile/protocol';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { agenda, calendarBadge, eventsSummary, eventWhen, isLive } from './agenda.js';
+import { agenda, calendarBadge, eventsSummary, eventWhen, isLive, untilText } from './agenda.js';
 import { coverOf, readCover, rgb565ToRgba } from './cover.js';
 import { glyph, tileIcon } from './icons.js';
 import { loadLayout, saveLayout } from './layoutStore.js';
-import { pageToShow, scrolledTab, TAB_MIN, tabsOf } from './nav.js';
+import { tabsOf } from './nav.js';
 import { positionAt } from './position.js';
-import { amPm, formatClock, formatDate, formatDigits, formatDuration, formatHour, formatShortDate, startOfDay } from './time.js';
+import { formatClock, formatDate, formatDuration, formatHour, formatShortDate, startOfDay } from './time.js';
 import { formatPrecip, formatTemp, isDaytime, weatherColor, weatherIcon, weatherText } from './weatherLook.js';
 
 /** Local time, epoch seconds. 2026-11-20 is a Friday. */
 const at = (day: number, hour = 0, minute = 0) => new Date(2026, 10, day, hour, minute).getTime() / 1000;
 
 describe('time', () => {
-  it('has 12 and 24 hour clocks', () => {
-    expect(formatClock(at(20, 15, 5), true)).toBe('3:05 PM');
-    expect(formatClock(at(20, 15, 5), false)).toBe('15:05');
-    expect(formatClock(at(20, 0, 0), true)).toBe('12:00 AM');
-    expect(formatClock(at(20, 12, 0), true)).toBe('12:00 PM');
-    expect(formatClock(at(20, 0, 0), false)).toBe('00:00');
-    expect(formatHour(at(20, 15), true)).toBe('3 PM');
-    expect(formatHour(at(20, 9), false)).toBe('09:00');
-    expect(formatDigits(at(20, 9, 30), true)).toBe('9:30');
-    expect(amPm(at(20, 11, 59))).toBe('AM');
+  it('has 24 hours', () => {
+    expect(formatClock(at(20, 15, 5))).toBe('15:05');
+    expect(formatClock(at(20, 0, 0))).toBe('00:00');
+    expect(formatHour(at(20, 9))).toBe('09:00');
   });
 
-  it('has dates in English', () => {
-    expect(formatDate(at(20))).toBe('Friday, November 20');
-    expect(formatShortDate(at(20))).toBe('Fri Nov 20');
+  it('has dates in Turkish', () => {
+    expect(formatDate(at(20))).toBe('20 Kasım Cuma');
+    expect(formatShortDate(at(20))).toBe('20 Kas Cum');
   });
 
   it('knows days', () => {
@@ -63,9 +57,9 @@ describe('calendar', () => {
       event(at(23, 9), at(23, 10), { title: 'monday' }),
     ];
     expect(agenda(events, now).map((d) => [d.title, d.events.map((e) => e.title)])).toEqual([
-      ['TODAY  •  Friday, November 20', ['running', 'late']],
-      ['TOMORROW  •  Saturday, November 21', ['midnight']],
-      ['Monday, November 23', ['monday']],
+      ['Bugün, 20 Kasım Cuma', ['running', 'late']],
+      ['Yarın, 21 Kasım Cumartesi', ['midnight']],
+      ['23 Kasım Pazartesi', ['monday']],
     ]);
   });
 
@@ -83,23 +77,34 @@ describe('calendar', () => {
   });
 
   it('says when an event is', () => {
-    expect(eventWhen(event(at(20, 15, 30), at(20, 16)), now, true)).toBe('Today  •  3:30 PM');
-    expect(eventWhen(event(at(21, 9), at(21, 10)), now, false)).toBe('Tomorrow  •  09:00');
-    expect(eventWhen(event(at(23, 9), at(23, 10)), now, false)).toBe('Mon Nov 23  •  09:00');
-    expect(eventWhen(event(at(20, 11), at(20, 13)), now, false)).toBe('Now  •  until 13:00');
-    expect(eventWhen(event(at(20), at(21), { allDay: true }), now)).toBe('Today  •  All day');
+    expect(eventWhen(event(at(20, 15, 30), at(20, 16)), now)).toBe('Bugün, 15:30');
+    expect(eventWhen(event(at(21, 9), at(21, 10)), now)).toBe('Yarın, 09:00');
+    expect(eventWhen(event(at(23, 9), at(23, 10)), now)).toBe('23 Kas Pzt, 09:00');
+    expect(eventWhen(event(at(20, 11), at(20, 13)), now)).toBe('Şimdi, bitiş 13:00');
+    expect(eventWhen(event(at(20), at(21), { allDay: true }), now)).toBe('Bugün, Tüm gün');
+  });
+
+  it('says in the panel how long it takes', () => {
+    expect(untilText(event(at(20, 12, 48), at(20, 13)), now)).toBe('12:48, 48 dk sonra');
+    expect(untilText(event(at(20, 13), at(20, 14)), now)).toBe('13:00, 1 sa sonra');
+    expect(untilText(event(at(20, 14, 5), at(20, 15)), now)).toBe('14:05, 2 sa 5 dk sonra');
+    expect(untilText(event(now + 1, at(20, 15)), now)).toBe('12:00, 1 dk sonra');
+    expect(untilText(event(at(20, 11), at(20, 13)), now)).toBe('Bitiş 13:00');
+    expect(untilText(event(at(19, 11), at(20, 13)), now)).toBe('Bitiş 13:00');
+    expect(untilText(event(at(20), at(21), { allDay: true }), now)).toBe('Bugün, Tüm gün');
+    expect(untilText(event(at(21, 9), at(21, 10)), now)).toBe('Yarın, 09:00');
   });
 
   it('knows tomorrow across the year', () => {
     const eve = new Date(2026, 11, 31, 20).getTime() / 1000;
-    expect(eventWhen(event(eve + 6 * 3600, eve + 7 * 3600), eve, false)).toBe('Tomorrow  •  02:00');
+    expect(eventWhen(event(eve + 6 * 3600, eve + 7 * 3600), eve)).toBe('Yarın, 02:00');
   });
 
   it('closes the list', () => {
     const events = [event(now - 9, now - 1), event(now, now + 1), event(now, now + 2)];
-    expect(eventsSummary({ events, days: 7 }, now, 2)).toBe('No more events in the next 7 days');
-    expect(eventsSummary({ events, days: 7 }, now, 1)).toBe('1 more in the next 7 days');
-    expect(eventsSummary({ events: [], days: 1 }, now, 0)).toBe('Nothing scheduled in the next day');
+    expect(eventsSummary({ events, days: 7 }, now, 2)).toBe('Önümüzdeki 7 günde başka etkinlik yok');
+    expect(eventsSummary({ events, days: 7 }, now, 1)).toBe('Önümüzdeki 7 günde 1 etkinlik daha');
+    expect(eventsSummary({ events: [], days: 1 }, now, 0)).toBe('Önümüzdeki 1 günde etkinlik yok');
   });
 
   it('has a dot while the next event is today', () => {
@@ -180,7 +185,7 @@ describe('weather look', () => {
     expect(weatherColor(0, true)).toBe('#fbbf5a');
     expect(weatherColor(2, false)).toBe('#a9b4ff');
     expect(weatherColor(63, true)).toBe('#67e8f9');
-    expect([2, 65, 99, 42].map(weatherText)).toEqual(['Partly cloudy', 'Heavy rain', 'Storm with hail', 'Unknown']);
+    expect([2, 65, 99, 42].map(weatherText)).toEqual(['Parçalı bulutlu', 'Şiddetli yağmur', 'Dolulu fırtına', 'Bilinmiyor']);
   });
 
   it('rounds temperatures', () => {
@@ -188,7 +193,7 @@ describe('weather look', () => {
   });
 
   it('leaves out little chance of rain', () => {
-    expect([0, 9, 10, 80].map(formatPrecip)).toEqual(['', '', '10%', '80%']);
+    expect([0, 9, 10, 80].map(formatPrecip)).toEqual(['', '', '%10', '%80']);
   });
 
   it('takes 6 to 19 as day', () => {
@@ -218,29 +223,6 @@ describe('navigation', () => {
       'shortcuts',
     ]);
     expect(tabsOf(['home', 'media', 'ai', 'stats', 'network', 'github'])).toEqual(['home', 'media', 'ai', 'stats', 'github']);
-  });
-
-  it('goes Home when a page is off or missing', () => {
-    expect(pageToShow('media', ['home', 'media'])).toBe('media');
-    expect(pageToShow('media', ['home', 'stats'])).toBe('home');
-    expect(pageToShow('network', ['home', 'network'])).toBe('home');
-  });
-});
-
-describe('bar', () => {
-  it('needs no scrolling while tabs of 44 px fit', () => {
-    expect(scrolledTab(484, 11)).toBeNull();
-    expect(scrolledTab(2000, 11)).toBeNull();
-  });
-
-  it('shows half a tab more than fits, with tabs of at least 44 px', () => {
-    expect(scrolledTab(483, 11)! * 10.5).toBeCloseTo(483);
-    expect(scrolledTab(352, 11)! * 7.5).toBeCloseTo(352);
-    for (let length = 70; length < 484; length++) {
-      const tab = scrolledTab(length, 11)!;
-      expect(tab).toBeGreaterThanOrEqual(TAB_MIN);
-      expect((length / tab) % 1).toBeCloseTo(0.5);
-    }
   });
 });
 

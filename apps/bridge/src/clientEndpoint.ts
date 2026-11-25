@@ -11,7 +11,7 @@ import {
   TOKEN_PARAM,
   type BridgeMessage,
   type Command,
-  type PongMessage,
+  type BridgePong,
   type StatusMessage,
   type WeatherSettings,
 } from '@deskhub-mobile/protocol';
@@ -97,7 +97,7 @@ export class ClientEndpoint {
       const text = data.toString('utf8');
       const ping = parsePing(text);
       // Not a command: it goes no further.
-      if (ping) ws.send(JSON.stringify({ type: 'bridge.pong', id: ping.id } satisfies PongMessage));
+      if (ping) ws.send(JSON.stringify({ type: 'bridge.pong', id: ping.id } satisfies BridgePong));
       else this.#onCommand(text);
     });
     // The messages are JSON texts already.

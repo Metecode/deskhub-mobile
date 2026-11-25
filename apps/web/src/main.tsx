@@ -16,6 +16,7 @@ import { EventsStore } from './eventsStore.js';
 import { goFullscreenOnTap } from './fullscreen.js';
 import { LaunchStore } from './games.js';
 import { loadLayout, saveLayout } from './layoutStore.js';
+import { LinkStore, PING_MS } from './linkQuality.js';
 import { OfflineStore } from './offline.js';
 import { isCalm, takeUpdate } from './reload.js';
 import { Sound } from './sound.js';
@@ -46,6 +47,8 @@ const offline = new OfflineStore(import.meta.env.PROD);
 const info = new InfoRoute();
 
 const burnIn = new BurnInStore();
+const link = new LinkStore((id) => connection.ping(id));
+connection.onPong = link.pong;
 
 const darkReasons = () => {
   const { asleep, layout } = connection.getState();
@@ -70,6 +73,7 @@ connection.subscribe(() => {
   weather.setSettings(state.weather);
   dark.update(darkReasons());
   alerts.update(state.alert);
+  if (state.link !== saved.link) link.reset();
   if (state.events !== saved.events) events.update(state.events, seconds());
   if (state.layout !== saved.layout || state.home !== saved.home) saveLayout(state);
   saved = state;
@@ -88,6 +92,10 @@ setInterval(() => {
 }, 5000);
 
 setInterval(() => {
+  if (document.visibilityState === 'visible') link.ping();
+}, PING_MS);
+
+setInterval(() => {
   events.clean(seconds());
   // Refused before, perhaps not now.
   void wakeLock.update();
@@ -103,7 +111,10 @@ function wake(): void {
 }
 document.addEventListener('visibilitychange', () => {
   if (document.visibilityState === 'visible') wake();
-  else burnIn.forget();
+  else {
+    burnIn.forget();
+    link.reset();
+  }
 });
 window.addEventListener('online', wake);
 
@@ -141,6 +152,7 @@ createRoot(document.getElementById('root')!).render(
         errors={errors}
         info={info}
         burnIn={burnIn}
+        link={link}
         calm={calm}
       />
     </ErrorBoundary>

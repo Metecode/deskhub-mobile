@@ -5,18 +5,19 @@ import { agenda, eventsSummary, isLive, notOver } from '../agenda.js';
 import { Empty } from '../components/Empty.js';
 import type { BridgeState } from '../connection.js';
 import { statusHint } from '../status.js';
+import { T } from '../text.js';
 import { formatClock } from '../time.js';
 import styles from './CalendarPage.module.css';
 
 function EventRow({ event, now }: { event: CalendarEvent; now: number }) {
   const live = isLive(event, now);
-  const detail = [event.location, event.calendar].filter(Boolean).join('  •  ');
+  const detail = [event.location, event.calendar].filter(Boolean).join(', ');
   return (
-    <li className={`${styles.event} ${live ? styles.live : ''}`} style={live ? { borderColor: event.color } : undefined}>
+    <li className={styles.event} data-live={live || undefined}>
       <span className={styles.bar} style={{ background: event.color }} />
       <div className={styles.when}>
         {event.allDay ? (
-          'All day'
+          T.agenda.allDay
         ) : (
           <>
             <span>{formatClock(event.start)}</span>
@@ -38,9 +39,8 @@ export function CalendarPage({ state, now }: { state: BridgeState; now: number }
   const summary = eventsSummary(events, now, shown);
   return (
     <main className={styles.page}>
-      <h1 className={styles.heading}>Upcoming</h1>
       {shown === 0 ? (
-        <Empty title={summary} hint={statusHint(state) || 'Add a calendar with deskhub-calendars on your PC'} />
+        <Empty title={summary} hint={statusHint(state) || T.agenda.add} />
       ) : (
         <div className={styles.list}>
           {agenda(events.events, now).map(({ day, title, events: list }) => (

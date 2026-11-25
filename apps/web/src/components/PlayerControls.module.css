@@ -6,7 +6,7 @@
 .slider {
   display: block;
   width: 100%;
-  height: calc(40 * var(--u));
+  height: max(40px, calc(36 * var(--u)));
   margin: 0;
   background: none;
   appearance: none;
@@ -36,6 +36,7 @@
   display: flex;
   justify-content: space-between;
   color: var(--muted);
+  font-size: calc(14 * var(--u));
   font-variant-numeric: tabular-nums;
 }
 
@@ -43,23 +44,21 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: calc(28 * var(--u));
+  gap: calc(20 * var(--u));
 }
 
 .buttons button {
   display: grid;
   place-items: center;
-  width: calc(68 * var(--u));
-  height: calc(68 * var(--u));
-  border: 1px solid var(--border);
+  width: calc(58 * var(--u));
+  height: calc(58 * var(--u));
   border-radius: 50%;
-  background: var(--card);
+  background: var(--selected);
 }
 
 .buttons .play {
-  width: calc(92 * var(--u));
-  height: calc(92 * var(--u));
-  border: 0;
+  width: calc(72 * var(--u));
+  height: calc(72 * var(--u));
   background: var(--text);
   color: var(--bg);
 }
@@ -69,15 +68,14 @@
 }
 
 .small button {
-  width: calc(52 * var(--u));
-  height: calc(52 * var(--u));
-  border: 0;
+  width: max(44px, calc(46 * var(--u)));
+  height: max(44px, calc(46 * var(--u)));
   background: var(--card-hi);
 }
 
 .small .play {
-  width: calc(68 * var(--u));
-  height: calc(68 * var(--u));
+  width: calc(56 * var(--u));
+  height: calc(56 * var(--u));
 }
 
 .buttons button:active {

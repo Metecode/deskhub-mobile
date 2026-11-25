@@ -1,0 +1,43 @@
+.icon {
+  flex: none;
+  width: calc(26 * var(--u));
+  height: calc(26 * var(--u));
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2.4;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.icon[data-level='good'] {
+  color: var(--good);
+}
+
+.icon[data-level='fair'] {
+  color: var(--warn);
+}
+
+.icon[data-level='poor'] {
+  color: var(--bad);
+}
+
+.icon[data-level='none'] {
+  color: var(--dim);
+}
+
+.off {
+  stroke: #3a3f49;
+}
+
+.icon[data-level='none'] .off {
+  stroke: currentColor;
+}
+
+.dot {
+  fill: currentColor;
+  stroke: none;
+}
+
+.icon .cross {
+  stroke: var(--bad);
+}

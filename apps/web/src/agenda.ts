@@ -41,6 +41,15 @@ export function eventWhen(e: CalendarEvent, now: number): string {
   return T.agenda.when(day, formatClock(e.start));
 }
 
+/** In the panel: "18:30, 48 dk sonra" */
+export function untilText(e: CalendarEvent, now: number): string {
+  if (e.allDay || !isSameDay(e.start, now)) return e.start <= now && !e.allDay ? T.panel.until(formatClock(e.end)) : eventWhen(e, now);
+  if (e.start <= now) return T.panel.until(formatClock(e.end));
+  const minutes = Math.ceil((e.start - now) / 60);
+  const left = minutes < 60 ? T.panel.inMinutes(minutes) : T.panel.inHours(Math.trunc(minutes / 60), minutes % 60);
+  return `${formatClock(e.start)}, ${left}`;
+}
+
 /** The line that closes the list, after `shown` events. */
 export function eventsSummary({ events, days }: Events, now: number, shown: number): string {
   const more = notOver(events, now).length - shown;

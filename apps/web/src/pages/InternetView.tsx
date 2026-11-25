@@ -16,6 +16,7 @@ import {
 } from '../internet.js';
 import { speedTestButton, type SpeedTestStore } from '../speedTest.js';
 import { statusHint } from '../status.js';
+import { formatNumber, T } from '../text.js';
 import styles from './InternetView.module.css';
 
 interface InternetProps {
@@ -37,8 +38,8 @@ export function InternetView({ state, connection, speedTest, now }: InternetProp
   return (
     <div className={styles.view}>
       <div className={styles.top}>
-        <section className={styles.card}>
-          <h2 className={styles.caption}>LATENCY</h2>
+        <section className={`${styles.box} card`}>
+          <h2 className={styles.muted}>{T.net.latency}</h2>
           <p className={styles.latency} style={{ color: net ? latencyColor(net.latency) : undefined }}>
             {formatLatency(net && net.latency)}
           </p>
@@ -46,37 +47,37 @@ export function InternetView({ state, connection, speedTest, now }: InternetProp
             {net && jitterText(net)}
           </p>
         </section>
-        <section className={styles.card}>
-          <h2 className={styles.caption}>STATUS</h2>
+        <section className={`${styles.box} card`}>
+          <h2 className={styles.muted}>{T.net.state}</h2>
           <p className={styles.status} style={{ color: net?.online === false ? 'var(--bad)' : 'var(--good)' }}>
-            {net ? (net.online ? 'Online' : 'Offline') : '--'}
+            {net ? (net.online ? T.net.online : T.net.offline) : T.none}
           </p>
           <p className={styles.sub}>{net && statusText(net, now)}</p>
         </section>
-        <section className={styles.card}>
-          <h2 className={styles.caption}>DATA USED</h2>
+        <section className={`${styles.box} card`}>
+          <h2 className={styles.muted}>{T.net.data}</h2>
           <p className={styles.data}>
-            <span>Today</span>
+            <span>{T.net.today}</span>
             <span>{net && formatBytes(net.todayBytes)}</span>
           </p>
           <p className={styles.data}>
-            <span>This month</span>
+            <span>{T.net.month}</span>
             <span>{net && formatBytes(net.monthBytes)}</span>
           </p>
         </section>
       </div>
 
-      <section className={`${styles.card} ${styles.chartCard}`}>
+      <section className={`${styles.chartCard} card`}>
         <div className={styles.row}>
-          <h2 className={styles.caption}>LATENCY, LAST 2 MINUTES</h2>
-          <p className={styles.dim}>{net && `max ${chartPeak(net.history)} ms`}</p>
+          <h2 className={styles.muted}>{T.net.chart}</h2>
+          <p className={styles.dim}>{net && T.net.max(Math.round(chartPeak(net.history)))}</p>
         </div>
         <div className={styles.chart}>
           <svg
             viewBox={`0 0 ${NET_HISTORY - 1} 100`}
             preserveAspectRatio="none"
             role="img"
-            aria-label="Latency over the last 2 minutes"
+            aria-label={T.net.chart}
           >
             {[0, 50, 100].map((y) => (
               <path key={y} className={styles.division} d={`M0 ${y}H${NET_HISTORY - 1}`} />
@@ -87,11 +88,11 @@ export function InternetView({ state, connection, speedTest, now }: InternetProp
         </div>
       </section>
 
-      <section className={`${styles.card} ${styles.speed}`}>
+      <section className={`${styles.speed} card`}>
         <div className={styles.row}>
-          <h2 className={styles.caption}>SPEED TEST</h2>
+          <h2 className={styles.muted}>{T.net.speedTest}</h2>
           <p className={styles.dim}>
-            {online && stats && `Now ↓ ${formatMbps(stats.netDown)}  ↑ ${formatMbps(stats.netUp)} Mbps`}
+            {online && stats && T.net.nowRates(formatMbps(stats.netDown), formatMbps(stats.netUp))}
           </p>
         </div>
         {net && button && (
@@ -99,18 +100,18 @@ export function InternetView({ state, connection, speedTest, now }: InternetProp
             <div className={styles.text}>
               <p className={styles.speeds}>
                 <span>
-                  <Icon name="arrow_downward" size={32} color="var(--gpu)" />
-                  {net.speed ? `${net.speed.down.toFixed(0)} Mbps` : '--'}
+                  <Icon name="arrow_downward" size={26} color="var(--gpu)" />
+                  {net.speed ? `${formatNumber(net.speed.down)} Mbps` : T.none}
                 </span>
                 <span>
-                  <Icon name="arrow_upward" size={32} color="var(--cpu)" />
-                  {net.speed ? `${net.speed.up.toFixed(0)} Mbps` : '--'}
+                  <Icon name="arrow_upward" size={26} color="var(--cpu)" />
+                  {net.speed ? `${formatNumber(net.speed.up)} Mbps` : T.none}
                 </span>
               </p>
               <p className={styles.sub}>
                 {net.speed
-                  ? `Ping ${net.speed.ping.toFixed(0)} ms  •  tested ${formatAgo(net.speed.at, now)}`
-                  : 'No test yet. A test uses about 35 MB of data.'}
+                  ? T.net.tested(formatNumber(net.speed.ping), formatAgo(net.speed.at, now))
+                  : T.net.noTest}
               </p>
             </div>
             <button

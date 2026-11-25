@@ -37,7 +37,7 @@ import {
   type MediaServer,
   type MediaTarget,
   type Net,
-  type PingMessage,
+  type BridgePing,
   type Printer,
   type RawMessage,
   type Stats,
@@ -286,7 +286,7 @@ export class Connection {
   /** False: there is no connection. */
   ping(id: number): boolean {
     if (this.#state.link !== 'open' || !this.#socket) return false;
-    this.#socket.send(JSON.stringify({ type: 'bridge.ping', id } satisfies PingMessage));
+    this.#socket.send(JSON.stringify({ type: 'bridge.ping', id } satisfies BridgePing));
     return true;
   }
 

@@ -1,7 +1,7 @@
 // "An agent is waiting for you" (firmware/main/ui_alert.c).
 import type { Alert } from '@deskhub-mobile/protocol';
 import { Store } from './store.js';
-import { alertText, LOCALE, T } from './text.js';
+import { alertText, T } from './text.js';
 
 const same = (a: Alert, b: Alert) => JSON.stringify(a) === JSON.stringify(b);
 
@@ -52,15 +52,9 @@ export class AlertStore extends Store<Alert | null> {
   }
 }
 
-/** The Home strip's one line (short_detail). */
-export function shortDetail({ title, detail }: Alert): string {
-  const text = alertText(detail || title).replace(/^Claude /, '').replace(/^Finished\. /, '');
-  return text.charAt(0).toLocaleUpperCase(LOCALE) + text.slice(1);
-}
-
 export const kindText = ({ permission }: Alert) => (permission ? T.alert.permission : T.alert.waiting);
 
-/** The AI page's panel. A second line only when it adds something. */
+/** The card in the panel. A second line only when it adds something. */
 export function panelText(alert: Alert): { title: string; detail: string } {
   const title = alert.title || T.alert.waitingTitle;
   return { title: alertText(title), detail: alert.detail === title ? '' : alertText(alert.detail) };

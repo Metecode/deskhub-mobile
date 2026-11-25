@@ -38,8 +38,8 @@ export function useInnerSize(ref: RefObject<HTMLElement | null>): Size {
     const element = ref.current;
     if (!element) return;
     const observer = new ResizeObserver(([entry]) => {
-      // The body's font is 14 board pixels.
-      const unit = Number.parseFloat(getComputedStyle(document.body).fontSize) / 14;
+      // Its font is 15 of the page's units (App.module.css).
+      const unit = Number.parseFloat(getComputedStyle(element.closest('[data-unit]')!).fontSize) / 15;
       const { width, height } = entry!.contentRect;
       setSize({ width: width / unit, height: height / unit });
     });

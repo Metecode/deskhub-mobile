@@ -194,7 +194,7 @@ describe('TimerStore', () => {
 
 describe('timerName', () => {
   it('is in minutes where it can be', () => {
-    expect(timerName(1500)).toBe('25-minute timer');
-    expect(timerName(90)).toBe('90-second timer');
+    expect(timerName(1500)).toBe('25 dakikalık sayaç');
+    expect(timerName(90)).toBe('90 saniyelik sayaç');
   });
 });

@@ -1,37 +1,40 @@
-/* Desk Hub's Graphite theme: the COL_* values of firmware/main/ui_internal.h. */
+/* Flat on black: on an OLED screen those pixels are off. */
 :root {
-  --bg: #0d0e11;
-  --rail: #111216;
-  --card: #16181d;
-  --card-hi: #262a32; /* gauge and bar tracks, chart lines, pressed cards, the selected tab */
-  --border: #262a32;
-  --pressed: #30343d;
-  --text: #f3f4f6;
-  --muted: #9aa0aa;
-  --dim: #6b717c;
+  --bg: #000;
+  --card: #0f1114;
+  --card-hi: #262a32; /* tracks, empty squares */
+  --selected: #1c2026;
+  --pressed: #2a2f37;
+  --border: #23272e;
+  --text: #f4f5f6;
+  --clock: #e3e5e8;
+  --muted: #a3a9b3;
+  --dim: #7d8490;
   --accent: #ffb224;
   --accent-pressed: #d9931a;
   --on-accent: #16181d;
   --good: #3dd68c;
   --warn: #ffb224;
   --bad: #ff6b6b;
-  --track: #3a3f49; /* a progress track on a card (ui_media.c) */
+  --track: #3a3f49;
 
-  /* Data series, in the order ui_stats.c gives them to the gauges. */
+  /* One colour per subject. */
   --cpu: #6cb4ff;
   --gpu: #5ed3c6;
   --ram: #b49cff;
   --vram: #f79ad3;
+  --claude: #d97757;
+  --calendar-color: #5ed3c6;
 
-  /* One board pixel. The board is 800x480; its page padding is cut by 15 px at both ends. */
-  --u: min(100vw / 800, 100dvh / 450);
+  /* For the panel, the dock and the layers: 1 on a 915 x 412 screen. Pages have their own (App.module.css). */
+  --u: min(100vw / 915, 100dvh / 412);
 
   color-scheme: dark;
 }
 
 @media (orientation: portrait) {
   :root {
-    --u: min(100vw / 400, 100dvh / 760);
+    --u: min(100vw / 412, 100dvh / 915);
   }
 }
 
@@ -65,6 +68,40 @@ body {
   -webkit-tap-highlight-color: transparent;
   -webkit-text-size-adjust: none;
   user-select: none;
+}
+
+/* The same on every page. */
+.card {
+  min-width: 0;
+  min-height: 0;
+  padding: calc(14 * var(--u)) calc(18 * var(--u));
+  overflow: hidden;
+  border-radius: calc(20 * var(--u));
+  background: var(--card);
+}
+
+.caption {
+  flex: none;
+  overflow: hidden;
+  color: var(--subject, var(--muted));
+  font-size: calc(15 * var(--u));
+  font-weight: 600;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.ellipsis {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  * {
+    transition: none !important;
+    animation: none !important;
+  }
 }
 
 button {

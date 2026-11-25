@@ -4,51 +4,81 @@
   overflow: clip;
 }
 
-.app[data-nav='right'] {
+.app[data-layout='right'] {
   flex-direction: row-reverse;
 }
 
-.app[data-nav='bottom'] {
-  flex-direction: column-reverse;
+.app[data-layout='upright'],
+.app[data-layout='top'] {
+  flex-direction: column;
 }
 
 /* Against burn-in. Not the layers above them: those have to cover everything. */
-.app > nav,
-.page {
+.app > aside,
+.body {
   position: relative;
   top: var(--shift-y, 0);
   left: var(--shift-x, 0);
 }
 
-.app > nav,
-.app header[data-dims] {
+.app > aside,
+.app nav {
   transition: opacity 1s;
 }
 
-.app[data-dim] > nav,
-.app[data-dim] header[data-dims] {
+.app[data-dim] > aside,
+.app[data-dim] nav {
   opacity: 0.45;
 }
 
-.page {
+/* The stage and, under it, the dock. */
+.body {
   display: flex;
   flex: 1;
   flex-direction: column;
   min-width: 0;
   min-height: 0;
-  padding: max(calc(10 * var(--u)), env(safe-area-inset-top)) calc(20 * var(--u))
-    max(calc(10 * var(--u)), env(safe-area-inset-bottom));
+  padding: max(calc(14 * var(--u)), env(safe-area-inset-top)) calc(16 * var(--u) + env(safe-area-inset-right)) 0
+    calc(8 * var(--u));
 }
 
-.app[data-nav='left'] > .page {
-  padding-right: max(calc(20 * var(--u)), env(safe-area-inset-right));
+.app[data-layout='right'] > .body {
+  padding-right: calc(8 * var(--u));
+  padding-left: calc(16 * var(--u) + env(safe-area-inset-left));
 }
 
-.app[data-nav='right'] > .page {
-  padding-left: max(calc(20 * var(--u)), env(safe-area-inset-left));
+.app[data-layout='top'] > .body {
+  padding-top: calc(2 * var(--u));
+  padding-left: calc(16 * var(--u) + env(safe-area-inset-left));
 }
 
-.app[data-nav='bottom'] > .page {
-  padding: max(calc(8 * var(--u)), env(safe-area-inset-top)) max(calc(20 * var(--u)), env(safe-area-inset-right))
-    calc(8 * var(--u)) max(calc(20 * var(--u)), env(safe-area-inset-left));
+.app[data-layout='upright'] > .body {
+  padding: calc(4 * var(--u)) calc(12 * var(--u)) 0;
+}
+
+.stage {
+  position: relative;
+  flex: 1;
+  min-height: 0;
+  container-type: size;
+}
+
+/* Pages are drawn for 655 x 330, or 388 x 640 upright, and scale with the stage. */
+.unit {
+  --u: min(100cqw / 655, 100cqh / 330);
+
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  font-size: calc(15 * var(--u));
+}
+
+.app[data-layout='upright'] .unit {
+  --u: min(100cqw / 388, 100cqh / 620);
+}
+
+/* The same with a wider stage: otherwise it would be small. */
+.app[data-layout='top'] .unit {
+  --u: min(100cqw / 720, 100cqh / 275);
 }

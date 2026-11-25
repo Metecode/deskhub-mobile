@@ -32,48 +32,48 @@ describe('formats', () => {
     [0, '0 KB'],
     [999_000, '999 KB'],
     [35e6, '35 MB'],
-    [3.24e9, '3.2 GB'],
-    [1.234e12, '1.23 TB'],
+    [3.24e9, '3,2 GB'],
+    [1.234e12, '1,23 TB'],
   ])('%d bytes: %s', (b, text) => expect(formatBytes(b)).toBe(text));
 
   it.each([
-    [0, 'just now'],
-    [59, 'just now'],
-    [60, '1m ago'],
-    [7200, '2h ago'],
-    [200_000, '2d ago'],
+    [0, 'az önce'],
+    [59, 'az önce'],
+    [60, '1 dk önce'],
+    [7200, '2 sa önce'],
+    [200_000, '2 gün önce'],
   ])('%d s ago: %s', (s, text) => expect(formatAgo(NOW - s, NOW)).toBe(text));
 
-  it('never', () => expect(formatAgo(0, NOW)).toBe('never'));
+  it('never', () => expect(formatAgo(0, NOW)).toBe('hiç'));
 
   it.each([
-    [45, '45s'],
-    [125, '2m'],
-    [3720, '1h 02m'],
-    [277_200, '3d 5h'],
+    [45, '45 sn'],
+    [125, '2 dk'],
+    [3720, '1 sa 2 dk'],
+    [277_200, '3 gün 5 sa'],
   ])('%d s: %s', (s, text) => expect(formatSpan(s)).toBe(text));
 
   it('latency', () => {
     expect([null, 17.5, 0].map(formatLatency)).toEqual(['--', '18 ms', '0 ms']);
     expect([null, 39.9, 40, 100].map(latencyColor)).toEqual(['var(--dim)', 'var(--text)', 'var(--warn)', 'var(--bad)']);
-    expect(jitterText(NET)).toBe('Jitter 2.1 ms  •  Loss 3%');
+    expect(jitterText(NET)).toBe('Dalgalanma 2,1 ms, kayıp %3');
   });
 
-  it('live rates', () => expect(formatMbps(1835)).toBe('15.0'));
+  it('live rates', () => expect(formatMbps(1835)).toBe('15,0'));
 });
 
 describe('texts', () => {
   it('status', () => {
-    expect(statusText(NET, NOW)).toBe('Up 3d 5h  •  Last drop 3d ago, 45s');
-    expect(statusText({ ...NET, online: false }, NOW)).toBe('Last drop 3d ago, 45s');
-    expect(statusText({ ...NET, upSince: 0, lastDrop: null }, NOW)).toBe('No drops seen');
-    expect(statusText({ ...NET, lastDrop: null, ip: '203.0.113.5' }, NOW)).toBe('Up 3d 5h  •  203.0.113.5');
+    expect(statusText(NET, NOW)).toBe('3 gün 5 sa açık, son kopma 3 gün önce, 45 sn');
+    expect(statusText({ ...NET, online: false }, NOW)).toBe('son kopma 3 gün önce, 45 sn');
+    expect(statusText({ ...NET, upSince: 0, lastDrop: null }, NOW)).toBe('kopma görülmedi');
+    expect(statusText({ ...NET, lastDrop: null, ip: '203.0.113.5' }, NOW)).toBe('3 gün 5 sa açık, 203.0.113.5');
   });
 
   it('Home', () => {
-    expect(homeText(NET, NOW)).toBe('↓ 942  ↑ 38 Mbps  •  2h ago');
-    expect(homeText({ ...NET, testing: true }, NOW)).toBe('Speed test running...');
-    expect(homeText({ ...NET, speed: null }, NOW)).toBe('Jitter 2.1 ms  •  Loss 3%');
+    expect(homeText(NET, NOW)).toBe('↓ 942  ↑ 38 Mbps, 2 sa önce');
+    expect(homeText({ ...NET, testing: true }, NOW)).toBe('Hız testi yapılıyor');
+    expect(homeText({ ...NET, speed: null }, NOW)).toBe('Dalgalanma 2,1 ms, kayıp %3');
   });
 });
 
@@ -127,13 +127,13 @@ describe('speed test', () => {
     const t = 1_800_000_000_000;
     const button = (testing: boolean, netAt: number, requestedAt: number, now: number, online = true) =>
       speedTestButton({ ...NET, testing }, netAt, requestedAt, now, online);
-    expect(button(false, t, 0, t)).toEqual({ label: 'Run test', disabled: false });
-    expect(button(false, t, 0, t, false)).toEqual({ label: 'Run test', disabled: true });
-    expect(button(false, t - 500, t, t)).toEqual({ label: 'Starting...', disabled: true });
-    expect(button(true, t + 100, t, t + 100)).toEqual({ label: 'Testing...', disabled: true });
-    expect(button(false, t + 9000, t, t + 20_000)).toEqual({ label: 'Again in 1:40', disabled: true });
-    expect(button(false, t + 9000, t, t + SPEED_TEST_LOCK_MS)).toEqual({ label: 'Run test', disabled: false });
+    expect(button(false, t, 0, t)).toEqual({ label: 'Test et', disabled: false });
+    expect(button(false, t, 0, t, false)).toEqual({ label: 'Test et', disabled: true });
+    expect(button(false, t - 500, t, t)).toEqual({ label: 'Başlıyor', disabled: true });
+    expect(button(true, t + 100, t, t + 100)).toEqual({ label: 'Test ediliyor', disabled: true });
+    expect(button(false, t + 9000, t, t + 20_000)).toEqual({ label: '1:40 sonra', disabled: true });
+    expect(button(false, t + 9000, t, t + SPEED_TEST_LOCK_MS)).toEqual({ label: 'Test et', disabled: false });
     // Another phone's, or a scheduled one.
-    expect(button(true, t, 0, t)).toEqual({ label: 'Testing...', disabled: true });
+    expect(button(true, t, 0, t)).toEqual({ label: 'Test ediliyor', disabled: true });
   });
 });

@@ -2,11 +2,10 @@
 import { useSyncExternalStore } from 'react';
 import { Icon } from '../components/Icon.js';
 import type { Sound } from '../sound.js';
+import { T } from '../text.js';
 import { formatDuration } from '../time.js';
-import { PRESETS, type TimerState, type TimerStore } from '../timer.js';
+import { PRESETS, type TimerStore } from '../timer.js';
 import styles from './TimerPage.module.css';
-
-const STATUS: Readonly<Record<TimerState['status'], string>> = { idle: 'Ready', running: 'Running', paused: 'Paused' };
 
 export function TimerPage({ timer, sound }: { timer: TimerStore; sound: Sound }) {
   const { status, total, left } = useSyncExternalStore(timer.subscribe, timer.getState);
@@ -32,11 +31,11 @@ export function TimerPage({ timer, sound }: { timer: TimerStore; sound: Sound })
             )}
           </svg>
           <p className={styles.time}>{formatDuration(left)}</p>
-          <p className={styles.status}>{STATUS[status]}</p>
+          <p className={styles.status}>{T.timer[status]}</p>
         </div>
       </section>
-      <section className={styles.side}>
-        <h2 className={styles.caption}>MINUTES</h2>
+      <section className={`${styles.side} card`}>
+        <h2 className="caption">{T.timer.minutes}</h2>
         <div className={styles.presets}>
           {PRESETS.map((minutes) => (
             <button
@@ -53,13 +52,13 @@ export function TimerPage({ timer, sound }: { timer: TimerStore; sound: Sound })
           ))}
         </div>
         <div className={styles.buttons}>
-          <button type="button" className={styles.reset} aria-label="Reset" onClick={timer.reset}>
+          <button type="button" className={styles.reset} aria-label={T.timer.reset} onClick={timer.reset}>
             <Icon name="replay" size={32} />
           </button>
           <button
             type="button"
             className={styles.go}
-            aria-label={running ? 'Pause' : 'Start'}
+            aria-label={running ? T.timer.pause : T.timer.start}
             onClick={() => {
               // Its sound has to be prepared in a touch.
               sound.unlock();

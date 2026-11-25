@@ -3,6 +3,7 @@ import type { Media } from '@deskhub-mobile/protocol';
 import { useEffect, useRef, useState, type CSSProperties } from 'react';
 import { useNow } from '../hooks.js';
 import { positionAt } from '../position.js';
+import { T } from '../text.js';
 import { formatDuration } from '../time.js';
 import { Icon } from './Icon.js';
 import styles from './PlayerControls.module.css';
@@ -47,7 +48,7 @@ export function SeekBar({ media, at, disabled, onSeek }: SeekBarProps) {
         type="range"
         className={styles.slider}
         style={{ '--done': `${(100 * Math.min(pos, max)) / max}%` } as CSSProperties}
-        aria-label="Position"
+        aria-label={T.media.position}
         min={0}
         max={max}
         value={pos}
@@ -72,22 +73,22 @@ interface ButtonsProps {
 }
 
 export function PlayerButtons({ playing, disabled, small = false, onCommand }: ButtonsProps) {
-  const iconSize = small ? 32 : 48;
+  const iconSize = small ? 28 : 38;
   return (
     <div className={`${styles.buttons} ${small ? styles.small : ''}`}>
-      <button type="button" aria-label="Previous" disabled={disabled} onClick={() => onCommand('prev')}>
+      <button type="button" aria-label={T.media.previous} disabled={disabled} onClick={() => onCommand('prev')}>
         <Icon name="skip_previous" size={iconSize} />
       </button>
       <button
         type="button"
         className={styles.play}
-        aria-label={playing ? 'Pause' : 'Play'}
+        aria-label={playing ? T.media.pause : T.media.play}
         disabled={disabled}
         onClick={() => onCommand('toggle')}
       >
-        <Icon name={playing ? 'pause' : 'play_arrow'} size={48} />
+        <Icon name={playing ? 'pause' : 'play_arrow'} size={small ? 32 : 42} />
       </button>
-      <button type="button" aria-label="Next" disabled={disabled} onClick={() => onCommand('next')}>
+      <button type="button" aria-label={T.media.next} disabled={disabled} onClick={() => onCommand('next')}>
         <Icon name="skip_next" size={iconSize} />
       </button>
     </div>

@@ -4,15 +4,14 @@ import { ContributionChart, WEEKDAYS_WIDTH } from '../components/ContributionCha
 import { isOnline, type BridgeState } from '../connection.js';
 import { barColor, bestText, formatCount, longestText, pageChart, summary, weekChange } from '../github.js';
 import { useInnerSize } from '../hooks.js';
+import { T, WEEKDAY_LETTERS } from '../text.js';
 import styles from './GitHubPage.module.css';
-
-const DAYS = [...'SMTWTFS'];
 
 export function GitHubPage({ state }: { state: BridgeState }) {
   const { github } = state;
   const year = useRef<HTMLDivElement>(null);
   const { width } = useInnerSize(year);
-  const why = isOnline(state) ? 'Waiting for the PC' : 'PC offline';
+  const why = isOnline(state) ? T.waitingForPc : T.pcOffline;
   const color = barColor(github);
   const change = github && weekChange(github);
   const busiest = Math.max(1, ...(github?.weekDays ?? []), ...(github?.lastWeekDays ?? []));
@@ -21,9 +20,9 @@ export function GitHubPage({ state }: { state: BridgeState }) {
 
   return (
     <main className={styles.page}>
-      <section className={styles.card}>
+      <section className={`${styles.yearCard} card`}>
         <div className={styles.row}>
-          <h2 className={styles.caption}>LAST YEAR</h2>
+          <h2 className={styles.muted}>{T.github.year}</h2>
           <p className={styles.summary}>{github ? summary(github) : why}</p>
         </div>
         <div ref={year} className={styles.year}>
@@ -34,30 +33,30 @@ export function GitHubPage({ state }: { state: BridgeState }) {
       </section>
 
       <div className={styles.cards}>
-        <section className={`${styles.card} ${styles.spread}`}>
-          <h2 className={styles.caption}>STREAK</h2>
+        <section className={`${styles.box} card`}>
+          <h2 className={styles.muted}>{T.github.streak}</h2>
           <p className={styles.streak}>
-            {github ? github.streak : '--'} <span>{github?.streak === 1 ? 'day' : 'days'}</span>
+            {github ? github.streak : T.none} <span>{T.github.dayUnit}</span>
           </p>
           <dl className={styles.facts}>
             <div>
-              <dt>Longest</dt>
-              <dd>{github ? longestText(github) : '--'}</dd>
+              <dt>{T.github.longest}</dt>
+              <dd>{github ? longestText(github) : T.none}</dd>
             </div>
             <div>
-              <dt>Best day</dt>
-              <dd>{github ? bestText(github) : '--'}</dd>
+              <dt>{T.github.best}</dt>
+              <dd>{github ? bestText(github) : T.none}</dd>
             </div>
           </dl>
         </section>
 
-        <section className={`${styles.card} ${styles.week}`}>
-          <h2 className={styles.caption}>THIS WEEK</h2>
+        <section className={`${styles.box} card`}>
+          <h2 className={styles.muted}>{T.github.week}</h2>
           <p className={styles.weekCount}>
-            {github ? formatCount(github.week) : '--'} <span data-more={change?.more || undefined}>{change?.text}</span>
+            {github ? formatCount(github.week) : T.none} <span data-more={change?.more || undefined}>{change?.text}</span>
           </p>
           <div className={styles.bars}>
-            {DAYS.map((letter, i) => {
+            {WEEKDAY_LETTERS.map((letter, i) => {
               const now = github?.weekDays[i];
               const today = github !== null && i === github.weekDays.length - 1;
               return (
@@ -82,9 +81,9 @@ export function GitHubPage({ state }: { state: BridgeState }) {
           </div>
         </section>
 
-        <section className={styles.card}>
-          <h2 className={styles.caption}>TOP REPOS</h2>
-          {!github?.repos.length && <p className={styles.none}>{github ? 'No commits this year' : why}</p>}
+        <section className={`${styles.box} card`}>
+          <h2 className={styles.muted}>{T.github.repos}</h2>
+          {!github?.repos.length && <p className={styles.none}>{github ? T.github.noCommits : why}</p>}
           <div className={styles.repos}>
             {github?.repos.map(({ name, commits }, i) => (
               <div key={i}>

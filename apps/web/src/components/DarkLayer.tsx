@@ -2,7 +2,7 @@
 // Really turning the screen off is beyond a web page.
 import type { DarkStyle } from '@deskhub-mobile/protocol';
 import { useEffect, useRef, useState } from 'react';
-import { amPm, formatDate, formatDigits, HOUR12 } from '../time.js';
+import { formatClock, formatDate } from '../time.js';
 import styles from './DarkLayer.module.css';
 
 interface DarkLayerProps {
@@ -26,11 +26,8 @@ function MovingClock({ now }: { now: number }) {
         transform: `translate(${-place.x * 100}%, ${-place.y * 100}%)`,
       }}
     >
-      <p className={styles.time}>{formatDigits(now)}</p>
-      <p className={styles.date}>
-        {formatDate(now)}
-        {HOUR12 && `  •  ${amPm(now)}`}
-      </p>
+      <p className={styles.time}>{formatClock(now)}</p>
+      <p className={styles.date}>{formatDate(now)}</p>
     </div>
   );
 }
