@@ -7,7 +7,7 @@ import { ClientEndpoint } from './clientEndpoint.js';
 import { CompanionEndpoint } from './companionEndpoint.js';
 import { createHttpHandler } from './http.js';
 import { Hub } from './hub.js';
-import type { Logger } from './log.js';
+import { limitWarnings, type Logger } from './log.js';
 import { allowedOrigins, fromThisPc } from './origins.js';
 import { parseTarget } from './target.js';
 import { WebFiles } from './webFiles.js';
@@ -34,8 +34,9 @@ export class Bridge {
   constructor(options: BridgeOptions) {
     const { hubToken, clientToken, clientOrigins, weather, webRoot, log } = options;
     const web = new WebFiles(webRoot, log);
-    this.#log = log;
-    this.companion = new CompanionEndpoint(this.hub, hubToken, log);
+    // Whoever reaches the port can cause warnings.
+    this.#log = limitWarnings(log);
+    this.companion = new CompanionEndpoint(this.hub, hubToken, this.#log);
     this.clients = new ClientEndpoint({
       hub: this.hub,
       token: clientToken,
@@ -43,7 +44,7 @@ export class Bridge {
       weather,
       build: () => web.build,
       sendCommand: (command) => this.companion.send(command),
-      log,
+      log: limitWarnings(log),
     });
     this.#server = createServer(createHttpHandler({ hubToken, web }));
     this.#server.on('upgrade', (req, socket, head) => this.#onUpgrade(req, socket, head));
