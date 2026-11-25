@@ -5,7 +5,7 @@ import type { IconName } from './icons.js';
 /** The pages there are to see. The Internet is a view of the stats page (ui_show_page in ui.c). */
 export const TABS = {
   home: 'home',
-  stats: 'insights',
+  stats: 'desktop_windows',
   ai: 'auto_awesome',
   calendar: 'event',
   weather: 'wb_sunny',
