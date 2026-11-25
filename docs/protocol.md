@@ -289,7 +289,7 @@ Always first. The covers kept follow it.
 | `pc_online` | boolean | |
 | `messages` | array | The last message of every type, without `hello`, `hello_ok` and `ping`. Kept while the PC is offline. A cleared alert is there as `{"type":"alert","clear":true}`. |
 | `weather` | object or null | `latitude`, `longitude`, `city`, `units` (`metric` or `imperial`). Phones fetch the weather themselves. null: no location is set. |
-| `build` | string, optional | Which build of the web app the bridge serves. Left out when there is none. A page of another build reloads, see the README. |
+| `build` | string, optional | Which build of the web app the bridge serves. Left out when there is none. A page of another build reloads, see [What to know](usage.md). |
 
 ### `bridge.status`
 

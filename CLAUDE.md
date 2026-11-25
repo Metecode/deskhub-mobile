@@ -35,7 +35,7 @@ Companion (upstream, Windows, Python) --ws /ws--> Bridge (Node, on the PC) --ws 
   use CSS ellipsis.
 - A companion message that fails its schema is still relayed as it is. Commands from phones are
   strict: only the whitelist reaches the companion.
-- Code, comments and docs in English. What the user reads is Turkish and only in `apps/web/src/text.ts`.
+- Code, comments and docs in English, except `README.tr.md`: keep it in step with `README.md`. What the user reads is Turkish and only in `apps/web/src/text.ts`.
 - Small conventional commits. Don't push.
 
 ## Commands
@@ -77,8 +77,15 @@ Security review (Cloudflare's `security-audit` skill, asked for by the user), br
 
 - [x] `/ws` for this PC only, refused sockets, the log, headers, short `CLIENT_TOKEN`, `.env`
 - [x] README, docs/protocol.md
-- [ ] The headers (CSP) verified on the phone (by the user)
-- [ ] Pull request into `main` (the user opens and merges it)
+- [x] The headers (CSP) verified on the phone (by the user)
+- [x] Pull request into `main` (the user opens and merges it)
+
+README for GitHub (asked for by the user), branch `docs-readme` (from `main`):
+
+- [x] `README.md` is the introduction; what it had is in `docs/setup.md`, `docs/usage.md`, `docs/security.md`
+- [x] `README.tr.md`
+- [x] `docs/images`: the real app with made-up data, never the user's own
+- [ ] Looked at on GitHub, pull request into `main` (by the user)
 
 Phases 0 to 2 are done and verified on the phone by the user (branches `phase-0` to `phase-2`).
 Phase 3, branch `phase-3`:
@@ -128,5 +135,5 @@ Not verified yet:
   browser only).
 - Phase 4: the renewal of Claude's sign-in through the VS Code extension's `claude`; the firewall prompt of
   `launch.ps1`; a real sign-in to Windows with `autostart.ps1`.
-- Phase 3: Steam itself (recent games, friends, covers from its servers): to be tried on the user's own
-  computer, as there is no Steam on this one. Real printers, Bambu in particular.
+- Phase 3: real printers, Bambu in particular. (Steam itself is verified on the user's own computer: recent games,
+  covers, friends and a launch.)
