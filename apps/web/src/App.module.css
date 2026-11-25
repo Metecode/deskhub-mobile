@@ -1,6 +1,7 @@
 .app {
   display: flex;
   height: 100dvh;
+  overflow: clip;
 }
 
 .app[data-nav='right'] {

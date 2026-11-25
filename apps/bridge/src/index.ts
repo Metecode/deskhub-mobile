@@ -29,8 +29,10 @@ async function main(): Promise<void> {
   log.info(`listening on port ${config.port}${config.mock ? ', mock mode' : ''}`);
   // In mock mode the web app comes from the Vite dev server.
   const webPort = config.mock ? DEV_PORT : config.port;
-  log.info('open one of these (localhost is this PC, or a phone with adb reverse):');
-  for (const address of ['localhost', ...lanAddresses()])
+  // They have the token in them (tools/start-bridge.ps1 writes a log file).
+  const links = process.argv.includes('--no-links') ? [] : ['localhost', ...lanAddresses()];
+  if (links.length) log.info('open one of these (localhost is this PC, or a phone with adb reverse):');
+  for (const address of links)
     log.info(`  http://${address}:${webPort}/?${TOKEN_PARAM}=${encodeURIComponent(config.clientToken)}`);
 
   if (config.mock) {

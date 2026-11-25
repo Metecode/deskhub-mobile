@@ -81,13 +81,14 @@ Phase 4, branch `phase-4` (from `phase-3`):
 - [x] Web: service worker, manifest, saved calendar
 - [x] Web: burn-in (pixel shift, dimming, Time's up)
 - [x] Web and bridge: updates, error note
-- [ ] `tools/autostart.ps1`
-- [ ] CI
-- [ ] README, docs/protocol.md
-- [ ] Verified in a desktop browser
+- [x] `tools/autostart.ps1`
+- [x] CI
+- [x] README, docs/protocol.md
+- [x] Verified in a desktop browser
 - [ ] Verified on the phone (by the user)
 - [ ] One pull request into `main`, tag `v0.2.0` (only when the user says so, after phase 3 on the phone)
 
+Next: the user tries phases 3 and 4 on the phone.
 
 Not verified yet:
 

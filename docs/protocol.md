@@ -1,6 +1,6 @@
 # Protocol
 
-What the bridge speaks, as of phase 3. Upstream references are to commit
+What the bridge speaks, as of phase 4. Upstream references are to commit
 `b78c505279a50f80cd40bfc86f0d9de9ac79437c`. The schemas are in `packages/protocol`.
 
 ## Companion <-> bridge: `/ws`
@@ -288,19 +288,22 @@ Always first. The covers kept follow it.
 | `pc_online` | boolean | |
 | `messages` | array | The last message of every type, without `hello`, `hello_ok` and `ping`. Kept while the PC is offline. A cleared alert is there as `{"type":"alert","clear":true}`. |
 | `weather` | object or null | `latitude`, `longitude`, `city`, `units` (`metric` or `imperial`). Phones fetch the weather themselves. null: no location is set. |
+| `build` | string, optional | Which build of the web app the bridge serves. Left out when there is none. A page of another build reloads, see the README. |
 
 ### `bridge.status`
 
 On every change and every 5 s, online or not. A phone that hears nothing for 15 s reconnects.
 
-| Field | Type |
-| --- | --- |
-| `pc_online` | boolean |
+| Field | Type | |
+| --- | --- | --- |
+| `pc_online` | boolean | |
+| `build` | string, optional | As in the snapshot; changes after `pnpm build` |
 
 ## HTTP
 
 | Request | Answer |
 | --- | --- |
-| `GET /...` | The web app; without a build, `/` is a 200 with a hint |
+| `GET /...` | The web app, a new build as soon as its `build.json` is there; without a build, `/` is a 200 with a hint |
+| `GET /build.json` | `build`, and in `files` what the service worker keeps |
 | `POST /firmware` | 403 after reading the upload. Any other refusal makes `deskhub-flash` flash over USB. |
 | `GET /screenshot`, `/tap`, `/perf` | 403 without `?token=<HUB_TOKEN>`, else 501 |

@@ -75,9 +75,14 @@ uv run python ../../deskhub-mobile/tools/run-companion.py
 It takes the same options. The tray icon's *Restart*, and the shortcut that `deskhub-install` makes,
 start the companion the normal way and bring the folding back.
 
-### 3. Windows Firewall
+### 3. The PC: a fixed address, the firewall, starting by itself
 
-The phone must reach port 8765 on the PC. In PowerShell as administrator:
+**A fixed address.** The link, what the phone has saved and Chrome's flag below all hold the PC's IP
+address. Give the PC a DHCP reservation in your router (often under *LAN* or *DHCP*, by the PC's MAC
+address), so that it never changes. If it does change, open the new link and set the flag again; the
+phone starts over with what it had saved.
+
+**The firewall.** The phone must reach port 8765 on the PC. In PowerShell as administrator:
 
 ```powershell
 New-NetFirewallRule -DisplayName "deskhub-mobile" -Direction Inbound -Protocol TCP `
@@ -86,9 +91,27 @@ New-NetFirewallRule -DisplayName "deskhub-mobile" -Direction Inbound -Protocol T
 
 This only opens it on networks Windows treats as *Private* (Settings > Network & internet > your
 network). If Windows asks about Node.js when the bridge first starts, allowing private networks
-does the same job. To undo it: `Remove-NetFirewallRule -DisplayName "deskhub-mobile"`.
+does the same job. Started by itself and hidden, it may not get to ask, so make the rule first. To undo
+it: `Remove-NetFirewallRule -DisplayName "deskhub-mobile"`.
+
+**Starting by itself.** [tools/autostart.ps1](tools/autostart.ps1) puts shortcuts in your Startup folder,
+without administrator rights. The second line also starts the companion, through
+`tools/run-companion.py` (see above); give it the folder with the companion's `config.toml` and `.venv`:
+
+```powershell
+powershell -ExecutionPolicy Bypass -File tools\autostart.ps1 install
+powershell -ExecutionPolicy Bypass -File tools\autostart.ps1 install -Companion ..\deskhub\companion
+```
+
+`status` and `remove` in place of `install` do what they say. **The Startup folder runs when you sign in**, not
+when Windows starts: after a restart the phone shows the PC as offline until somebody has signed in.
+Windows also waits a little with it after that. The bridge runs hidden and writes
+`%LOCALAPPDATA%\deskhub-mobile\bridge.log`, without the links, as they have the token in them. If you
+used `deskhub-install`, remove that first (`uv run deskhub-install --remove`).
 
 ### 4. Run it
+
+Once by hand, for the links:
 
 ```sh
 pnpm start
@@ -101,6 +124,38 @@ Then start the companion. The order doesn't matter.
 The bridge prints links like `http://192.168.1.20:8765/?token=...`. Open one on the phone. The
 token is saved in the browser and removed from the address, so you only need the link once.
 Tap the screen to go fullscreen.
+
+**Chrome's flag.** Browsers only let a page keep the screen on, and open without its server, in a *secure
+context*: HTTPS, or an address you declare as secure. On the phone, in Chrome:
+
+1. Open `chrome://flags/#unsafely-treat-insecure-origin-as-secure`.
+2. Enter the address without the token, for example `http://192.168.1.20:8765`.
+3. Choose *Enabled* and tap *Relaunch*.
+
+Then touch the two status icons at the end of the navigation bar (or open `/#info`): the diagnostics
+should say *Secure context: yes*, *Wake lock: on* and *Service worker: active*. The flag only changes what
+this one page may use; the traffic stays as unencrypted as before. It is meant for developers and may
+disappear from Chrome one day. Without it everything else works; then turn on *Stay awake* (while
+charging) in Android's developer options.
+
+**On the home screen.** In Chrome's menu, *Add to home screen*. Opened from there it starts fullscreen,
+where Chrome allows that for an address declared as secure.
+
+**Pinning.** To keep the phone in the app, turn on Android's app pinning (Settings > Security and privacy >
+More security settings > *Pin app* on a Galaxy; elsewhere search the settings for "pin"), open the app and
+pin it in the overview of recent apps. After a restart of the phone the app has to be opened again: one
+tap.
+
+**The battery.** The phone is always on the charger, so limit the charge. On a Galaxy A52: Settings > Battery
+and device care > Battery > More battery settings > *Protect battery*, which stops at 85 %. With One UI
+6.1 and later it is Settings > Battery > *Battery protection*; its *Maximum* stops at 80 %. Names differ a
+little between versions.
+
+**Over USB.** With USB debugging on, `adb reverse tcp:8765 tcp:8765` makes the bridge available on
+the phone as `http://localhost:8765`, without Wi-Fi or a firewall rule. That is a secure context without
+the flag.
+
+## What to know
 
 Claude Code's alerts ("needs permission", "waiting for you") and its limits need a hook and a status
 line in Claude Code's settings, which the companion's `install_claude.py` adds; see the Desk Hub
@@ -115,18 +170,22 @@ touch on the page, so after a reload there's only the picture until you touch it
 
 When the PC's display goes to sleep, or at night, the screen goes dark (`pc_sleep` and `night` under
 `[display]` in `config.toml`, as for the board); a touch wakes it for a minute. A web page can't turn
-the screen off, so it's black: dark on an OLED phone, a faint glow on an LCD, where the clock may look
-better.
+the screen off and on again, so it's black: on an OLED phone those pixels are off, on an LCD there is a
+faint glow, and the clock may look better. An alert or the timer lights it.
 
-While the PC is off, the clock, the weather and the last calendar stay, as long as the page is open.
-Opening it needs the bridge.
+**While the PC is off**, the clock, the weather, the timer, night mode and the last calendar work, and the
+page opens without it, if the flag is set. The phone keeps the last calendar for that: only the days the
+companion looks ahead (`days` under `[calendar]`), and events that are over are removed, though not
+before the page is next open. Whoever has the unlocked phone can read it.
 
-**Keeping the screen on.** Browsers only let a page keep the screen on over HTTPS or on
-`localhost`, and the app doesn't do it yet. Until it does, turn on *Stay awake* (while charging)
-in Android's developer options.
+**Against burn-in**, everything moves by a few pixels once a minute, and after 2 minutes without a touch
+the navigation bar and Home's header are dimmed. *Time's up* goes dark after 10 minutes.
 
-**Over USB.** With USB debugging on, `adb reverse tcp:8765 tcp:8765` makes the bridge available on
-the phone as `http://localhost:8765`, without Wi-Fi or a firewall rule.
+**Updates.** After `pnpm build` the running bridge serves the new build, and phones load it by
+themselves: once nobody has touched them for a minute, and neither while there is an alert nor while a timer
+runs or has ended. Such a reload leaves fullscreen until the next tap, unless the app was opened from
+the home screen. Changes to the bridge itself need a restart of it. If a page fails, a note shows instead,
+and it reloads after 30 seconds, under the same conditions and three times in 10 minutes at most.
 
 ## Security
 
@@ -157,16 +216,16 @@ pnpm test
 pnpm typecheck
 ```
 
-`pnpm dev` doesn't need the companion, only `CLIENT_TOKEN`. After `pnpm build`, restart a running
-bridge: it lists the web app's files when it starts.
+`pnpm dev` doesn't need the companion, only `CLIENT_TOKEN`. The made-up PC goes offline for 10 seconds now
+and then, on purpose. To open it on the phone, allow port 5173 in the firewall too.
 
 [tools/fake-moonraker.mjs](tools/fake-moonraker.mjs) stands in for a 3D printer; how to point the companion
-at it is at its top. The made-up PC goes offline for 10
-seconds now and then, on purpose. To open it on the phone, allow port 5173 in the firewall too.
+at it is at its top.
 
 - [docs/protocol.md](docs/protocol.md): the messages
 - [docs/plan-phase0.md](docs/plan-phase0.md), [docs/plan-phase1.md](docs/plan-phase1.md),
-  [docs/plan-phase2.md](docs/plan-phase2.md), [docs/plan-phase3.md](docs/plan-phase3.md): the plans
+  [docs/plan-phase2.md](docs/plan-phase2.md), [docs/plan-phase3.md](docs/plan-phase3.md),
+  [docs/plan-phase4.md](docs/plan-phase4.md): the plans
 - [CLAUDE.md](CLAUDE.md): project context, rules and phases
 
 ## License
