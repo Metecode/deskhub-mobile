@@ -83,6 +83,7 @@ Phase 4, branch `phase-4` (from `phase-3`):
 - [x] Web and bridge: updates, error note
 - [x] `tools/autostart.ps1`
 - [x] CI
+- [x] `deskhub-mobile.cmd` (`tools/launch.ps1`): set-up and start with a double-click (asked for by the user)
 - [x] README, docs/protocol.md
 - [x] Verified in a desktop browser
 - [ ] Verified on the phone (by the user)
@@ -99,5 +100,7 @@ Not verified yet:
   window to show); the PC's display really sleeping and waking (the PC has Modern Standby, so it wasn't
   turned off by the agent; a fake companion only); the beep and the vibration on the phone (a desktop
   browser only).
+- Phase 4: the renewal of Claude's sign-in through the VS Code extension's `claude`; the firewall prompt of
+  `launch.ps1`; a real sign-in to Windows with `autostart.ps1`.
 - Phase 3: Steam itself (recent games, friends, covers from its servers): to be tried on the user's own
   computer, as there is no Steam on this one. Real printers, Bambu in particular.

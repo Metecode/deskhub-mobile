@@ -24,6 +24,16 @@ printers, Timer, Games, GitHub and Shortcuts.
 
 ## Set up
 
+**The short way:** install the companion (step 2 below, without the `[hub]` part if you have no `.env` yet), then
+double-click **deskhub-mobile.cmd**. The first time it makes `.env` with new tokens (or with the companion's),
+installs, builds, asks for the companion's folder, the firewall and starting at sign-in, and shows a QR code to
+scan with the phone. If the companion doesn't know the bridge yet, it says which two lines to change. After
+that a double-click starts what isn't running, builds when the code is newer, and has a menu: QR code,
+restart, stop, sign-in on or off. It never changes the companion's files. What is left by hand is Chrome's
+flag on the phone, and what is in `.env` besides the tokens, such as the place for the weather.
+
+The steps one by one:
+
 ### 1. The bridge
 
 ```sh
@@ -74,6 +84,10 @@ uv run python ../../deskhub-mobile/tools/run-companion.py
 
 It takes the same options. The tray icon's *Restart*, and the shortcut that `deskhub-install` makes,
 start the companion the normal way and bring the folding back.
+
+With only Claude Code's VS Code extension there is no `claude` on the PATH, which the companion's *live limits*
+(`live_limits = true` under `[claude]`) need to have an expired sign-in renewed. `run-companion.py` lets it
+find the extension's.
 
 ### 3. The PC: a fixed address, the firewall, starting by itself
 
@@ -221,6 +235,8 @@ and then, on purpose. To open it on the phone, allow port 5173 in the firewall t
 
 [tools/fake-moonraker.mjs](tools/fake-moonraker.mjs) stands in for a 3D printer; how to point the companion
 at it is at its top.
+
+[tools/launch.ps1](tools/launch.ps1) is what `deskhub-mobile.cmd` runs.
 
 - [docs/protocol.md](docs/protocol.md): the messages
 - [docs/plan-phase0.md](docs/plan-phase0.md), [docs/plan-phase1.md](docs/plan-phase1.md),

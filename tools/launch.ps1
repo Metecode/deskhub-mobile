@@ -139,7 +139,8 @@ function Update-Build {
     $before = Get-BridgeHash
     if ((Get-Time 'pnpm-lock.yaml') -gt (Get-Time 'node_modules\.modules.yaml')) {
         Say 'Installing packages...' White
-        & pnpm install --frozen-lockfile
+        # Not part of what this function returns.
+        & pnpm install --frozen-lockfile | Out-Host
         if ($LASTEXITCODE -ne 0) { throw 'The packages could not be installed.' }
         # pnpm leaves the file alone when there was nothing to do.
         (Get-Item -LiteralPath 'node_modules\.modules.yaml').LastWriteTimeUtc = [DateTime]::UtcNow
@@ -149,7 +150,7 @@ function Update-Build {
     $built = @((Get-Time 'apps\bridge\dist\index.js'), (Get-Time 'apps\web\dist\build.json')) | Sort-Object | Select-Object -First 1
     if ($sources -gt $built) {
         Say 'Building...' White
-        & pnpm build
+        & pnpm build | Out-Host
         if ($LASTEXITCODE -ne 0) { throw 'The build failed.' }
     }
     return ($before -ne '' -and $before -ne (Get-BridgeHash))
@@ -225,11 +226,20 @@ function Add-FirewallRule {
     } catch { Say 'Windows did not allow it.' Yellow }
 }
 
-# The address on the network with the way out; a VPN's or a virtual machine's comes after it.
+# The address on the network with the way out; a VPN's or a virtual machine's comes after it. (Get-NetIPConfiguration
+# takes seconds.)
 function Get-Address {
-    $configs = Get-NetIPConfiguration | Where-Object { $_.IPv4DefaultGateway -and $_.IPv4Address }
-    $best = $configs | Sort-Object { $_.NetIPv4Interface.InterfaceMetric } | Select-Object -First 1
-    if ($best) { return @($best.IPv4Address)[0].IPAddress }
+    $adapters = [Net.NetworkInformation.NetworkInterface]::GetAllNetworkInterfaces() |
+        Where-Object { $_.OperationalStatus -eq 'Up' -and $_.NetworkInterfaceType -notin 'Loopback', 'Tunnel' }
+    foreach ($kind in @('Ethernet|GigabitEthernet|Wireless80211', '.')) {
+        foreach ($adapter in $adapters) {
+            if ($adapter.NetworkInterfaceType.ToString() -notmatch $kind) { continue }
+            $properties = $adapter.GetIPProperties()
+            $out = $properties.GatewayAddresses | Where-Object { $_.Address.AddressFamily -eq 'InterNetwork' -and $_.Address.ToString() -ne '0.0.0.0' }
+            $own = $properties.UnicastAddresses | Where-Object { $_.Address.AddressFamily -eq 'InterNetwork' } | Select-Object -First 1
+            if ($out -and $own) { return $own.Address.ToString() }
+        }
+    }
     return $null
 }
 
@@ -305,8 +315,9 @@ try {
     if (-not (Get-BridgeProcess)) { Start-Bridge }
     if ($companion -and -not (Test-Companion)) { Start-Companion }
 
-    if (-not $memory.ContainsKey('askedFirewall') -and -not (Test-Firewall)) {
-        if (Confirm-Yes 'The phone must get through the firewall. Add a rule? (asks for administrator rights)') { Add-FirewallRule }
+    # Looking through the rules takes seconds, so it is done once.
+    if (-not $memory.ContainsKey('askedFirewall')) {
+        if (-not (Test-Firewall) -and (Confirm-Yes 'The phone must get through the firewall. Add a rule? (asks for administrator rights)')) { Add-FirewallRule }
         $memory.askedFirewall = $true
         Save-Memory
     }
