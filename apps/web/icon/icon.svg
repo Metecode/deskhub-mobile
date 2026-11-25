@@ -1,0 +1,10 @@
+<!-- The source of public/icon-*.png. All of it is in the middle 80 %, so that it can be masked. -->
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <rect width="512" height="512" fill="#0d0e11" />
+  <rect x="84" y="148" width="344" height="216" rx="36" fill="#16181d" stroke="#f3f4f6" stroke-width="16" />
+  <path d="M140 296a52 52 0 1 1 104 0" fill="none" stroke="#3a3f49" stroke-width="20" stroke-linecap="round" />
+  <path d="M140 296a52 52 0 0 1 78-45" fill="none" stroke="#ffb224" stroke-width="20" stroke-linecap="round" />
+  <path d="M288 216h84" stroke="#6cb4ff" stroke-width="20" stroke-linecap="round" />
+  <path d="M288 256h56" stroke="#5ed3c6" stroke-width="20" stroke-linecap="round" />
+  <path d="M288 296h84" stroke="#b49cff" stroke-width="20" stroke-linecap="round" />
+</svg>

@@ -7,7 +7,7 @@
   "scripts": {
     "dev": "vite",
     "build": "vite build",
-    "typecheck": "tsc -p ."
+    "typecheck": "tsc -p . && tsc -p tsconfig.sw.json && tsc -p tsconfig.node.json"
   },
   "dependencies": {
     "@deskhub-mobile/protocol": "workspace:*",
@@ -17,6 +17,7 @@
     "react-dom": "^19.3.1"
   },
   "devDependencies": {
+    "@types/node": "^20.19.43",
     "@types/react": "^19.3.1",
     "@types/react-dom": "^19.0.0",
     "@vitejs/plugin-react": "^6.3.0",

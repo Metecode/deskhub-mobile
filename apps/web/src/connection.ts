@@ -48,6 +48,11 @@ import {
 import { readCover, type Cover } from './cover.js';
 import type { SavedLayout } from './layoutStore.js';
 
+/** What the page starts with. */
+export interface SavedData extends SavedLayout {
+  events?: Events;
+}
+
 /** How far back the history goes. */
 export const HISTORY_MS = 60_000;
 
@@ -125,13 +130,13 @@ export interface BridgeState extends HubData {
   messages: Readonly<Record<string, RawMessage>>;
 }
 
-const NO_DATA: Omit<HubData, 'layout' | 'home'> = {
+/** Without what outlives a bridge that has forgotten it. */
+const NO_DATA: Omit<HubData, 'layout' | 'home' | 'events'> = {
   stats: null,
   media: NO_MEDIA,
   mediaAt: 0,
   server: normalizeMediaServer({ type: 'media_server' }),
   serverAt: 0,
-  events: normalizeEvents({ type: 'events' }),
   tiles: [],
   lit: new Set(),
   usage: null,
@@ -211,7 +216,7 @@ export class Connection {
   constructor(
     url: string,
     token: string | null,
-    { layout, home }: SavedLayout = { layout: DEFAULT_LAYOUT, home: DEFAULT_HOME },
+    { layout, home, events = normalizeEvents({ type: 'events' }) }: SavedData = { layout: DEFAULT_LAYOUT, home: DEFAULT_HOME },
   ) {
     this.#url = url;
     this.#token = token;
@@ -227,6 +232,7 @@ export class Connection {
       messages: {},
       layout,
       home,
+      events,
     };
   }
 

@@ -10,9 +10,11 @@ import { App } from './App.js';
 import { Connection } from './connection.js';
 import { DarkStore } from './dark.js';
 import { ErrorStore, InfoRoute } from './diagnostics.js';
+import { EventsStore } from './eventsStore.js';
 import { goFullscreenOnTap } from './fullscreen.js';
 import { LaunchStore } from './games.js';
 import { loadLayout, saveLayout } from './layoutStore.js';
+import { OfflineStore } from './offline.js';
 import { Sound } from './sound.js';
 import { SpeedTestStore } from './speedTest.js';
 import { TimerStore } from './timer.js';
@@ -26,12 +28,18 @@ errors.listen();
 takeTokenFromUrl();
 
 const scheme = location.protocol === 'https:' ? 'wss:' : 'ws:';
-const connection = new Connection(`${scheme}//${location.host}/client`, loadToken(), loadLayout());
+const seconds = () => Math.floor(Date.now() / 1000);
+const events = new EventsStore();
+const connection = new Connection(`${scheme}//${location.host}/client`, loadToken(), {
+  ...loadLayout(),
+  events: events.load(seconds()),
+});
 const weather = new WeatherStore();
 const sound = new Sound();
 const speedTest = new SpeedTestStore();
 const launches = new LaunchStore();
 const wakeLock = new WakeLockStore(wakeLockEnvironment());
+const offline = new OfflineStore(import.meta.env.PROD);
 const info = new InfoRoute();
 
 const darkReasons = () => {
@@ -54,12 +62,21 @@ connection.subscribe(() => {
   weather.setSettings(state.weather);
   dark.update(darkReasons());
   alerts.update(state.alert);
+  if (state.events !== saved.events) events.update(state.events, seconds());
   if (state.layout !== saved.layout || state.home !== saved.home) saveLayout(state);
   saved = state;
 });
 connection.connect();
 dark.start();
 timer.resume();
+wakeLock.start();
+void offline.start();
+
+setInterval(() => {
+  events.clean(seconds());
+  // Refused before, perhaps not now.
+  void wakeLock.update();
+}, 60_000);
 
 function wake(): void {
   connection.wake();
@@ -98,6 +115,7 @@ createRoot(document.getElementById('root')!).render(
       launches={launches}
       sound={sound}
       wakeLock={wakeLock}
+      offline={offline}
       errors={errors}
       info={info}
     />

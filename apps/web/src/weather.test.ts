@@ -126,8 +126,18 @@ describe('WeatherStore', () => {
   });
 
   /** Lets the response be read, which takes real turns of the event loop. */
+  const turn = () =>
+    new Promise<void>((resolve) => {
+      // setTimeout() is a fake here.
+      const { port1, port2 } = new MessageChannel();
+      port1.onmessage = () => {
+        port1.close();
+        resolve();
+      };
+      port2.postMessage(null);
+    });
   const settle = async () => {
-    for (let i = 0; i < 5; i++) await new Promise((resolve) => setImmediate(resolve));
+    for (let i = 0; i < 5; i++) await turn();
   };
   const started = async (settings: WeatherSettings = PLACE) => {
     const store = create();

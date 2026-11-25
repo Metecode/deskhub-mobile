@@ -1,7 +1,8 @@
 // Diagnostics. Opened with the status icons, or with /#info.
-import { useEffect, useState, useSyncExternalStore, type ReactNode } from 'react';
+import { useSyncExternalStore, type ReactNode } from 'react';
 import { isOnline, type BridgeState } from '../connection.js';
-import { browserName, tryServiceWorker, type ErrorStore } from '../diagnostics.js';
+import { browserName, type ErrorStore } from '../diagnostics.js';
+import type { OfflineState, OfflineStore } from '../offline.js';
 import { formatClock, formatDuration } from '../time.js';
 import type { WakeLockState, WakeLockStore } from '../wakeLock.js';
 import styles from './InfoPage.module.css';
@@ -41,43 +42,42 @@ function wakeLockText(state: WakeLockState, now: number): [string, Mark] {
   }
 }
 
+function offlineText(state: OfflineState): [string, Mark] {
+  switch (state.status) {
+    case 'unavailable':
+      return ['not available', 'bad'];
+    case 'off':
+      return ['off', undefined];
+    case 'starting':
+      return ['starting', undefined];
+    case 'active':
+      return ['active', 'good'];
+    case 'failed':
+      return [state.reason, 'bad'];
+  }
+}
+
 interface InfoPageProps {
   state: BridgeState;
   wakeLock: WakeLockStore;
+  offline: OfflineStore;
   errors: ErrorStore;
   /** Epoch seconds. */
   now: number;
   onClose: () => void;
 }
 
-export function InfoPage({ state, wakeLock, errors, now, onClose }: InfoPageProps) {
+export function InfoPage({ state, wakeLock, offline, errors, now, onClose }: InfoPageProps) {
   const lock = useSyncExternalStore(wakeLock.subscribe, wakeLock.getState);
   const error = useSyncExternalStore(errors.subscribe, errors.getState);
-  /** undefined while it is being tried. */
-  const [worker, setWorker] = useState<string | null>();
-
-  useEffect(() => {
-    let gone = false;
-    void tryServiceWorker().then((result) => {
-      if (!gone) setWorker(result);
-    });
-    return () => {
-      gone = true;
-    };
-  }, []);
-
+  const worker = useSyncExternalStore(offline.subscribe, offline.getState);
   const [lockText, lockMark] = wakeLockText(lock, now);
+  const [workerText, workerMark] = offlineText(worker);
   const online = isOnline(state);
-  const on = lock.status !== 'off' && lock.status !== 'unavailable';
   return (
     <main className={styles.page}>
       <header className={styles.header}>
         <h1>Diagnostics</h1>
-        {lock.status !== 'unavailable' && (
-          <button type="button" className={styles.button} onClick={on ? wakeLock.stop : wakeLock.start}>
-            {on ? 'Let the screen sleep' : 'Keep the screen on'}
-          </button>
-        )}
         <button type="button" className={styles.button} onClick={() => location.reload()}>
           Reload
         </button>
@@ -99,8 +99,8 @@ export function InfoPage({ state, wakeLock, errors, now, onClose }: InfoPageProp
         <Row label="Wake lock" mark={lockMark}>
           {lockText}
         </Row>
-        <Row label="Service worker" mark={worker === undefined ? undefined : worker === null ? 'good' : 'bad'}>
-          {worker === undefined ? 'trying' : (worker ?? 'works')}
+        <Row label="Service worker" mark={workerMark}>
+          {workerText}
         </Row>
         <Row label="Bridge" mark={state.link === 'open' ? 'good' : 'bad'}>
           {LINKS[state.link]}

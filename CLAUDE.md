@@ -76,7 +76,7 @@ Phase 4, branch `phase-4` (from `phase-3`):
 
 - [x] Plan approved and written down
 - [x] Web: diagnostics page
-- [ ] Way A (Chrome's flag) tried on the phone (by the user): decides about HTTPS
+- [x] Way A (Chrome's flag) tried on the phone (by the user): it works, so no HTTPS
 - [ ] Web: wake lock
 - [ ] Web: service worker, manifest, saved calendar
 - [ ] Web: burn-in (pixel shift, dimming, Time's up)
@@ -88,7 +88,6 @@ Phase 4, branch `phase-4` (from `phase-3`):
 - [ ] Verified on the phone (by the user)
 - [ ] One pull request into `main`, tag `v0.2.0` (only when the user says so, after phase 3 on the phone)
 
-Next: the user tries phase 3 and the diagnostics page on the phone.
 
 Not verified yet:
 

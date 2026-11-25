@@ -13,6 +13,7 @@ import type { ErrorStore, InfoRoute } from './diagnostics.js';
 import type { LaunchStore } from './games.js';
 import { useNow, usePortrait } from './hooks.js';
 import { pageToShow, tabsOf } from './nav.js';
+import type { OfflineStore } from './offline.js';
 import { AiPage } from './pages/AiPage.js';
 import { CalendarPage } from './pages/CalendarPage.js';
 import { GamesPage } from './pages/GamesPage.js';
@@ -44,12 +45,13 @@ export interface Stores {
   launches: LaunchStore;
   sound: Sound;
   wakeLock: WakeLockStore;
+  offline: OfflineStore;
   errors: ErrorStore;
   info: InfoRoute;
 }
 
 export function App(stores: Stores) {
-  const { connection, weather, alerts, timer, dark, speedTest, launches, sound, wakeLock, errors, info } = stores;
+  const { connection, weather, alerts, timer, dark, speedTest, launches, sound, wakeLock, offline, errors, info } = stores;
   const state = useSyncExternalStore(connection.subscribe, connection.getState);
   const forecast = useSyncExternalStore(weather.subscribe, weather.getState);
   const alert = useSyncExternalStore(alerts.subscribe, alerts.getState);
@@ -61,7 +63,7 @@ export function App(stores: Stores) {
   const portrait = usePortrait();
   const infoOpen = useSyncExternalStore(info.subscribe, info.getState);
   const infoPage = infoOpen && (
-    <InfoPage state={state} wakeLock={wakeLock} errors={errors} now={now} onClose={info.close} />
+    <InfoPage state={state} wakeLock={wakeLock} offline={offline} errors={errors} now={now} onClose={info.close} />
   );
 
   if (state.link === 'bad_token') {

@@ -57,18 +57,3 @@ export function browserName(userAgent: string): string {
   const other = /\b(Edg|EdgA|OPR|SamsungBrowser)\/(\d+)/.exec(userAgent);
   return other ? `${other[1]} ${other[2]} (Chrome ${version[1]})` : `Chrome ${version[1]}`;
 }
-
-/**
- * Whether a service worker can be registered here, tried with one that does nothing and is
- * removed at once. null: it works, else why not.
- */
-export async function tryServiceWorker(): Promise<string | null> {
-  if (!('serviceWorker' in navigator)) return 'not available';
-  try {
-    const registration = await navigator.serviceWorker.register('/sw-try.js', { scope: '/sw-try/' });
-    await registration.unregister();
-    return null;
-  } catch (e) {
-    return describeError(e);
-  }
-}
