@@ -68,6 +68,7 @@ Phases 0 to 4 are in `main`, tag `v0.2.0`. Phase 5, branch `phase-5` (from `main
 - [x] Launcher and QR page in Turkish (the bridge's log stays English)
 - [x] README, docs/protocol.md
 - [x] Tabs can be swapped on the phone (`tabOrder.ts`, asked for by the user)
+- [x] Swiping between the dock's pages (`swipe.ts`, asked for by the user)
 - [x] Verified with the mock and the real companion, at all sizes
 - [ ] Verified on the phone (by the user)
 

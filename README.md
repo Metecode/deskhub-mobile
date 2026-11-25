@@ -182,7 +182,8 @@ A shortcut with the icon `power_settings_new` (for sleep or shutdown) takes two 
 Games start with one tap; after that all of them are locked for 5 seconds on that phone. GitHub needs a
 token (`deskhub-setup github`), printers are added with `deskhub-printers`; see the Desk Hub README.
 The dock has the first five pages in the order of `[pages] enabled`, the rest are under *Tümü*. *Tümü* >
-*Sekmeler* changes the order on that phone: touch a tab, then the one to swap it with. `nav` says on
+*Sekmeler* changes the order on that phone: touch a tab, then the one to swap it with.
+Swiping sideways on a page goes to the next tab of the dock. `nav` says on
 which side the panel is; with `bottom` it is a line across the top. Home leaves out the weather and the events,
 as the panel has both, and the widgets next to them grow.
 

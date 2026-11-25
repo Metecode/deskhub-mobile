@@ -8,6 +8,7 @@ import { DarkLayer } from './components/DarkLayer.js';
 import { Dock } from './components/Dock.js';
 import { ErrorBoundary } from './components/ErrorNote.js';
 import { Panel } from './components/Panel.js';
+import { SwipeStage } from './components/SwipeStage.js';
 import { TimesUp } from './components/TimesUp.js';
 import { TokenForm } from './components/TokenForm.js';
 import type { Connection } from './connection.js';
@@ -17,7 +18,7 @@ import type { LaunchStore } from './games.js';
 import { homeGrid } from './homeLayout.js';
 import { useNow, usePortrait } from './hooks.js';
 import type { LinkStore } from './linkQuality.js';
-import { dockOf, viewToShow } from './nav.js';
+import { dockOf, viewToShow, type View } from './nav.js';
 import type { OfflineStore } from './offline.js';
 import { AiPage } from './pages/AiPage.js';
 import { AllPage } from './pages/AllPage.js';
@@ -115,8 +116,8 @@ export function App(stores: Stores) {
   const dock = dockOf(tabs);
   const current = viewToShow(page, tabs);
   const openable = (target: 'weather' | 'calendar' | 'timer') => (tabs.includes(target) ? () => open(target) : null);
-  const show = () => {
-    switch (current) {
+  const show = (view: View) => {
+    switch (view) {
       case 'all':
         return (
           <AllPage
@@ -200,13 +201,17 @@ export function App(stores: Stores) {
         onLink={infoOpen ? info.close : info.open}
       />
       <div className={styles.body}>
-        <div className={styles.stage}>
-          <div className={styles.unit} data-unit>
-            <ErrorBoundary key={infoOpen ? 'info' : current} calm={calm} onError={errors.add}>
-              {infoPage || <Show render={show} />}
+        <SwipeStage
+          // The diagnostics lie over the page: there is nothing next to them.
+          views={infoOpen ? [] : dock.rest ? [...dock.tabs, 'all'] : dock.tabs}
+          view={current}
+          onChange={open}
+          render={(view) => (
+            <ErrorBoundary key={infoOpen ? 'info' : view} calm={calm} onError={errors.add}>
+              {infoPage || <Show render={() => show(view)} />}
             </ErrorBoundary>
-          </div>
-        </div>
+          )}
+        />
         <Dock
           dock={dock}
           view={current}

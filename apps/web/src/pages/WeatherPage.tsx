@@ -36,7 +36,7 @@ export function WeatherPage({ state: { settings, weather }, now }: { state: Weat
         </div>
       </section>
 
-      <section className={`${styles.hours} card`}>
+      <section className={`${styles.hours} card`} data-no-swipe>
         {hoursFrom(weather, now).map((h) => (
           <div key={h.time} className={styles.hour}>
             <span className={styles.label}>{h.time <= now ? T.now : formatHour(h.time)}</span>

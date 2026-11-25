@@ -55,25 +55,3 @@
 .app[data-layout='upright'] > .body {
   padding: calc(4 * var(--u)) calc(12 * var(--u)) 0;
 }
-
-.stage {
-  position: relative;
-  flex: 1;
-  min-height: 0;
-  container-type: size;
-}
-
-/* Pages are drawn for 655 x 330, or 388 x 640 upright, and scale with the stage. */
-.unit {
-  --u: min(100cqw / 655, 100cqh / 330);
-
-  position: absolute;
-  inset: 0;
-  display: flex;
-  flex-direction: column;
-  font-size: calc(15 * var(--u));
-}
-
-.app[data-layout='upright'] .unit {
-  --u: min(100cqw / 388, 100cqh / 620);
-}
