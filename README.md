@@ -223,6 +223,11 @@ itself can connect as the companion.
 
 Nothing slows down guessing, so `CLIENT_TOKEN` should be as long as the command above makes it.
 
+`deskhub-mobile.cmd` closes `.env` to the PC's other accounts each time it starts. Without it, outside your
+user folder every account can read it; to do the same by hand:
+`icacls .env /inheritance:r /grant:r "%USERNAME%:F"` (in cmd). They can still change the code there, which
+runs as you, so on a PC that you share keep all of it in your user folder.
+
 The weather comes from [Open-Meteo](https://open-meteo.com), straight to the phone. Open-Meteo sees the
 phone's address and the coordinates in `.env` (two decimals are plenty), nothing else. Without
 coordinates nothing is fetched.

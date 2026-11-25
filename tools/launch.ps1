@@ -53,6 +53,14 @@ function Read-Env {
     return $values
 }
 
+# Outside the user folders, Windows lets every account of this PC read a new file and change it. The
+# tokens are for this one (and SYSTEM and the administrators).
+function Protect-Env {
+    $me = [Security.Principal.WindowsIdentity]::GetCurrent().User.Value
+    & icacls $envFile /inheritance:r /grant:r "*${me}:F" '*S-1-5-18:F' '*S-1-5-32-544:F' | Out-Null
+    if ($LASTEXITCODE -ne 0) { Say '.env bu PC''nin diğer hesaplarına kapatılamadı.' Yellow }
+}
+
 # host and token under [hub] in the companion's config.toml.
 function Read-Hub([string]$Folder) {
     $hub = @{}
@@ -288,9 +296,13 @@ try {
         $hubToken = if ($hub.token -and $hub.token -ne 'change-me') { $hub.token } else { New-Token }
         $text = [IO.File]::ReadAllText((Join-Path $root '.env.example'))
         $text = $text -replace '(?m)^HUB_TOKEN=.*$', "HUB_TOKEN=$hubToken" -replace '(?m)^CLIENT_TOKEN=.*$', "CLIENT_TOKEN=$(New-Token)"
+        # Before the tokens are in it.
+        [IO.File]::WriteAllText($envFile, '')
+        Protect-Env
         [IO.File]::WriteAllText($envFile, $text)
         Say '.env yeni anahtarlarla oluşturuldu. Hava için konum da oraya yazılır (WEATHER_...).'
     }
+    else { Protect-Env }
     $settings = Read-Env
     $port = if ($settings.HUB_PORT) { [int]$settings.HUB_PORT } else { 8765 }
 
