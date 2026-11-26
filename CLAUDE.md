@@ -64,7 +64,8 @@ Phase 6, branch `phase-6` (from `main`), asked for by the user:
 - [x] Protocol, bridge (Codex, the sheet, the portfolio, reminders, mock), web (Bülten, Günaydın, reading aloud,
   reminder card, measurements), docs: see the plan's steps
 - [x] Verified with the mock and with the real Codex and sheet
-- [ ] Verified on the phone (by the user): the voice, Günaydın, the reminder's keyboard, wide tables
+- [x] Verified on the phone (by the user): the bulletin and reading aloud ("Dinle" after the fix for bold headings)
+- [ ] Still to see on the phone: Günaydın the next morning, the reminder's keyboard on Monday, the bulletin from the personal account
 - [ ] Pull request into `main` (the user opens and merges it)
 
 Phases 0 to 5 are in `main`, tag `v0.3.0`. Phase 5, branch `phase-5` (from `main`):
