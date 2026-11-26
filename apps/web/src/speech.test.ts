@@ -1,11 +1,12 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { pickVoice, SpeechStore, type Synth } from './speech.js';
+import { CANCEL_GAP_MS, pickVoice, SpeechStore, START_MS, type Synth } from './speech.js';
 
 interface FakeUtterance {
   text: string;
   lang?: string;
   rate?: number;
   voice?: unknown;
+  onstart?: () => void;
   onend?: () => void;
   onerror?: (e: { error: string }) => void;
 }
@@ -14,23 +15,43 @@ const voice = (name: string, lang: string, localService: boolean) =>
   ({ name, lang, localService, default: false, voiceURI: name }) as SpeechSynthesisVoice;
 
 class FakeSynth implements Synth {
+  speaking = false;
+  pending = false;
+  /** false: Android swallows the sentence. */
+  starts = true;
+  resumes = 0;
   voices: SpeechSynthesisVoice[] = [];
   spoken: FakeUtterance[] = [];
   cancels = 0;
   #listener: () => void = () => {};
   getVoices = () => this.voices;
-  speak = (u: SpeechSynthesisUtterance) => void this.spoken.push(u as unknown as FakeUtterance);
-  cancel = () => void this.cancels++;
+  speak = (u: SpeechSynthesisUtterance) => {
+    const said = u as unknown as FakeUtterance;
+    this.spoken.push(said);
+    if (!this.starts) return;
+    this.speaking = true;
+    said.onstart?.();
+  };
+  cancel = () => {
+    this.cancels++;
+    this.speaking = false;
+  };
+  resume = () => void this.resumes++;
   addEventListener = (_: 'voiceschanged', listener: () => void) => void (this.#listener = listener);
   voicesChanged = () => this.#listener();
   /** The last sentence ends. */
-  end = () => this.spoken.at(-1)!.onend!();
+  end = () => {
+    this.speaking = false;
+    this.spoken.at(-1)!.onend!();
+  };
 }
 
 let synth: FakeSynth;
 let store: SpeechStore;
 const make = (text: string) => ({ text }) as unknown as SpeechSynthesisUtterance;
 const reading = { title: 'Kısa', sentences: ['Bir.', 'İki.', 'Üç.'] };
+/** What waits for the gap after cancel(). */
+const gap = () => vi.advanceTimersByTime(CANCEL_GAP_MS);
 
 beforeEach(() => {
   const storage = new Map<string, string>();
@@ -39,11 +60,15 @@ beforeEach(() => {
     setItem: (k: string, v: string) => storage.set(k, v),
     removeItem: (k: string) => storage.delete(k),
   });
+  vi.useFakeTimers();
   synth = new FakeSynth();
   store = new SpeechStore(synth, make);
 });
 
-afterEach(() => vi.unstubAllGlobals());
+afterEach(() => {
+  vi.useRealTimers();
+  vi.unstubAllGlobals();
+});
 
 describe('pickVoice', () => {
   it('takes a Turkish voice on the phone first', () => {
@@ -87,16 +112,22 @@ describe('SpeechStore', () => {
   it('goes back and forward', () => {
     store.play(reading);
     store.next();
+    gap();
     store.next();
+    gap();
     store.next();
+    gap();
     expect(store.getState().playing?.index).toBe(2);
     store.back();
+    expect(synth.spoken.at(-1)!.text).toBe('Üç.');
+    gap();
     expect(synth.spoken.at(-1)!.text).toBe('İki.');
   });
 
   it('keeps the speed and the first touch, and uses the speed at once', () => {
     store.play(reading);
     store.setRate(1.5);
+    gap();
     store.setFirstTouch(true);
     expect(synth.spoken.at(-1)).toMatchObject({ text: 'Bir.', rate: 1.5 });
     expect(new SpeechStore(synth, make).getState()).toMatchObject({ rate: 1.5, firstTouch: true });
@@ -111,6 +142,33 @@ describe('SpeechStore', () => {
     expect(synth.spoken).toHaveLength(1);
     store.play(reading);
     expect(store.getState().error).toBeNull();
+  });
+
+  it('cancels only what is being said, and speaks a moment later', () => {
+    store.play(reading);
+    expect(synth.cancels).toBe(0);
+    store.next();
+    expect(synth.cancels).toBe(1);
+    expect(synth.spoken).toHaveLength(1);
+    gap();
+    expect(synth.spoken.map((u) => u.text)).toEqual(['Bir.', 'İki.']);
+    expect(synth.resumes).toBe(2);
+  });
+
+  it('tries a swallowed sentence once more, then says so', () => {
+    synth.starts = false;
+    store.play(reading);
+    vi.advanceTimersByTime(START_MS);
+    expect(synth.spoken.map((u) => u.text)).toEqual(['Bir.', 'Bir.']);
+    vi.advanceTimersByTime(START_MS);
+    expect(store.getState()).toMatchObject({ playing: null, error: 'no-start' });
+  });
+
+  it('leaves a sentence that started alone, however long it takes', () => {
+    store.play(reading);
+    vi.advanceTimersByTime(START_MS * 5);
+    expect(synth.spoken).toHaveLength(1);
+    expect(store.getState().playing?.index).toBe(0);
   });
 
   it('does nothing without a speech engine', () => {

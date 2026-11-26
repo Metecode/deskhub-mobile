@@ -6,6 +6,10 @@ import { Store } from './store.js';
 
 const KEY = 'deskhub-mobile.speech';
 export const RATES = [0.8, 1, 1.2, 1.5] as const;
+/** A sentence that hasn't started by then was swallowed. */
+export const START_MS = 3000;
+/** Between cancel() and the next speak(). */
+export const CANCEL_GAP_MS = 80;
 
 export interface VoiceInfo {
   name: string;
@@ -35,7 +39,10 @@ export interface SpeechState {
 
 /** The part of SpeechSynthesis that is used, so tests can stand in for it. */
 export interface Synth {
+  readonly speaking: boolean;
+  readonly pending: boolean;
   getVoices(): readonly SpeechSynthesisVoice[];
+  resume?(): void;
   speak(utterance: SpeechSynthesisUtterance): void;
   cancel(): void;
   addEventListener(type: 'voiceschanged', listener: () => void): void;
@@ -68,6 +75,8 @@ export class SpeechStore extends Store<SpeechState> {
   #voice: SpeechSynthesisVoice | null = null;
   /** Each utterance has its own number; the end of a cancelled one is ignored. */
   #serial = 0;
+  #current: SpeechSynthesisUtterance | null = null;
+  #watch: ReturnType<typeof setTimeout> | undefined;
 
   constructor(
     synth: Synth | null = typeof speechSynthesis === 'undefined' ? null : speechSynthesis,
@@ -136,6 +145,8 @@ export class SpeechStore extends Store<SpeechState> {
 
   readonly stop = (): void => {
     this.#serial++;
+    clearTimeout(this.#watch);
+    this.#current = null;
     this.#synth?.cancel();
     this.setState({ ...this.getState(), playing: null });
   };
@@ -147,13 +158,23 @@ export class SpeechStore extends Store<SpeechState> {
     this.#say(index);
   }
 
-  #say(index: number): void {
+  #say(index: number, retry = false): void {
     const playing = this.getState().playing;
     const text = playing?.sentences[index];
     if (!this.#synth || !playing || text === undefined) return this.stop();
+    const synth = this.#synth;
     const serial = ++this.#serial;
-    this.#synth.cancel();
+    clearTimeout(this.#watch);
+    // Chrome on Android may drop a speak() right after cancel(): cancel only what is there, then wait a moment.
+    const busy = synth.speaking || synth.pending;
+    if (busy) synth.cancel();
     const utterance = this.#make(text);
+    // Kept: Chrome may never tell the end of an utterance that was collected as garbage.
+    this.#current = utterance;
+    let started = false;
+    utterance.onstart = () => {
+      started = true;
+    };
     utterance.lang = this.#voice?.lang ?? 'tr-TR';
     if (this.#voice) utterance.voice = this.#voice;
     utterance.rate = this.getState().rate;
@@ -170,6 +191,20 @@ export class SpeechStore extends Store<SpeechState> {
       this.setState({ ...this.getState(), error: e.error });
     };
     this.setState({ ...this.getState(), playing: { ...playing, index, paused: false }, error: null });
-    this.#synth.speak(utterance);
+    const speak = () => {
+      if (serial !== this.#serial) return;
+      // A page that was hidden may leave Chrome's speech paused.
+      synth.resume?.();
+      synth.speak(utterance);
+      // Android sometimes swallows a sentence: nothing starts and nothing ends. Once more, then say so.
+      this.#watch = setTimeout(() => {
+        if (serial !== this.#serial || started) return;
+        if (!retry) return this.#say(index, true);
+        this.stop();
+        this.setState({ ...this.getState(), error: 'no-start' });
+      }, START_MS);
+    };
+    if (busy) setTimeout(speak, CANCEL_GAP_MS);
+    else speak();
   }
 }
