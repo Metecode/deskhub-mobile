@@ -179,7 +179,7 @@ export class SpeechStore extends Store<SpeechState> {
     if (this.#voice) utterance.voice = this.#voice;
     utterance.rate = this.getState().rate;
     utterance.onend = () => {
-      if (serial !== this.#serial) return;
+      if (serial !== this.#serial || this.#current !== utterance) return;
       if (index + 1 < playing.sentences.length) this.#say(index + 1);
       else this.stop();
     };
