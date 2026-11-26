@@ -165,6 +165,12 @@ API key or credits: with `OPENAI_API_KEY` set the bridge refuses to run Codex.
 The bridge finds the extension's own `codex.exe` by itself, the newest after an update; else set `CODEX_PATH`
 to an `.exe`. `codex login status` should say *Logged in using ChatGPT*.
 
+VS Code's Codex and the bridge share one sign-in. For the bulletin to use another ChatGPT account, give it a
+folder of its own: in PowerShell, `$env:CODEX_HOME = "$env:USERPROFILE.codex-deskhub"`, make that folder, run
+`codex login` (the extension's `codex.exe`) and sign in with that account; then put the folder in `.env` as
+`CODEX_HOME`. `codex login status` doesn't name the account: the e-mail is in the `id_token` of
+`auth.json` there.
+
 **The prompt.** Copy `bulletin.prompt.example.md` to `bulletin.prompt.md` (never committed) and write your own
 prompt below its settings:
 
