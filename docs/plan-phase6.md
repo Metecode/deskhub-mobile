@@ -229,7 +229,7 @@ All in `packages/protocol` with Zod schemas, and in `docs/protocol.md`.
 - [x] Codex's flags checked on this PC (`--disable apps`, `--disable shell_tool`)
 - [x] Protocol: the messages above
 - [x] Bridge: finding and running Codex, the schedule, `data\`, what it adds to the prompt
-- [x] Bridge: the sheet (service account, JWT, CSV); with the user's own key: still to do
+- [x] Bridge: the sheet (service account, JWT, CSV); read with the user's own key on 26 Nov
 - [x] The sheet's tabs and columns, looked at with the user
 - [x] Bridge: the portfolio's numbers, tested on a made-up sheet with the same headers
 - [x] Bridge: the price block and the sources, checked
