@@ -61,6 +61,11 @@ Companion (upstream, Windows, Python) --ws /ws--> Bridge (Node, on the PC) --ws 
 Phase 6, branch `phase-6` (from `main`), asked for by the user:
 
 - [x] Plan approved and written down (`docs/plan-phase6.md` and its mock-ups; the rest of the steps are in the plan)
+- [x] Protocol, bridge (Codex, the sheet, the portfolio, reminders, mock), web (Bülten, Günaydın, reading aloud,
+  reminder card, measurements), docs: see the plan's steps
+- [x] Verified with the mock and with the real Codex and sheet
+- [ ] Verified on the phone (by the user): the voice, Günaydın, the reminder's keyboard, wide tables
+- [ ] Pull request into `main` (the user opens and merges it)
 
 Phases 0 to 5 are in `main`, tag `v0.3.0`. Phase 5, branch `phase-5` (from `main`):
 

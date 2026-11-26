@@ -245,5 +245,5 @@ All in `packages/protocol` with Zod schemas, and in `docs/protocol.md`.
 - [x] Web: reminder card and measurement chart
 - [x] Mock-ups for what isn't drawn yet: pictures of the real app in mock mode instead (`docs/images/morning.png`, `bulletin.png`)
 - [x] README, `README.tr.md`, docs/protocol.md, docs/setup.md, docs/usage.md, docs/security.md
-- [ ] Verified with the mock and the real Codex
+- [x] Verified with the mock (headless Chrome, both orientations) and the real Codex with the real sheet (26 Nov: 216 s, 16 prices passed, all 11 holdings and gold priced, 36 sources, no notes). Reading aloud only with a stand-in voice: headless Chrome has none
 - [ ] Verified on the phone (by the user)
