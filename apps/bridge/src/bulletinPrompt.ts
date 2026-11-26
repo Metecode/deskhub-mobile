@@ -98,6 +98,8 @@ export function fullPrompt(prompt: Prompt, sheet: SheetForPrompt | null, tickers
     part.push('Portföy dosyası okunamadı: bunu en başta söyle ve yedek listeyle devam et.', '');
   }
   part.push(
+    '- Her bölüm başlığını Markdown başlığı olarak, `## ` ile başlayan ayrı bir satıra yaz (örneğin `## 0. Bir bakışta`); başlığı kalın yazıyla yapma.',
+    "- Somut adımı en sonda, Kaynaklar'dan önce, `**Somut adım: ...**` diye tek satır olarak yaz.",
     '- Portföy tablosunu ve kâr/zararı **sen hesaplama**: köprü bunları dosyadan ve senin fiyatlarından kodla hesaplayıp ayrıca gösterir. ' +
       '"3. Portföyüm" bölümünde yalnızca yorum yaz; portföyün tutarlarını, adetlerini ve kâr/zararını metinde verme.',
     '- Bültenin sonunda `## Kaynaklar` bölümü zorunlu: kullandığın her bağlantı, Markdown bağlantısı olarak ve tarihiyle, her biri ayrı satırda.',

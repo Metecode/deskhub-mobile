@@ -137,3 +137,36 @@ describe('splitAtPortfolio', () => {
     expect(splitAtPortfolio('## Piyasa\nA')).toBeNull();
   });
 });
+
+describe('normalizeHeadings', () => {
+  it('makes numbered lines all in bold into headings, and leaves other bold lines', async () => {
+    const { normalizeHeadings } = await import('./bulletin.js');
+    const md = normalizeHeadings(
+      [
+        '**26 Kasım — bülten**',
+        '',
+        '**0. Bir bakışta**',
+        '',
+        'ABD tatilde.',
+        '',
+        '**1. En önemli üç başlık**',
+        '1. **Olay.** Açıklama.',
+        '',
+        '**Yorum:** bir.',
+        '',
+        '**Somut adım: Bugün işlem gerekmiyor.**',
+        '',
+        '## Kaynaklar',
+        '- [A](https://a.example)',
+      ].join('\n'),
+    );
+    expect(sectionsOf(md).map((s) => s.title)).toEqual(['Bir bakışta', 'En önemli üç başlık', 'Kaynaklar']);
+    expect(md).toContain('**26 Kasım — bülten**');
+    expect(md).toContain('**Yorum:** bir.');
+    expect(closingLine(md)).toBe('Bugün işlem gerekmiyor.');
+    const said = readingOf(md, false).sentences;
+    expect(said[0]).toBe('Bir bakışta');
+    expect(said).toContain('ABD tatilde.');
+    expect(said.at(-1)).toBe('Bugün işlem gerekmiyor.');
+  });
+});

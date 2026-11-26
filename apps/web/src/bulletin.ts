@@ -66,11 +66,20 @@ export const chipName = (title: string): string => {
   return words.length > 2 ? words.slice(0, 2).join(' ') : first;
 };
 
-/** The concrete step: the last line, if it is one in bold. */
+/**
+ * Codex doesn't always write the sections as `## ` headings: a line that is all bold and starts with a
+ * number ("**2. Piyasa tablosu**") is one too.
+ */
+export const normalizeHeadings = (markdown: string): string =>
+  markdown.replace(/^\*\*(\d+[.)]\s+[^*\n]+?)\*\*[ \t]*$/gm, '## $1');
+
+/** The concrete step: the line that says "Somut adım", wherever it is, else the last line if it is in bold. */
 export function closingLine(markdown: string): string {
-  const last = markdown.trim().split('\n').at(-1)?.trim() ?? '';
-  if (!/^\*\*.+\*\*$/.test(last)) return '';
-  return last.replace(/\*\*/g, '').replace(/^Somut adım:\s*/i, '').trim();
+  const lines = markdown.trim().split('\n').map((l) => l.trim());
+  const step = lines.find((l) => /^\*{0,2}Somut adım:/i.test(l));
+  const last = lines.at(-1) ?? '';
+  const line = step ?? (/^\*\*.+\*\*$/.test(last) ? last : '');
+  return line.replace(/\*\*/g, '').replace(/^Somut adım:\s*/i, '').trim();
 }
 
 /** Markdown as it would be said: no tables, code, links' addresses, price tags or marks. */
@@ -113,7 +122,8 @@ export interface Reading {
   sentences: string[];
 }
 
-const SHORT = [/bir bakışta/i, /önemli .*gelişme/i];
+/** "Bir bakışta" and the top developments, whatever Codex calls them ("En önemli 3 gelişme", "... üç başlık"). */
+const SHORT = [/bir bakışta/i, /önemli/i];
 const SKIP_ALL = [/kaynaklar/i];
 
 /** Short: "at a glance", the top developments and the concrete step. All: everything but the sources. */

@@ -50,6 +50,7 @@ import {
   type Usage,
   type WeatherSettings,
 } from '@deskhub-mobile/protocol';
+import { normalizeHeadings } from './bulletin.js';
 import { readCover, type Cover } from './cover.js';
 import type { SavedLayout } from './layoutStore.js';
 
@@ -337,7 +338,11 @@ export class Connection {
       return;
     }
     // The bridge's own: sent as they are, so taken as they are.
-    if (message.type === 'bridge.bulletin') return this.#update({ bulletin: message as unknown as BulletinMessage });
+    if (message.type === 'bridge.bulletin') {
+      const bulletin = message as unknown as BulletinMessage;
+      const markdown = bulletin.markdown === undefined ? undefined : normalizeHeadings(bulletin.markdown);
+      return this.#update({ bulletin: { ...bulletin, markdown } });
+    }
     if (message.type === 'bridge.reminders') return this.#update({ reminders: message as unknown as RemindersMessage });
     if (message.type === 'bridge.measurements') {
       const chart = message as unknown as MeasurementsMessage;
