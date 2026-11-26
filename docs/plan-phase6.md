@@ -228,7 +228,7 @@ All in `packages/protocol` with Zod schemas, and in `docs/protocol.md`.
 - [x] Bridge: finding and running Codex, the schedule, `data\`, what it adds to the prompt
 - [ ] Bridge: the sheet (service account, JWT, CSV)
 - [x] The sheet's tabs and columns, looked at with the user
-- [ ] Bridge: the portfolio's numbers, tested on a made-up sheet with the same headers
+- [x] Bridge: the portfolio's numbers, tested on a made-up sheet with the same headers
 - [x] Bridge: the price block and the sources, checked
 - [ ] Bridge: reminders and measurements
 - [ ] Bridge: mock mode

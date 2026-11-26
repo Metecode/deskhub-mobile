@@ -179,10 +179,16 @@ export class BulletinService {
       log.warn(`bulletin: the sheet couldn't be read: ${(e as Error).message}`);
     }
     const { settings } = prompt;
-    const holdings =
-      sheet && this.#o.portfolio
-        ? this.#o.portfolio.holdings(sheet, settings)
-        : [...new Set([...settings.fallback, ...settings.stocks, ...settings.rewards])];
+    let holdings = [...new Set([...settings.fallback, ...settings.stocks, ...settings.rewards])];
+    if (sheet && this.#o.portfolio) {
+      try {
+        holdings = this.#o.portfolio.holdings(sheet, settings);
+      } catch (e) {
+        // A sheet that can't be made sense of is as one that can't be read.
+        log.warn(`bulletin: ${(e as Error).message}`);
+        sheet = null;
+      }
+    }
     const wanted = [...new Set([...holdings, ...settings.watch])];
 
     const work = join(this.#o.dataDir, 'codex-work');
@@ -214,9 +220,14 @@ export class BulletinService {
     if (!sheet) notes.unshift({ code: 'sheet_unreadable' });
     let portfolio: Portfolio | null = null;
     if (sheet && this.#o.portfolio) {
-      const made = this.#o.portfolio.make(sheet, checked.prices, settings);
-      portfolio = made.portfolio;
-      notes.push(...(made.notes ?? []));
+      try {
+        const made = this.#o.portfolio.make(sheet, checked.prices, settings);
+        portfolio = made.portfolio;
+        notes.push(...(made.notes ?? []));
+      } catch (e) {
+        log.warn(`bulletin: ${(e as Error).message}`);
+        notes.unshift({ code: 'sheet_unreadable' });
+      }
     }
     const saved: Saved = {
       date: day,
