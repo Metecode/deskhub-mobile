@@ -41,6 +41,23 @@ runs or has ended. Such a reload leaves fullscreen until the next tap, unless th
 the home screen. Changes to the bridge itself need a restart of it. If a page fails, a note shows instead,
 and it reloads after 30 seconds, under the same conditions and three times in 10 minutes at most.
 
+**The morning bulletin** ([setting it up](setup.md#6-the-morning-bulletin-and-reminders-optional)) has its tab
+right after Home, with a dot until today's is opened. *Günaydın* takes Home's place once a day, from 05:00:
+the weather, the first event, today's reminder and the bulletin's *Bir bakışta*; *Kapat* or opening the bulletin
+puts Home back for the day. The *Portföyüm* table is the bridge's own sum from the sheet and the bulletin's
+prices, never Codex's: a price that didn't pass its checks shows as *fiyat doğrulanamadı* rather than guessed,
+and notes under the title say what couldn't be checked. Wide tables scroll sideways.
+
+**Reading aloud** uses the phone's Turkish voice, free and offline. *Dinle* reads *Bir bakışta*, the top
+developments and the concrete step, about 1 to 2 minutes; *Tamamı* everything but the tables, links and
+sources. On *Günaydın* it first reads the weather, the first event and the reminder. Chrome speaks only after a
+touch, so it starts from a button, or from the day's first touch if that is turned on at the foot of the
+*Bülten* page, next to the speed. Without a Turkish voice: Settings > General management > Text-to-speech >
+Google's speech services, and download Turkish. The diagnostics show the voice in use.
+
+**Reminders** show on their day in the panel, in place of the next event; *Sonra* hides one for 2 hours.
+*Tümü* > *Ölçümler* draws each entry and the 4-week mean.
+
 ## What's missing
 
 - **CPU temperature**: the companion doesn't send it. It will show if a later version does.

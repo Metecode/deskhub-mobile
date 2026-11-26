@@ -243,7 +243,7 @@ All in `packages/protocol` with Zod schemas, and in `docs/protocol.md`.
 - [x] Web: Günaydın
 - [x] Web: reading aloud, speed, diagnostics
 - [x] Web: reminder card and measurement chart
-- [ ] Mock-ups for what isn't drawn yet
-- [ ] README, `README.tr.md`, docs/protocol.md, docs/setup.md
+- [x] Mock-ups for what isn't drawn yet: pictures of the real app in mock mode instead (`docs/images/morning.png`, `bulletin.png`)
+- [x] README, `README.tr.md`, docs/protocol.md, docs/setup.md, docs/usage.md, docs/security.md
 - [ ] Verified with the mock and the real Codex
 - [ ] Verified on the phone (by the user)

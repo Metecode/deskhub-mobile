@@ -59,6 +59,10 @@ small bridge next to it behaves like the board, and the phone shows the result i
     <td><img src="docs/images/media.png" alt="Media page"><br><b>Media</b>: what is playing, with controls</td>
     <td><img src="docs/images/calendar.png" alt="Calendar page"><br><b>Calendar</b>: Google, iCloud, Outlook or any ICS link</td>
   </tr>
+  <tr>
+    <td><img src="docs/images/morning.png" alt="Günaydın on Home: the weather, the first event, a reminder and the bulletin's summary"><br><b>Good morning</b>: the weather, the first event, a reminder and the bulletin, read aloud</td>
+    <td><img src="docs/images/bulletin.png" alt="The morning bulletin with the portfolio table"><br><b>Morning bulletin</b>: written by Codex on your ChatGPT plan, with a portfolio from your Google Sheet</td>
+  </tr>
 </table>
 
 <details>
@@ -147,6 +151,9 @@ Run these in `deskhub\companion`, then restart with **Y** in the launcher's wind
 | GitHub chart | `uv run deskhub-setup github` |
 | Pages, Home's layout | `uv run deskhub-setup pages`, `uv run deskhub-setup home` |
 
+The morning bulletin and weekly reminders are the bridge's own, without the companion: see
+[setting them up](docs/setup.md#6-the-morning-bulletin-and-reminders-optional).
+
 > [!IMPORTANT]
 > Always name a topic. `deskhub-setup` on its own also goes through the ESP32 board and its firmware, which you
 > don't need here. The weather's place is in `.env`, not in its `weather` topic.
@@ -188,7 +195,7 @@ flowchart LR
 | | |
 | --- | --- |
 | [Setting up](docs/setup.md) | Every step, from the bridge to the phone |
-| [What to know](docs/usage.md) | Tabs, sleep and night, burn-in, updates, and what's missing |
+| [What to know](docs/usage.md) | Tabs, sleep and night, burn-in, updates, the bulletin, and what's missing |
 | [Security](docs/security.md) | What is protected, and what isn't |
 | [Protocol](docs/protocol.md) | The messages between companion, bridge and phone |
 | [CLAUDE.md](CLAUDE.md) | Project context, rules and phases |

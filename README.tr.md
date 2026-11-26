@@ -58,6 +58,10 @@ Yanındaki küçük bir köprü (bridge) kart gibi davranır, telefon da sonucu 
     <td><img src="docs/images/media.png" alt="Müzik sayfası"><br><b>Müzik</b>: ne çaldığı ve kontroller</td>
     <td><img src="docs/images/calendar.png" alt="Takvim sayfası"><br><b>Takvim</b>: Google, iCloud, Outlook ya da herhangi bir ICS bağlantısı</td>
   </tr>
+  <tr>
+    <td><img src="docs/images/morning.png" alt="Ana sayfada Günaydın: hava, ilk etkinlik, hatırlatıcı ve bültenin özeti"><br><b>Günaydın</b>: hava, ilk etkinlik, hatırlatıcı ve bülten, sesli okunur</td>
+    <td><img src="docs/images/bulletin.png" alt="Portföy tablosuyla sabah bülteni"><br><b>Sabah bülteni</b>: ChatGPT aboneliğinle Codex yazar, portföy Google tablondan gelir</td>
+  </tr>
 </table>
 
 <details>
@@ -145,6 +149,9 @@ Bunları `deskhub\companion` klasöründe çalıştır, sonra başlatıcının p
 | GitHub grafiği | `uv run deskhub-setup github` |
 | Sayfalar, Ana sayfanın düzeni | `uv run deskhub-setup pages`, `uv run deskhub-setup home` |
 
+Sabah bülteni ve haftalık hatırlatıcılar companion'sız, köprünün kendi işi:
+[kurulumu](docs/setup.md#6-the-morning-bulletin-and-reminders-optional).
+
 > [!IMPORTANT]
 > Komuta her zaman bir konu ekle. `deskhub-setup` tek başına ESP32 kartını ve yazılımını da kurmaya çalışır, burada
 > gerekmez. Havanın konumu `weather` konusunda değil, `.env` dosyasındadır.
@@ -188,7 +195,7 @@ Ayrıntılı belgeler İngilizce.
 | | |
 | --- | --- |
 | [Kurulum](docs/setup.md) | Köprüden telefona bütün adımlar |
-| [Bilmen gerekenler](docs/usage.md) | Sekmeler, uyku ve gece, ekran yanması, güncellemeler, eksikler |
+| [Bilmen gerekenler](docs/usage.md) | Sekmeler, uyku ve gece, ekran yanması, güncellemeler, bülten, eksikler |
 | [Güvenlik](docs/security.md) | Neyin korunduğu, neyin korunmadığı |
 | [Protokol](docs/protocol.md) | Companion, köprü ve telefon arasındaki mesajlar |
 | [CLAUDE.md](CLAUDE.md) | Proje bağlamı, kurallar ve aşamalar |
