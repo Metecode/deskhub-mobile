@@ -7,6 +7,7 @@ import { consoleLogger as log } from './log.js';
 import { startMockCompanion } from './mockCompanion.js';
 import { DEV_PORT, lanAddresses } from './origins.js';
 import { portfolioMaker } from './portfolio.js';
+import { readGoogleSheet } from './sheetsClient.js';
 import { Bridge } from './server.js';
 
 // Both src/ and dist/ are three levels below the repository root.
@@ -30,6 +31,7 @@ function services(config: Config, broadcast: (text: string) => void): { services
     publish: (message) => broadcast(JSON.stringify(message)),
     log,
     portfolio: portfolioMaker,
+    readSheet: config.sheets ? () => readGoogleSheet(config.sheets!) : undefined,
   });
   return {
     services: {

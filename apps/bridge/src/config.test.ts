@@ -14,6 +14,7 @@ describe('readConfig', () => {
       clientOrigins: [],
       weather: null,
       bulletin: { promptFile: resolve('/repo', 'bulletin.prompt.md'), from: 360 },
+      sheets: null,
       dataDir: join('/local', 'deskhub-mobile', 'data'),
       warnings: [],
     });
@@ -28,6 +29,15 @@ describe('readConfig', () => {
     expect(config.bulletin).toEqual({ promptFile: resolve('/repo', 'my.md'), from: 435 });
     expect(config.dataDir).toBe(resolve('/repo', 'data'));
     expect(() => readConfig({ ...env, BULLETIN_FROM: '25:00' }, false)).toThrow('BULLETIN_FROM');
+  });
+
+  it('reads the sheet settings', () => {
+    expect(readConfig({ ...env, SHEETS_ID: 'abc' }, false, '/repo').sheets).toEqual({
+      sheetId: 'abc',
+      keyFile: resolve('/repo', 'google-service-account.json'),
+      tabs: ['Özet', 'Pozisyonlar', 'Alımlar', 'Altın Alımları', 'Kontrol'],
+    });
+    expect(readConfig({ ...env, SHEETS_ID: 'abc', SHEETS_TABS: ' A , B ,' }, false).sheets?.tabs).toEqual(['A', 'B']);
   });
 
   it.each([true, false])('needs CLIENT_TOKEN (mock: %s)', (mock) => {

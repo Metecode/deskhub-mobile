@@ -2,6 +2,7 @@ import { randomBytes } from 'node:crypto';
 import { homedir } from 'node:os';
 import { join, resolve } from 'node:path';
 import { parseFrom } from './bulletinService.js';
+import { DEFAULT_TABS } from './sheetsClient.js';
 import type { WeatherSettings } from '@deskhub-mobile/protocol';
 import { parseOrigins } from './origins.js';
 
@@ -14,6 +15,8 @@ export interface Config {
   weather: WeatherSettings | null;
   /** The morning bulletin (docs/plan-phase6.md). */
   bulletin: { promptFile: string; from: number };
+  /** The user's sheet for the bulletin. null: not set. */
+  sheets: { sheetId: string; keyFile: string; tabs: string[] } | null;
   /** The bridge's own data: bulletins, measurements. */
   dataDir: string;
   warnings: string[];
@@ -86,6 +89,18 @@ export function readConfig(env: Record<string, string | undefined>, mock: boolea
       promptFile: resolve(root, value('BULLETIN_PROMPT_FILE') || 'bulletin.prompt.md'),
       from: parseFrom(value('BULLETIN_FROM') || '06:00'),
     },
+    sheets: value('SHEETS_ID')
+      ? {
+          sheetId: value('SHEETS_ID'),
+          keyFile: resolve(root, value('SHEETS_KEY_FILE') || 'google-service-account.json'),
+          tabs: value('SHEETS_TABS')
+            ? value('SHEETS_TABS')
+                .split(',')
+                .map((t) => t.trim())
+                .filter(Boolean)
+            : DEFAULT_TABS,
+        }
+      : null,
     dataDir: value('DATA_DIR') ? resolve(root, value('DATA_DIR')) : defaultDataDir(env),
     warnings,
   };

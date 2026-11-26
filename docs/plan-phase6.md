@@ -101,12 +101,12 @@ A bulletin is shown even when a check fails, with a note saying which: what Code
   | --- | --- | --- |
   | `Pozisyonlar` | `Sembol`, `Adet <date> dahil`, `Maliyet USD` | Quantity and cost (commission included, splits already applied). The date in the quantity's header is how far it goes. Its price, value and K/Z columns are not used: they are from an older day. |
   | `Alımlar` | `Tarih`, `Güncel sembol`, `Adet`, `Toplam maliyet USD`, `Kayıt ID` | Purchases **after** that date, added on top, so nothing counts twice. `Güncel sembol` already maps SPLG to SPYM. |
-  | `Ödüller` | `Pay değişimi`, `Hak kazanma tarihi` | The IBKR reward shares: shown, left out of returns. |
   | `Altın Alımları` | `Gram`, `Ayar`, `Toplam maliyet TL` | Gold's grams and TL cost: its value from gram gold, its profit and loss in TL. |
   | `Kontrol` | `Konu`, `Bulgu / yöntem` | Splits are only text here. A split after the quantity's date is a note "bölünme var, adet kontrol edilmeli", never applied by guess. |
 
-  `Özet`, `Gelirler`, `Nakit ve Döviz` and `Belgeler` are not read: dividends and deposits aren't gains, and
-  the old cash balance isn't a total (the prompt's own rules). Numbers are Turkish (`1.234,56`).
+  `Ödüller` isn't needed: the reward shares are in `Pozisyonlar` already, under the ticker that `rewards`
+  names. `Gelirler`, `Nakit ve Döviz` and `Belgeler` are not read: dividends and deposits aren't gains, and the
+  old cash balance isn't a total (the prompt's own rules). Numbers are Turkish (`1.234,56`).
 - A symbol in `Pozisyonlar` that the prompt's list has as watched (VST now) is a position: "Yeni pozisyon",
   with its one-time card, as the prompt asks.
 - The day's change needs the day before's close as well, so the `prices` block gets `previous_close`.
@@ -129,6 +129,9 @@ A bulletin is shown even when a check fails, with a note saying which: what Code
 - The bridge signs a JWT with the key (Node's `crypto`, no Google library), gets a token, and reads the
   sheet's tabs as values (`spreadsheets.values.batchGet`) right before each run. The sheet's ID is
   `SHEETS_ID` in `.env`.
+- Only the tabs that the bulletin needs (`SHEETS_TABS`, default `Özet, Pozisyonlar, Alımlar, Altın Alımları,
+  Kontrol`), as Codex searches the web while it sees them: not `Belgeler` (account numbers, links to
+  statements), `Nakit ve Döviz` or `Gelirler`. Google's error text isn't logged, only the status.
 - Failing that (no key, not shared, offline), the bulletin runs without it and says so first, as the prompt
   asks; the portfolio table is left out.
 - `docs/setup.md` gets the steps in Turkish and English, with pictures-free text: make the project, turn on the
@@ -226,7 +229,7 @@ All in `packages/protocol` with Zod schemas, and in `docs/protocol.md`.
 - [x] Codex's flags checked on this PC (`--disable apps`, `--disable shell_tool`)
 - [x] Protocol: the messages above
 - [x] Bridge: finding and running Codex, the schedule, `data\`, what it adds to the prompt
-- [ ] Bridge: the sheet (service account, JWT, CSV)
+- [x] Bridge: the sheet (service account, JWT, CSV); with the user's own key: still to do
 - [x] The sheet's tabs and columns, looked at with the user
 - [x] Bridge: the portfolio's numbers, tested on a made-up sheet with the same headers
 - [x] Bridge: the price block and the sources, checked

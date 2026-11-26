@@ -85,7 +85,8 @@ describe('BulletinService', () => {
     expect(ready.markdown).toContain('Bir bakışta');
     expect(ready.markdown).not.toContain('```prices');
     expect(ready.prices?.map((p) => p.ticker)).toEqual(['ETF1']);
-    expect(ready.notes).toEqual([{ code: 'sheet_unreadable' }]);
+    // No sheet set up: no note about it.
+    expect(ready.notes).toEqual([]);
     expect(runs[0]!.input).toContain('Rolün: örnek.');
     expect(runs[0]!.input).not.toContain('fallback:');
 
@@ -188,5 +189,27 @@ describe('BulletinService', () => {
       '2026-12-01.json',
       '2026-12-01.md',
     ]);
+  });
+});
+
+describe('BulletinService with a sheet', () => {
+  it('still writes the bulletin, with a note, when the sheet can’t be read', async () => {
+    const s = new BulletinService({
+      promptFile: join(dir, 'bulletin.prompt.md'),
+      dataDir: join(dir, 'data'),
+      from: 0,
+      env: {},
+      publish: (message) => published.push(message),
+      log: silentLogger,
+      spawn,
+      findCodex: () => 'codex.exe',
+      readSheet: async () => {
+        throw new Error('token: HTTP 403');
+      },
+      now: () => now,
+    });
+    await s.maybeRun();
+    expect(last()).toMatchObject({ state: 'ready', notes: [{ code: 'sheet_unreadable' }] });
+    expect(runs[0]!.input).toContain('Portföy dosyası okunamadı');
   });
 });

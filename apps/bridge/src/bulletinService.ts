@@ -217,7 +217,8 @@ export class BulletinService {
 
     const checked = checkBulletin(output, [...wanted, USDTRY, GRAM_GOLD], holdings, this.#o.now());
     const notes = [...checked.notes];
-    if (!sheet) notes.unshift({ code: 'sheet_unreadable' });
+    // Only when there is one to read.
+    if (!sheet && this.#o.readSheet) notes.unshift({ code: 'sheet_unreadable' });
     let portfolio: Portfolio | null = null;
     if (sheet && this.#o.portfolio) {
       try {
