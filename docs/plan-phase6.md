@@ -224,7 +224,7 @@ All in `packages/protocol` with Zod schemas, and in `docs/protocol.md`.
 
 - [x] Plan approved and written down
 - [x] Codex's flags checked on this PC (`--disable apps`, `--disable shell_tool`)
-- [ ] Protocol: the messages above
+- [x] Protocol: the messages above
 - [ ] Bridge: finding and running Codex, the schedule, `data\`, what it adds to the prompt
 - [ ] Bridge: the sheet (service account, JWT, CSV)
 - [x] The sheet's tabs and columns, looked at with the user
