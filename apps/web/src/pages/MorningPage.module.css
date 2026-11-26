@@ -1,0 +1,90 @@
+.page {
+  position: relative;
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  min-height: 0;
+  padding: calc(16 * var(--u)) calc(22 * var(--u)) calc(14 * var(--u));
+  border-radius: calc(20 * var(--u));
+  background: var(--card);
+}
+
+.hello {
+  font-size: calc(26 * var(--u));
+  font-weight: 600;
+}
+
+.day {
+  display: grid;
+  gap: calc(4 * var(--u));
+  margin: calc(6 * var(--u)) 0 calc(4 * var(--u));
+  padding: 0;
+  list-style: none;
+  font-size: calc(15 * var(--u));
+}
+
+.day li {
+  display: flex;
+  gap: calc(10 * var(--u));
+  align-items: center;
+  min-width: 0;
+}
+
+.day li > span:last-child {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.muted {
+  color: var(--dim);
+}
+
+.glance {
+  flex: 1;
+  min-height: 0;
+  padding-top: calc(4 * var(--u));
+  overflow-y: auto;
+  border-top: 1px solid var(--border);
+  overscroll-behavior: contain;
+  scrollbar-width: none;
+}
+
+.step {
+  margin: calc(6 * var(--u)) 0;
+  color: var(--accent);
+  font-size: calc(15 * var(--u));
+  font-weight: 600;
+}
+
+.buttons {
+  display: flex;
+  flex: none;
+  gap: calc(8 * var(--u));
+}
+
+.listen,
+.pill {
+  display: inline-flex;
+  gap: calc(6 * var(--u));
+  align-items: center;
+  min-height: 44px;
+  padding: 0 calc(16 * var(--u));
+  border-radius: 22px;
+  background: var(--card-hi);
+  font-weight: 600;
+}
+
+.listen {
+  background: var(--accent);
+  color: var(--on-accent);
+}
+
+.listen:active {
+  background: var(--accent-pressed);
+}
+
+.pill:active {
+  background: var(--pressed);
+}

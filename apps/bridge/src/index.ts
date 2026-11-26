@@ -4,6 +4,7 @@ import { readConfig, type Config } from './config.js';
 import { consoleLogger as log } from './log.js';
 import { startMockCompanion } from './mockCompanion.js';
 import { DEV_PORT, lanAddresses } from './origins.js';
+import { createServices } from './services.js';
 import { Bridge } from './server.js';
 
 // Both src/ and dist/ are three levels below the repository root.
@@ -15,14 +16,19 @@ function loadConfig(): Config {
   } catch {
     // No .env: the environment may still have everything.
   }
-  return readConfig(process.env, process.argv.includes('--mock'));
+  return readConfig(process.env, process.argv.includes('--mock'), fromRoot('.'));
 }
 
 async function main(): Promise<void> {
   const config = loadConfig();
   for (const warning of config.warnings) log.warn(warning);
 
-  const bridge = new Bridge({ ...config, webRoot: fromRoot('apps/web/dist'), log });
+  // Mock mode has made-up ones and never runs Codex or reads the sheet.
+  let send: (text: string) => void = () => {};
+  const own = await createServices(config, (text) => send(text), log, fromRoot('.'));
+  const bridge = new Bridge({ ...config, webRoot: fromRoot('apps/web/dist'), log, services: own.services });
+  send = (text) => bridge.clients.broadcast(text);
+  await own.start();
   // All interfaces: the companion comes from this PC, phones from the network.
   await bridge.listen(config.port, '0.0.0.0');
 

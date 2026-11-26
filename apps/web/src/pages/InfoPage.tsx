@@ -4,6 +4,7 @@ import { isOnline, type BridgeState } from '../connection.js';
 import { browserName, type ErrorStore } from '../diagnostics.js';
 import type { OfflineState, OfflineStore } from '../offline.js';
 import type { LinkState } from '../linkQuality.js';
+import type { SpeechState, SpeechStore } from '../speech.js';
 import { formatNumber, T } from '../text.js';
 import { formatClock, formatDuration } from '../time.js';
 import type { WakeLockState, WakeLockStore } from '../wakeLock.js';
@@ -58,13 +59,26 @@ interface InfoPageProps {
   wakeLock: WakeLockStore;
   offline: OfflineStore;
   errors: ErrorStore;
+  speech: SpeechStore;
   /** Epoch seconds. */
   now: number;
   onTabs: () => void;
   onClose: () => void;
 }
 
-export function InfoPage({ state, link, wakeLock, offline, errors, now, onTabs, onClose }: InfoPageProps) {
+function voiceText(voice: SpeechState): [string, Mark] {
+  if (!voice.supported) return [T.speech.unsupported, 'bad'];
+  if (!voice.voice) return [T.speech.noVoice, 'bad'];
+  if (voice.error) return [T.speech.failed(voice.error), 'bad'];
+  const { name, lang, local } = voice.voice;
+  return [
+    `${T.speech.voiceOf(name, lang, local)}; ${T.speech.turkishVoices(voice.turkishVoices)}; ${T.speech.rate(voice.rate)}`,
+    'good',
+  ];
+}
+
+export function InfoPage({ state, link, wakeLock, offline, errors, speech, now, onTabs, onClose }: InfoPageProps) {
+  const [speechText, speechMark] = voiceText(useSyncExternalStore(speech.subscribe, speech.getState));
   const lock = useSyncExternalStore(wakeLock.subscribe, wakeLock.getState);
   const error = useSyncExternalStore(errors.subscribe, errors.getState);
   const worker = useSyncExternalStore(offline.subscribe, offline.getState);
@@ -113,6 +127,9 @@ export function InfoPage({ state, link, wakeLock, offline, errors, now, onTabs, 
         </Row>
         <Row label={T.info.pc} mark={online ? 'good' : undefined}>
           {online ? T.info.online : T.info.offline}
+        </Row>
+        <Row label={T.speech.voice} mark={speechMark}>
+          {speechText}
         </Row>
         <Row label={T.info.browser}>{browserName(navigator.userAgent)}</Row>
         <Row label={T.info.screen}>

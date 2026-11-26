@@ -53,8 +53,20 @@ Companion (upstream, Windows, Python) --ws /ws--> Bridge (Node, on the PC) --ws 
   pixels now and then, dim static elements such as the navigation bar and the clock.
 
 - **5:** A layout of its own (panel, stage, dock), Turkish, Claude's logo. Plan: `docs/plan-phase5.md`.
+- **6:** A morning bulletin that Codex writes on the user's ChatGPT plan (never API keys or credits), read
+  aloud by the phone; weekly reminders. Plan: `docs/plan-phase6.md`. The user's prompt and data are never committed.
 
 ## Where we are
+
+Phase 6, branch `phase-6` (from `main`), asked for by the user:
+
+- [x] Plan approved and written down (`docs/plan-phase6.md` and its mock-ups; the rest of the steps are in the plan)
+- [x] Protocol, bridge (Codex, the sheet, the portfolio, reminders, mock), web (Bülten, Günaydın, reading aloud,
+  reminder card, measurements), docs: see the plan's steps
+- [x] Verified with the mock and with the real Codex and sheet
+- [x] Verified on the phone (by the user): the bulletin and reading aloud ("Dinle" after the fix for bold headings)
+- [ ] Still to see on the phone: Günaydın the next morning, the reminder's keyboard on Monday, the bulletin from the personal account
+- [ ] Pull request into `main` (the user opens and merges it)
 
 Phases 0 to 5 are in `main`, tag `v0.3.0`. Phase 5, branch `phase-5` (from `main`):
 

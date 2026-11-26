@@ -3,7 +3,7 @@ import { createServer, type IncomingMessage, type Server } from 'node:http';
 import type { AddressInfo } from 'node:net';
 import type { Duplex } from 'node:stream';
 import type { WeatherSettings } from '@deskhub-mobile/protocol';
-import { ClientEndpoint } from './clientEndpoint.js';
+import { ClientEndpoint, type BridgeServices } from './clientEndpoint.js';
 import { CompanionEndpoint } from './companionEndpoint.js';
 import { createHttpHandler } from './http.js';
 import { Hub } from './hub.js';
@@ -22,6 +22,8 @@ export interface BridgeOptions {
   /** The built web app. */
   webRoot: string;
   log: Logger;
+  /** The bridge's own features. */
+  services?: BridgeServices;
 }
 
 export class Bridge {
@@ -32,7 +34,7 @@ export class Bridge {
   readonly #log: Logger;
 
   constructor(options: BridgeOptions) {
-    const { hubToken, clientToken, clientOrigins, weather, webRoot, log } = options;
+    const { hubToken, clientToken, clientOrigins, weather, webRoot, log, services } = options;
     const web = new WebFiles(webRoot, log);
     // Whoever reaches the port can cause warnings.
     this.#log = limitWarnings(log);
@@ -45,6 +47,7 @@ export class Bridge {
       build: () => web.build,
       sendCommand: (command) => this.companion.send(command),
       log: limitWarnings(log),
+      services,
     });
     this.#server = createServer(createHttpHandler({ hubToken, web }));
     this.#server.on('upgrade', (req, socket, head) => this.#onUpgrade(req, socket, head));

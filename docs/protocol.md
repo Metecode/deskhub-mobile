@@ -306,6 +306,27 @@ On every change and every 5 s, online or not. A phone that hears nothing for 15 
 same `id`, to that phone alone. It is no command and never reaches the companion. With other or more fields it
 is refused like any unknown command.
 
+### The bridge's own (phase 6)
+
+Sent right after the snapshot and the covers, and on every change. Commands from phones are strict
+(`parseBridgeCommand` in `packages/protocol/src/bridgeCommands.ts`): exactly these fields, or nothing happens. None
+of them reaches the companion.
+
+| Message | Way | |
+| --- | --- | --- |
+| `bridge.bulletin` | bridge -> phones | `state`: `off` (no prompt file: no tab), `running`, `ready`, `failed`. `date` (`YYYY-MM-DD`) of what is shown; while running or failed, the last one's. `startedAt`, `madeAt`, `retryAt` in epoch ms. `markdown` without the prices block. `portfolio`: the bridge's sums (`Portfolio` in `packages/protocol/src/bulletin.ts`). `prices`: the lines that passed. `sources`: `{ title, url }`. `notes`: `{ code, ticker? }`, `no_sources`, `no_prices`, `price_unverified`, `sheet_unreadable`, `split_after`. `error`: `codex_missing`, `codex_signed_out`, `api_key_set`, `unsafe_flags`, `failed`, `timeout`, `empty`. |
+| `bridge.reminders` | bridge -> phones | `reminders`: today's, each with `id`, `title`, `day`, `fields` (`key`, `label`, `unit`), `done`, `last` and `previous` (`{ at, values }`). `measured`: every reminder with fields, any day. Again at midnight. |
+| `bridge.measurements` | bridge -> one phone | `id`, `fields`, `entries` of the last 183 days, oldest first. The answer to the next two. |
+| `bridge.bulletin.run` | phone -> bridge | *Tekrar dene*; at most once every 10 minutes after the last start. |
+| `bridge.reminder.save` | phone -> bridge | `id`, `values`: numbers from 0 to 10000, exactly the reminder's fields. |
+| `bridge.measurements.get` | phone -> bridge | `id` |
+
+**The prices block** that Codex writes at the end of the bulletin: a fenced `prices` block, one JSON object a line,
+`{ ticker, price, previous_close, currency, kind, at, source }`. A line is kept if its ticker is wanted, `at` (ISO
+with its offset) is at most 4 days old and not ahead, a `close` isn't stamped from 09:30 to 13:00 New York time,
+`source` is `http(s)` and the price is above 0. That tells a price is well formed, fresh and sourced, not
+that it is right.
+
 ## HTTP
 
 | Request | Answer |

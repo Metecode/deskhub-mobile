@@ -1,3 +1,4 @@
+import { join, resolve } from 'node:path';
 import { describe, expect, it } from 'vitest';
 import { readConfig } from './config.js';
 
@@ -5,15 +6,39 @@ const env = { HUB_TOKEN: 'hub', CLIENT_TOKEN: 'client-0123456789' };
 
 describe('readConfig', () => {
   it('has defaults', () => {
-    expect(readConfig(env, false)).toEqual({
+    expect(readConfig({ ...env, LOCALAPPDATA: '/local' }, false, '/repo')).toEqual({
       mock: false,
       hubToken: 'hub',
       port: 8765,
       clientToken: 'client-0123456789',
       clientOrigins: [],
       weather: null,
+      bulletin: { promptFile: resolve('/repo', 'bulletin.prompt.md'), from: 360 },
+      remindersFile: resolve('/repo', 'reminders.json'),
+      sheets: null,
+      dataDir: join('/local', 'deskhub-mobile', 'data'),
       warnings: [],
     });
+  });
+
+  it('reads the bulletin settings', () => {
+    const config = readConfig(
+      { ...env, BULLETIN_PROMPT_FILE: 'my.md', BULLETIN_FROM: '7:15', DATA_DIR: 'data' },
+      false,
+      '/repo',
+    );
+    expect(config.bulletin).toEqual({ promptFile: resolve('/repo', 'my.md'), from: 435 });
+    expect(config.dataDir).toBe(resolve('/repo', 'data'));
+    expect(() => readConfig({ ...env, BULLETIN_FROM: '25:00' }, false)).toThrow('BULLETIN_FROM');
+  });
+
+  it('reads the sheet settings', () => {
+    expect(readConfig({ ...env, SHEETS_ID: 'abc' }, false, '/repo').sheets).toEqual({
+      sheetId: 'abc',
+      keyFile: resolve('/repo', 'google-service-account.json'),
+      tabs: ['Özet', 'Pozisyonlar', 'Alımlar', 'Altın Alımları', 'Kontrol'],
+    });
+    expect(readConfig({ ...env, SHEETS_ID: 'abc', SHEETS_TABS: ' A , B ,' }, false).sheets?.tabs).toEqual(['A', 'B']);
   });
 
   it.each([true, false])('needs CLIENT_TOKEN (mock: %s)', (mock) => {

@@ -76,6 +76,8 @@ const ICONS = {
   umbrella: 0xf1ad,
   view_in_ar: 0xe9fe,
   wb_cloudy: 0xe42d,
+  // The bulletin's tab (phase 6); not on the board.
+  article: 0xef42,
   wifi_off: 0xe648,
 } as const;
 

@@ -154,3 +154,62 @@ little between versions.
 **Over USB.** With USB debugging on, `adb reverse tcp:8765 tcp:8765` makes the bridge available on
 the phone as `http://localhost:8765`, without Wi-Fi or a firewall rule. That is a secure context without
 the flag.
+
+## 6. The morning bulletin and reminders (optional)
+
+The bridge can write a bulletin every morning with **Codex CLI on your ChatGPT plan**, show it on a *Bülten*
+tab and on *Günaydın* (Home's morning card), and read it aloud with the phone's own voice. It never uses an
+API key or credits: with `OPENAI_API_KEY` set the bridge refuses to run Codex.
+
+**Codex.** Sign in with ChatGPT once: the VS Code extension *Codex* does it, or `codex login` in a terminal.
+The bridge finds the extension's own `codex.exe` by itself, the newest after an update; else set `CODEX_PATH`
+to an `.exe`. `codex login status` should say *Logged in using ChatGPT*.
+
+VS Code's Codex and the bridge share one sign-in. For the bulletin to use another ChatGPT account, give it a
+folder of its own: in PowerShell, `$env:CODEX_HOME = "$env:USERPROFILE.codex-deskhub"`, make that folder, run
+`codex login` (the extension's `codex.exe`) and sign in with that account; then put the folder in `.env` as
+`CODEX_HOME`. `codex login status` doesn't name the account: the e-mail is in the `id_token` of
+`auth.json` there.
+
+**The prompt.** Copy `bulletin.prompt.example.md` to `bulletin.prompt.md` (never committed) and write your own
+prompt below its settings:
+
+| Setting | |
+| --- | --- |
+| `stocks` | Single stocks; every other holding counts as an ETF |
+| `rewards` | Reward shares: shown, left out of returns and of the mix |
+| `watch` | The watch list; one that was bought shows as a new position |
+| `fallback` | Holdings to use when the sheet can't be read |
+| `targets` | The target mix, `etf 60, stock 15, gold 25`, adding up to 100 |
+
+The bridge adds its own part to the prompt: the sheet as data, a `## Kaynaklar` section and a `prices` block
+at the end, and no portfolio numbers from Codex, as the bridge works them out itself. The bulletin is written
+once a day when Desk Hub is first opened (the bridge starting, or a phone connecting), not before
+`BULLETIN_FROM` (06:00). It takes a few minutes and some of your plan's limit; one failed run is retried
+after 10 minutes, after that there is *Tekrar dene* on the phone. If you have the same task in ChatGPT, turn
+that off so the limit isn't used twice.
+
+**The sheet.** For the portfolio table the bridge reads your Google Sheet, read-only, with a service account. It
+costs nothing and needs no billing (ignore the free trial's offer of credit):
+
+1. In the [Google Cloud console](https://console.cloud.google.com), make a project (*No organization*).
+2. *APIs & Services* > *Library* > *Google Sheets API* > *Enable*.
+3. *IAM & Admin* > *Service Accounts* > *Create service account*; it needs no role.
+4. Open it, *Keys* > *Add key* > *Create new key* > *JSON*. Save the file as `google-service-account.json`
+   next to `.env` (never committed). Windows hides `.json`: make sure the name isn't
+   `google-service-account.json.json`.
+5. Share the sheet with the account's address (`...@....iam.gserviceaccount.com`) as a *Viewer*, without a
+   notification. The sheet itself can stay *Restricted*.
+6. In `.env`, `SHEETS_ID` is the part of the sheet's link between `/d/` and `/edit`.
+
+Only the tabs in `SHEETS_TABS` are read (default `Özet, Pozisyonlar, Alımlar, Altın Alımları, Kontrol`).
+Quantities and costs come from `Pozisyonlar` up to the date in its quantity column's header ("Adet 13.11.2026
+dahil"), later purchases from `Alımlar`, gold from `Altın Alımları`. Columns are found by their header.
+
+**Reminders.** Copy `reminders.example.json` to `reminders.json` (never committed): an `id`, a `title`, a `day`
+(`monday` ... `sunday`) and up to four `fields` with a `key`, a `label` and a `unit`. On its day the reminder
+shows in the panel; what you enter is kept by the bridge, and *Tümü* > *Ölçümler* draws it.
+
+Bulletins (14 days) and measurements are kept in `%LOCALAPPDATA%\deskhub-mobile\data` (`DATA_DIR`), next to the
+bridge's log. The prompt is read again for every run; after changing `.env` or `reminders.json`, restart
+the bridge.

@@ -17,6 +17,18 @@ Use a network that Windows treats as *Private*. If Windows made rules for Node.j
 *Public* networks too: look for *Node.js JavaScript Runtime* in the firewall's inbound rules, and prefer the
 [rule for one port](setup.md#3-the-pc-a-fixed-address-the-firewall-starting-by-itself).
 
+**The morning bulletin.** Codex runs on your ChatGPT plan, never with an API key: with `OPENAI_API_KEY` set, or
+Codex signed in with a key, the bridge won't run it. Codex reads web pages, which could try to steer it, so it
+may only search: `--disable shell_tool` (no commands), `--disable apps` (no ChatGPT connectors such as Drive or
+Gmail), a read-only sandbox, `--ephemeral`, in an empty folder; the bridge checks with `codex features list` before
+every run that both are off. The only private data it sees is what the bridge puts in the prompt: the sheet's
+tabs in `SHEETS_TABS`, not `Belgeler` (account numbers, links to statements) nor cash or income, and it is told
+that this is data, not instructions. The service account may only read, and only what is shared with it. The
+prompt, `reminders.json` and the key file are in `.gitignore`; bulletins and measurements stay in
+`%LOCALAPPDATA%\deskhub-mobile\data`, and the log has only Codex's exit code and time. On the phone the bulletin is
+shown without raw HTML, links only if `http(s)`. Keep the sheet *Restricted*: "anyone with the link" makes it
+public to whoever has the link.
+
 The weather comes from [Open-Meteo](https://open-meteo.com), straight to the phone. Open-Meteo sees the
 phone's address and the coordinates in `.env` (two decimals are plenty), nothing else. Without
 coordinates nothing is fetched.

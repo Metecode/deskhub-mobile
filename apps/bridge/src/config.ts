@@ -1,4 +1,8 @@
 import { randomBytes } from 'node:crypto';
+import { homedir } from 'node:os';
+import { join, resolve } from 'node:path';
+import { parseFrom } from './bulletinService.js';
+import { DEFAULT_TABS } from './sheetsClient.js';
 import type { WeatherSettings } from '@deskhub-mobile/protocol';
 import { parseOrigins } from './origins.js';
 
@@ -9,7 +13,21 @@ export interface Config {
   clientToken: string;
   clientOrigins: string[];
   weather: WeatherSettings | null;
+  /** The morning bulletin (docs/plan-phase6.md). */
+  bulletin: { promptFile: string; from: number };
+  /** Weekly reminders (docs/plan-phase6.md). */
+  remindersFile: string;
+  /** The user's sheet for the bulletin. null: not set. */
+  sheets: { sheetId: string; keyFile: string; tabs: string[] } | null;
+  /** The bridge's own data: bulletins, measurements. */
+  dataDir: string;
   warnings: string[];
+}
+
+/** Where the bridge keeps its data: next to its log (tools/start-bridge.ps1). */
+function defaultDataDir(env: Record<string, string | undefined>): string {
+  const base = env.LOCALAPPDATA?.trim() || join(homedir(), '.local', 'share');
+  return join(base, 'deskhub-mobile', 'data');
 }
 
 function readWeather(value: (key: string) => string): WeatherSettings | null {
@@ -35,8 +53,11 @@ function readWeather(value: (key: string) => string): WeatherSettings | null {
 /** Nothing slows down guessing, so a short CLIENT_TOKEN is found sooner or later. */
 const MIN_CLIENT_TOKEN = 16;
 
-/** Reads the settings. Throws an Error with a message for the user when one is missing or wrong. */
-export function readConfig(env: Record<string, string | undefined>, mock: boolean): Config {
+/**
+ * Reads the settings. Throws an Error with a message for the user when one is missing or wrong. `root`
+ * is the folder of .env, which relative file names start from.
+ */
+export function readConfig(env: Record<string, string | undefined>, mock: boolean, root = '.'): Config {
   const value = (key: string) => env[key]?.trim() ?? '';
   const warnings: string[] = [];
 
@@ -66,6 +87,24 @@ export function readConfig(env: Record<string, string | undefined>, mock: boolea
     clientToken,
     clientOrigins: parseOrigins(value('CLIENT_ORIGINS')),
     weather: readWeather(value),
+    bulletin: {
+      promptFile: resolve(root, value('BULLETIN_PROMPT_FILE') || 'bulletin.prompt.md'),
+      from: parseFrom(value('BULLETIN_FROM') || '06:00'),
+    },
+    remindersFile: resolve(root, value('REMINDERS_FILE') || 'reminders.json'),
+    sheets: value('SHEETS_ID')
+      ? {
+          sheetId: value('SHEETS_ID'),
+          keyFile: resolve(root, value('SHEETS_KEY_FILE') || 'google-service-account.json'),
+          tabs: value('SHEETS_TABS')
+            ? value('SHEETS_TABS')
+                .split(',')
+                .map((t) => t.trim())
+                .filter(Boolean)
+            : DEFAULT_TABS,
+        }
+      : null,
+    dataDir: value('DATA_DIR') ? resolve(root, value('DATA_DIR')) : defaultDataDir(env),
     warnings,
   };
 }

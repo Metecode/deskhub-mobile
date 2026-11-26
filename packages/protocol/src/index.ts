@@ -1,5 +1,7 @@
 export * from './alert.js';
 export * from './art.js';
+export * from './bridgeCommands.js';
+export * from './bulletin.js';
 export * from './client.js';
 export * from './commands.js';
 export * from './companion.js';
@@ -13,6 +15,7 @@ export * from './media.js';
 export * from './net.js';
 export * from './power.js';
 export * from './printer.js';
+export * from './reminders.js';
 export * from './stats.js';
 export * from './steam.js';
 export * from './tiles.js';

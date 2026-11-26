@@ -5,10 +5,12 @@ import type { Duplex } from 'node:stream';
 import {
   CLOSE_BAD_ORIGIN,
   CLOSE_BAD_TOKEN,
+  parseBridgeCommand,
   parseCommand,
   parsePing,
   STATUS_INTERVAL_MS,
   TOKEN_PARAM,
+  type BridgeCommand,
   type BridgeMessage,
   type Command,
   type BridgePong,
@@ -38,6 +40,18 @@ export interface ClientEndpointOptions {
   /** Passes a command on. False when there's no companion to take it. */
   sendCommand: (command: Command) => boolean;
   log: Logger;
+  /** The bridge's own features (bulletin, reminders). */
+  services?: BridgeServices;
+}
+
+/** What the bridge does itself, besides relaying the companion. */
+export interface BridgeServices {
+  /** Sent to a phone right after the snapshot. */
+  messages(): string[];
+  /** A phone connected: Desk Hub was opened. */
+  opened(): void;
+  /** `reply` sends to that phone only. */
+  command(command: BridgeCommand, reply: (text: string) => void): void;
 }
 
 export class ClientEndpoint {
@@ -98,7 +112,7 @@ export class ClientEndpoint {
       const ping = parsePing(text);
       // Not a command: it goes no further.
       if (ping) ws.send(JSON.stringify({ type: 'bridge.pong', id: ping.id } satisfies BridgePong));
-      else this.#onCommand(text);
+      else this.#onCommand(text, ws);
     });
     // The messages are JSON texts already.
     const build = this.#build();
@@ -109,10 +123,26 @@ export class ClientEndpoint {
       }}`,
     );
     for (const frame of hub.covers) ws.send(frame);
+    const { services } = this.#options;
+    for (const message of services?.messages() ?? []) ws.send(message);
+    services?.opened();
   }
 
-  #onCommand(text: string): void {
-    const { log, sendCommand } = this.#options;
+  /** Sends one of the bridge's own messages to every phone. */
+  broadcast(text: string): void {
+    this.#broadcast(text);
+  }
+
+  #onCommand(text: string, ws: WebSocket): void {
+    const { log, sendCommand, services } = this.#options;
+    const own = services && parseBridgeCommand(text);
+    if (own) {
+      log.info(`command ${own.type}`);
+      services.command(own, (reply) => {
+        if (ws.readyState === ws.OPEN) ws.send(reply);
+      });
+      return;
+    }
     const command = parseCommand(text);
     if (!command) {
       log.warn(`command refused: ${JSON.stringify(text.slice(0, 100))}`);
