@@ -1,5 +1,7 @@
 import { fileURLToPath } from 'node:url';
 import { TOKEN_PARAM } from '@deskhub-mobile/protocol';
+import { BulletinService } from './bulletinService.js';
+import type { BridgeServices } from './clientEndpoint.js';
 import { readConfig, type Config } from './config.js';
 import { consoleLogger as log } from './log.js';
 import { startMockCompanion } from './mockCompanion.js';
@@ -15,14 +17,39 @@ function loadConfig(): Config {
   } catch {
     // No .env: the environment may still have everything.
   }
-  return readConfig(process.env, process.argv.includes('--mock'));
+  return readConfig(process.env, process.argv.includes('--mock'), fromRoot('.'));
+}
+
+/** The bridge's own features. Mock mode has made-up ones and never runs Codex. */
+function services(config: Config, broadcast: (text: string) => void): { services: BridgeServices; start(): Promise<void> } {
+  const bulletin = new BulletinService({
+    ...config.bulletin,
+    dataDir: config.dataDir,
+    env: process.env,
+    publish: (message) => broadcast(JSON.stringify(message)),
+    log,
+  });
+  return {
+    services: {
+      messages: () => [JSON.stringify(bulletin.message)],
+      opened: () => bulletin.opened(),
+      command: (command) => {
+        if (command.type === 'bridge.bulletin.run') void bulletin.runNow();
+      },
+    },
+    start: () => bulletin.start(),
+  };
 }
 
 async function main(): Promise<void> {
   const config = loadConfig();
   for (const warning of config.warnings) log.warn(warning);
 
-  const bridge = new Bridge({ ...config, webRoot: fromRoot('apps/web/dist'), log });
+  let send: (text: string) => void = () => {};
+  const own = config.mock ? null : services(config, (text) => send(text));
+  const bridge = new Bridge({ ...config, webRoot: fromRoot('apps/web/dist'), log, services: own?.services });
+  send = (text) => bridge.clients.broadcast(text);
+  await own?.start();
   // All interfaces: the companion comes from this PC, phones from the network.
   await bridge.listen(config.port, '0.0.0.0');
 

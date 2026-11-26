@@ -10,3 +10,7 @@ coverage/
 __pycache__/
 .claude/
 skills-lock.json
+# The user's own: the bulletin's prompt, reminders and the sheet's key (docs/plan-phase6.md).
+bulletin.prompt.md
+reminders.json
+google-service-account.json

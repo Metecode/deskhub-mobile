@@ -383,3 +383,41 @@ describe('commands', () => {
     expect((await client.closed).code).toBe(1009);
   });
 });
+
+describe("the bridge's own features", () => {
+  it('send their messages after the snapshot, hear about the opening, and take their commands', async () => {
+    await bridge.close();
+    const commands: unknown[] = [];
+    let opened = 0;
+    bridge = await startBridge({
+      services: {
+        messages: () => [JSON.stringify({ type: 'bridge.bulletin', state: 'off' })],
+        opened: () => opened++,
+        command: (command, reply) => {
+          commands.push(command);
+          if (command.type === 'bridge.measurements.get')
+            reply(JSON.stringify({ type: 'bridge.measurements', id: 'x', fields: [], entries: [] }));
+        },
+      },
+    });
+    const companion = await connectCompanion(bridge);
+    const phone = await connectClient(bridge);
+    expect((await phone.next()).type).toBe('bridge.snapshot');
+    expect(await phone.next()).toEqual({ type: 'bridge.bulletin', state: 'off' });
+    expect(opened).toBe(1);
+
+    phone.send({ type: 'bridge.measurements.get', id: 'olcum' });
+    expect((await phone.next()).type).toBe('bridge.measurements');
+    expect(commands).toEqual([{ type: 'bridge.measurements.get', id: 'olcum' }]);
+
+    // Not on the list: neither the bridge's nor the companion's.
+    phone.send({ type: 'bridge.bulletin.run', extra: 1 });
+    phone.send({ type: 'bridge.reminder.save', id: 'x', values: { kg: 1 } });
+    await phone.flush();
+    expect(commands).toHaveLength(2);
+    expect(companion.received).toEqual([]);
+
+    bridge.clients.broadcast('{"type":"bridge.reminders","reminders":[]}');
+    expect((await phone.next()).type).toBe('bridge.reminders');
+  });
+});
