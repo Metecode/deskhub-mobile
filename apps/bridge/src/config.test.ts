@@ -14,6 +14,7 @@ describe('readConfig', () => {
       clientOrigins: [],
       weather: null,
       bulletin: { promptFile: resolve('/repo', 'bulletin.prompt.md'), from: 360 },
+      remindersFile: resolve('/repo', 'reminders.json'),
       sheets: null,
       dataDir: join('/local', 'deskhub-mobile', 'data'),
       warnings: [],

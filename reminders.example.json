@@ -1,0 +1,11 @@
+[
+  {
+    "id": "olcum",
+    "title": "Kilo ve bel ölçümü",
+    "day": "monday",
+    "fields": [
+      { "key": "kg", "label": "Kilo", "unit": "kg" },
+      { "key": "cm", "label": "Bel", "unit": "cm" }
+    ]
+  }
+]

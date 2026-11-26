@@ -15,6 +15,8 @@ export interface Config {
   weather: WeatherSettings | null;
   /** The morning bulletin (docs/plan-phase6.md). */
   bulletin: { promptFile: string; from: number };
+  /** Weekly reminders (docs/plan-phase6.md). */
+  remindersFile: string;
   /** The user's sheet for the bulletin. null: not set. */
   sheets: { sheetId: string; keyFile: string; tabs: string[] } | null;
   /** The bridge's own data: bulletins, measurements. */
@@ -89,6 +91,7 @@ export function readConfig(env: Record<string, string | undefined>, mock: boolea
       promptFile: resolve(root, value('BULLETIN_PROMPT_FILE') || 'bulletin.prompt.md'),
       from: parseFrom(value('BULLETIN_FROM') || '06:00'),
     },
+    remindersFile: resolve(root, value('REMINDERS_FILE') || 'reminders.json'),
     sheets: value('SHEETS_ID')
       ? {
           sheetId: value('SHEETS_ID'),

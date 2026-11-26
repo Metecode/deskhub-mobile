@@ -233,8 +233,8 @@ All in `packages/protocol` with Zod schemas, and in `docs/protocol.md`.
 - [x] The sheet's tabs and columns, looked at with the user
 - [x] Bridge: the portfolio's numbers, tested on a made-up sheet with the same headers
 - [x] Bridge: the price block and the sources, checked
-- [ ] Bridge: reminders and measurements
-- [ ] Bridge: mock mode
+- [x] Bridge: reminders and measurements
+- [x] Bridge: mock mode
 - [ ] Web: Bülten tab (`react-markdown`, `remark-gfm`, our components), running and failed states
 - [ ] Web: Günaydın
 - [ ] Web: reading aloud, speed, diagnostics

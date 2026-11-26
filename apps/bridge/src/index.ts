@@ -1,13 +1,10 @@
 import { fileURLToPath } from 'node:url';
 import { TOKEN_PARAM } from '@deskhub-mobile/protocol';
-import { BulletinService } from './bulletinService.js';
-import type { BridgeServices } from './clientEndpoint.js';
 import { readConfig, type Config } from './config.js';
 import { consoleLogger as log } from './log.js';
 import { startMockCompanion } from './mockCompanion.js';
 import { DEV_PORT, lanAddresses } from './origins.js';
-import { portfolioMaker } from './portfolio.js';
-import { readGoogleSheet } from './sheetsClient.js';
+import { createServices } from './services.js';
 import { Bridge } from './server.js';
 
 // Both src/ and dist/ are three levels below the repository root.
@@ -22,38 +19,16 @@ function loadConfig(): Config {
   return readConfig(process.env, process.argv.includes('--mock'), fromRoot('.'));
 }
 
-/** The bridge's own features. Mock mode has made-up ones and never runs Codex. */
-function services(config: Config, broadcast: (text: string) => void): { services: BridgeServices; start(): Promise<void> } {
-  const bulletin = new BulletinService({
-    ...config.bulletin,
-    dataDir: config.dataDir,
-    env: process.env,
-    publish: (message) => broadcast(JSON.stringify(message)),
-    log,
-    portfolio: portfolioMaker,
-    readSheet: config.sheets ? () => readGoogleSheet(config.sheets!) : undefined,
-  });
-  return {
-    services: {
-      messages: () => [JSON.stringify(bulletin.message)],
-      opened: () => bulletin.opened(),
-      command: (command) => {
-        if (command.type === 'bridge.bulletin.run') void bulletin.runNow();
-      },
-    },
-    start: () => bulletin.start(),
-  };
-}
-
 async function main(): Promise<void> {
   const config = loadConfig();
   for (const warning of config.warnings) log.warn(warning);
 
+  // Mock mode has made-up ones and never runs Codex or reads the sheet.
   let send: (text: string) => void = () => {};
-  const own = config.mock ? null : services(config, (text) => send(text));
-  const bridge = new Bridge({ ...config, webRoot: fromRoot('apps/web/dist'), log, services: own?.services });
+  const own = await createServices(config, (text) => send(text), log, fromRoot('.'));
+  const bridge = new Bridge({ ...config, webRoot: fromRoot('apps/web/dist'), log, services: own.services });
   send = (text) => bridge.clients.broadcast(text);
-  await own?.start();
+  await own.start();
   // All interfaces: the companion comes from this PC, phones from the network.
   await bridge.listen(config.port, '0.0.0.0');
 
