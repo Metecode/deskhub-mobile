@@ -1,5 +1,5 @@
 // What is on every page: the time, the weather, the next event, the timer, an alert, the connection.
-import type { Alert } from '@deskhub-mobile/protocol';
+import type { Alert, TodayReminder, Values } from '@deskhub-mobile/protocol';
 import type { CSSProperties } from 'react';
 import { notOver, untilText } from '../agenda.js';
 import { kindText, panelText } from '../alerts.js';
@@ -14,6 +14,7 @@ import { AgentIcon } from './AgentIcon.js';
 import { Icon } from './Icon.js';
 import { LinkIcon } from './LinkIcon.js';
 import styles from './Panel.module.css';
+import { ReminderCard } from './ReminderCard.js';
 
 interface PanelProps {
   state: BridgeState;
@@ -29,6 +30,13 @@ interface PanelProps {
   onCalendar: (() => void) | null;
   onTimer: (() => void) | null;
   onLink: () => void;
+  /** Today's reminder that is still to do, in place of the next event (phase 6). */
+  reminder: {
+    item: TodayReminder;
+    onSave: (values: Values) => void;
+    onLater: () => void;
+    onChart: () => void;
+  } | null;
 }
 
 function AlertCard({ state, alert, onAction }: { state: BridgeState; alert: Alert; onAction: PanelProps['onAlertAction'] }) {
@@ -102,7 +110,14 @@ export function Panel(props: PanelProps) {
               </span>
             </button>
           )}
-          {props.onCalendar && (
+          {props.reminder ? (
+            <ReminderCard
+              reminder={props.reminder.item}
+              onSave={props.reminder.onSave}
+              onLater={props.reminder.onLater}
+              onChart={props.reminder.onChart}
+            />
+          ) : props.onCalendar && (
             <button type="button" className={styles.next} aria-label={T.panel.openCalendar} onClick={props.onCalendar}>
               <span className={styles.nextLabel}>{event && event.start <= now && !event.allDay ? T.panel.live : T.panel.next}</span>
               {event ? (

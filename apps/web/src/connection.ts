@@ -27,19 +27,23 @@ import {
   STEAM_THUMB,
   TOKEN_PARAM,
   type Alert,
+  type BridgeCommand,
   type BridgeMessage,
+  type BulletinMessage,
   type Command,
   type Events,
   type GitHub,
   type Home,
   type Layout,
   type Media,
+  type MeasurementsMessage,
   type MediaServer,
   type MediaTarget,
   type Net,
   type BridgePing,
   type Printer,
   type RawMessage,
+  type RemindersMessage,
   type Stats,
   type Steam,
   type Tile,
@@ -131,6 +135,11 @@ export interface BridgeState extends HubData {
   build: string | null;
   /** The last message of every type, as received. */
   messages: Readonly<Record<string, RawMessage>>;
+  /** The bridge's own (phase 6). null: none yet; state 'off': not set up. */
+  bulletin: BulletinMessage | null;
+  reminders: RemindersMessage | null;
+  /** By reminder, as last asked for. */
+  measurements: Readonly<Record<string, MeasurementsMessage>>;
 }
 
 /** Without what outlives a bridge that has forgotten it. */
@@ -236,6 +245,9 @@ export class Connection {
       weather: undefined,
       build: null,
       messages: {},
+      bulletin: null,
+      reminders: null,
+      measurements: {},
       layout,
       home,
       events,
@@ -283,6 +295,13 @@ export class Connection {
     if (isOnline(this.#state)) this.#socket?.send(JSON.stringify(command));
   }
 
+  /** Sends a command that the bridge carries out itself; it needs the bridge, not the companion. */
+  sendBridge(command: BridgeCommand): boolean {
+    if (this.#state.link !== 'open' || !this.#socket) return false;
+    this.#socket.send(JSON.stringify(command));
+    return true;
+  }
+
   /** False: there is no connection. */
   ping(id: number): boolean {
     if (this.#state.link !== 'open' || !this.#socket) return false;
@@ -316,6 +335,13 @@ export class Connection {
     if (message.type === 'bridge.snapshot' || message.type === 'bridge.status') {
       this.#onBridgeMessage(message as unknown as BridgeMessage);
       return;
+    }
+    // The bridge's own: sent as they are, so taken as they are.
+    if (message.type === 'bridge.bulletin') return this.#update({ bulletin: message as unknown as BulletinMessage });
+    if (message.type === 'bridge.reminders') return this.#update({ reminders: message as unknown as RemindersMessage });
+    if (message.type === 'bridge.measurements') {
+      const chart = message as unknown as MeasurementsMessage;
+      return this.#update({ measurements: { ...this.#state.measurements, [chart.id]: chart } });
     }
     const change = read(message, this.#state.layout);
     this.#update({

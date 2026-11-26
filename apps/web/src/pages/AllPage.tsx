@@ -1,6 +1,6 @@
 // What isn't in the dock, each with a line on how it is, and the diagnostics.
-import type { Page } from '@deskhub-mobile/protocol';
 import { notOver } from '../agenda.js';
+import { hasBulletin } from '../bulletin.js';
 import { tabName, TabIcon } from '../components/Dock.js';
 import { Icon } from '../components/Icon.js';
 import { isOnline, pcMedia, type BridgeState } from '../connection.js';
@@ -8,10 +8,10 @@ import type { LastError } from '../diagnostics.js';
 import { homeGame, sessionSeconds } from '../games.js';
 import { homeStreak } from '../github.js';
 import { formatLatency } from '../internet.js';
-import type { Tab } from '../nav.js';
+import type { PageName, Tab } from '../nav.js';
 import { homePrinter } from '../printers.js';
 import { PAGE_NAMES, percent, T } from '../text.js';
-import { formatDuration } from '../time.js';
+import { formatClock, formatDuration } from '../time.js';
 import type { TimerState } from '../timer.js';
 import type { WeatherState } from '../weather.js';
 import { formatTemp, weatherText } from '../weatherLook.js';
@@ -25,8 +25,10 @@ interface AllProps {
   error: LastError | null;
   /** Epoch seconds. */
   now: number;
-  onOpen: (page: Page) => void;
+  onOpen: (page: PageName) => void;
   onTabs: () => void;
+  /** null: no reminder measures anything. */
+  onMeasurements: (() => void) | null;
   onInfo: () => void;
 }
 
@@ -43,9 +45,10 @@ const COLORS: Readonly<Record<Tab | 'network', string>> = {
   github: 'var(--good)',
   shortcuts: 'var(--accent)',
   network: 'var(--cpu)',
+  bulletin: 'var(--accent)',
 };
 
-export function AllPage({ tabs, state, weather, timer, error, now, onOpen, onTabs, onInfo }: AllProps) {
+export function AllPage({ tabs, state, weather, timer, error, now, onOpen, onTabs, onMeasurements, onInfo }: AllProps) {
   const online = isOnline(state);
   const waiting = online ? T.all.waiting : T.pcOffline;
 
@@ -82,6 +85,12 @@ export function AllPage({ tabs, state, weather, timer, error, now, onOpen, onTab
         const limit = state.usage?.fiveHour;
         return limit ? `${T.usage.fiveHourShort} ${percent(Math.round(limit.pct))}` : waiting;
       }
+      case 'bulletin': {
+        const b = state.bulletin;
+        if (b?.state === 'running') return T.morning.writing;
+        if (b?.state === 'failed') return T.bulletin.failed;
+        return hasBulletin(b) && b.madeAt ? formatClock(Math.floor(b.madeAt / 1000)) : '';
+      }
       case 'home':
         return '';
     }
@@ -101,6 +110,17 @@ export function AllPage({ tabs, state, weather, timer, error, now, onOpen, onTab
           </span>
         </button>
       ))}
+      {onMeasurements && (
+        <button type="button" className={styles.tile} onClick={onMeasurements}>
+          <span style={{ color: 'var(--accent)' }}>
+            <Icon name="insights" size={32} />
+          </span>
+          <span className={styles.text}>
+            <span className={styles.name}>{T.measurements.title}</span>
+            <span className={styles.line}>{(state.reminders?.measured ?? []).map((m) => m.title).join(', ')}</span>
+          </span>
+        </button>
+      )}
       <button type="button" className={styles.tile} onClick={onTabs}>
         <span style={{ color: 'var(--muted)' }}>
           <Icon name="shuffle" size={32} />

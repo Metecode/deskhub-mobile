@@ -47,6 +47,8 @@ export interface TodayReminder extends Reminder {
 export interface RemindersMessage {
   type: 'bridge.reminders';
   reminders: TodayReminder[];
+  /** Every reminder with fields, whatever its day: their charts can be opened any day. */
+  measured: Pick<Reminder, 'id' | 'title' | 'fields'>[];
 }
 
 /** A reminder's entries, oldest first, for the chart. */

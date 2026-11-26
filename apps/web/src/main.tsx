@@ -7,6 +7,7 @@ import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
 import { AlertStore } from './alerts.js';
 import { App } from './App.js';
+import { bulletinIsToday, dayOf } from './bulletin.js';
 import { BurnInStore } from './burnIn.js';
 import { ErrorBoundary } from './components/ErrorNote.js';
 import { Connection } from './connection.js';
@@ -17,9 +18,11 @@ import { goFullscreenOnTap } from './fullscreen.js';
 import { LaunchStore } from './games.js';
 import { loadLayout, saveLayout } from './layoutStore.js';
 import { LinkStore, PING_MS } from './linkQuality.js';
+import { morningReading, MorningStore } from './morning.js';
 import { OfflineStore } from './offline.js';
 import { isCalm, takeUpdate } from './reload.js';
 import { Sound } from './sound.js';
+import { SpeechStore } from './speech.js';
 import { SpeedTestStore } from './speedTest.js';
 import { TabOrderStore } from './tabOrder.js';
 import { TimerStore } from './timer.js';
@@ -47,6 +50,8 @@ const wakeLock = new WakeLockStore(wakeLockEnvironment());
 const offline = new OfflineStore(import.meta.env.PROD);
 const info = new InfoRoute();
 
+const speech = new SpeechStore();
+const morning = new MorningStore();
 const burnIn = new BurnInStore();
 const tabOrder = new TabOrderStore();
 const link = new LinkStore((id) => connection.ping(id));
@@ -135,6 +140,28 @@ document.addEventListener('pointerdown', (e) => burnIn.down(e.pointerId), true);
 for (const type of ['pointerup', 'pointercancel'] as const)
   document.addEventListener(type, (e) => burnIn.up(e.pointerId), true);
 
+// The morning read aloud on the day's first touch, if that is turned on: Chrome speaks only after one.
+document.addEventListener(
+  'pointerdown',
+  () => {
+    const nowMs = Date.now();
+    const { firstTouch, playing } = speech.getState();
+    const { bulletin, events, reminders } = connection.getState();
+    if (!firstTouch || playing || morning.getState().read === dayOf(nowMs) || !bulletinIsToday(bulletin, nowMs)) return;
+    morning.markRead(nowMs);
+    speech.play(
+      morningReading({
+        weather: weather.getState().weather,
+        events: events.events,
+        reminders: reminders?.reminders ?? [],
+        bulletin,
+        now: Math.floor(nowMs / 1000),
+      }),
+    );
+  },
+  true,
+);
+
 goFullscreenOnTap();
 
 createRoot(document.getElementById('root')!).render(
@@ -156,6 +183,8 @@ createRoot(document.getElementById('root')!).render(
         burnIn={burnIn}
         link={link}
         tabOrder={tabOrder}
+        speech={speech}
+        morning={morning}
         calm={calm}
       />
     </ErrorBoundary>

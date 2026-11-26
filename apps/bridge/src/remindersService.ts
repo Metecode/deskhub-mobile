@@ -107,6 +107,7 @@ export class RemindersService {
             previous: previous ? strip(previous) : null,
           };
         }),
+      measured: this.#reminders.filter((r) => r.fields.length).map(({ id, title, fields }) => ({ id, title, fields })),
     };
   }
 

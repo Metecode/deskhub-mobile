@@ -178,8 +178,12 @@ A bulletin is shown even when a check fails, with a note saying which: what Code
   İlk etkinlik saat 10'da, Sprint planlama. Bugün kilo ve bel ölçümü günü." and then the bulletin's short part.
 - **Short** (default): *Bir bakışta*, the three developments and the concrete step, about 1 to 2 minutes.
   **Tamamı**: everything but the tables, the links, the price tags and the sources.
-- Read sentence by sentence (long texts stop half-way in some browsers). The sentence being read is marked
-  and kept in view. A bar at the bottom: back, pause, forward, *Tamamı*, close.
+- Read sentence by sentence (long texts stop half-way in some browsers). A bar at the bottom of the stage,
+  on any page: the sentence being read, how far it is, back, pause, forward, *Tamamı*, close. (Marking the
+  sentence in the text itself was dropped: a sentence of the spoken text can't be matched to its place in
+  the rendered Markdown reliably.) Pausing is our own (cancel, then the same sentence again), as Android's
+  `pause()` can't be relied on. An error of the engine stops the reading and shows in the diagnostics.
+- The speed and *first touch* are at the foot of the Bülten page, there being no settings page.
 - **Speed** in the settings: 0.8×, 1×, 1.2×, 1.5× (`rate`), kept on the phone.
 - Before reading, the text is made sayable: `−` as "eksi", `%` before a number, `$` after it, `TSİ`, `K/Z`
   and the like written out. The list lives next to the code, with tests.
@@ -235,10 +239,10 @@ All in `packages/protocol` with Zod schemas, and in `docs/protocol.md`.
 - [x] Bridge: the price block and the sources, checked
 - [x] Bridge: reminders and measurements
 - [x] Bridge: mock mode
-- [ ] Web: Bülten tab (`react-markdown`, `remark-gfm`, our components), running and failed states
-- [ ] Web: Günaydın
-- [ ] Web: reading aloud, speed, diagnostics
-- [ ] Web: reminder card and measurement chart
+- [x] Web: Bülten tab (`react-markdown`, `remark-gfm`, our components), running and failed states
+- [x] Web: Günaydın
+- [x] Web: reading aloud, speed, diagnostics
+- [x] Web: reminder card and measurement chart
 - [ ] Mock-ups for what isn't drawn yet
 - [ ] README, `README.tr.md`, docs/protocol.md, docs/setup.md
 - [ ] Verified with the mock and the real Codex

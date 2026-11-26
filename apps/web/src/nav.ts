@@ -2,6 +2,10 @@
 import type { Page } from '@deskhub-mobile/protocol';
 import type { IconName } from './icons.js';
 
+/** The bridge's own pages (phase 6), not the companion's. */
+export type OwnPage = 'bulletin';
+export type PageName = Page | OwnPage;
+
 /** The pages there are to see. The Internet is a view of the stats page (ui_show_page in ui.c). */
 export const TABS = {
   home: 'home',
@@ -15,17 +19,22 @@ export const TABS = {
   games: 'sports_esports',
   github: 'commit',
   shortcuts: 'grid_view',
-} as const satisfies Partial<Record<Page, IconName>>;
+  bulletin: 'article',
+} as const satisfies Partial<Record<PageName, IconName>>;
 
 export type Tab = keyof typeof TABS;
 
 /** What the stage shows. */
-export type View = Tab | 'all' | 'tabs';
+export type View = Tab | 'all' | 'tabs' | 'measurements';
 
-const isTab = (page: Page): page is Tab => Object.hasOwn(TABS, page);
+const isTab = (page: string): page is Tab => Object.hasOwn(TABS, page);
 
-/** The pages to show, in the companion's order. */
-export const tabsOf = (pages: readonly Page[]): Tab[] => pages.filter(isTab);
+/** The pages to show, in the companion's order; the bridge's own come right after Home. */
+export function tabsOf(pages: readonly Page[], own: readonly OwnPage[] = []): Tab[] {
+  const tabs: Tab[] = pages.filter((page): page is Page & Tab => isTab(page));
+  const at = tabs.indexOf('home') + 1;
+  return [...tabs.slice(0, at), ...own, ...tabs.slice(at)];
+}
 
 /** The most that fit with their names. */
 export const DOCK_MAX = 6;
@@ -42,12 +51,12 @@ export function dockOf(tabs: readonly Tab[]): Dock {
 }
 
 /** The view to show: Home when the one asked for is turned off or doesn't exist. */
-export function viewToShow(view: Page | 'all' | 'tabs', tabs: readonly Tab[]): View {
-  if (view === 'tabs') return view;
+export function viewToShow(view: PageName | 'all' | 'tabs' | 'measurements', tabs: readonly Tab[]): View {
+  if (view === 'tabs' || view === 'measurements') return view;
   if (view === 'all') return dockOf(tabs).rest ? 'all' : 'home';
   return tabs.find((tab) => tab === view) ?? 'home';
 }
 
 /** The dock's marked entry: pages under "All" belong to it. */
 export const markedTab = (view: View, { tabs, rest }: Dock): View =>
-  view === 'all' || view === 'tabs' || (rest?.includes(view) && !tabs.includes(view)) ? 'all' : view;
+  view === 'all' || view === 'tabs' || view === 'measurements' || (rest?.includes(view) && !tabs.includes(view)) ? 'all' : view;

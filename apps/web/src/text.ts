@@ -1,6 +1,7 @@
 // Everything the user reads, in Turkish. Nothing else in the app has text of its own (text.test.ts
 // looks for some). Names the user gave (tiles, calendars, events) stay as they are.
-import type { Page } from '@deskhub-mobile/protocol';
+import type { BulletinError } from '@deskhub-mobile/protocol';
+import type { PageName } from './nav.js';
 
 export const LOCALE = 'tr-TR';
 
@@ -19,7 +20,7 @@ export function formatNumber(n: number, digits = 0): string {
 /** "%38": the sign comes first in Turkish. */
 export const percent = (n: number | string): string => `%${n}`;
 
-export const PAGE_NAMES: Readonly<Record<Page, string>> = {
+export const PAGE_NAMES: Readonly<Record<PageName, string>> = {
   home: 'Ana',
   stats: 'Bilgisayar',
   ai: 'Claude',
@@ -32,6 +33,7 @@ export const PAGE_NAMES: Readonly<Record<Page, string>> = {
   games: 'Oyunlar',
   network: 'İnternet',
   github: 'GitHub',
+  bulletin: 'Bülten',
 };
 
 export const T = {
@@ -336,6 +338,101 @@ export const T = {
     given: 'Birkaç kez yenilendi, şimdilik kendiliğinden yenilenmeyecek.',
   },
 
+  bulletin: {
+    title: 'Sabah bülteni',
+    empty: 'Henüz bülten yok. Günün bülteni Desk Hub o gün ilk açıldığında hazırlanır.',
+    running: (time: string) => `Hazırlanıyor · ${time}`,
+    previous: (date: string) => `Önceki bülten, ${date}`,
+    failed: 'Bülten hazırlanamadı',
+    retry: 'Tekrar dene',
+    retryAt: (time: string) => `${time}’den sonra tekrar denenebilir`,
+    made: (date: string, time: string) => `${date} · ${time}`,
+    errors: {
+      codex_missing: 'Codex bulunamadı. PC’de VS Code’un Codex eklentisini kur ya da .env’de CODEX_PATH ver.',
+      codex_signed_out: 'Codex’te ChatGPT ile oturum açık değil. PC’de “codex login” çalıştır.',
+      api_key_set: 'PC’de bir OpenAI API anahtarı tanımlı. Ücretli kullanıma düşmemek için bülten hazırlanmadı.',
+      unsafe_flags: 'Codex’in güvenlik ayarları doğrulanamadı, bu yüzden çalıştırılmadı.',
+      failed: 'Codex bir hatayla kapandı.',
+      timeout: 'Codex 15 dakikada bitiremedi.',
+      empty: 'Codex boş bir bülten döndürdü.',
+    } satisfies Record<BulletinError, string>,
+    notes: {
+      no_sources: 'Kaynaklar bölümü yok.',
+      no_prices: 'Fiyatlar doğrulanamadı.',
+      price_unverified: (ticker: string) => `${ticker} fiyatı doğrulanamadı.`,
+      sheet_unreadable: 'Portföy dosyası okunamadı, kişisel tablo yok.',
+      split_after: (ticker: string) => `${ticker} için yeni bir bölünme var, adetleri kontrol et.`,
+    },
+    portfolio: 'Portföyüm',
+    portfolioNote: 'Köprünün hesabı: adetler dosyadan, fiyatlar bültenden.',
+    asOf: (date: string) => `Adetler ${date} dahil`,
+    columns: { ticker: 'Sembol', quantity: 'Adet', cost: 'Maliyet', value: 'Değer', pnl: 'K/Z', day: 'Günlük' },
+    reward: 'ödül',
+    newPosition: 'yeni',
+    total: 'Toplam',
+    rewardsLeftOut: 'Ödül payları toplama ve dağılıma katılmadı.',
+    gold: (grams: string) => `Altın, ${grams} gr`,
+    noPrice: 'fiyat doğrulanamadı',
+    mix: 'Dağılım ve hedef',
+    mixParts: { etf: 'ABD ETF', stock: 'ABD hisse', gold: 'Altın' },
+    mixOf: (pct: string, target: string) => `${pct}, hedef ${target}`,
+    sections: 'Bölümler',
+  },
+  morning: {
+    hello: 'Günaydın',
+    listen: 'Dinle',
+    open: 'Bülteni aç',
+    close: 'Kapat',
+    noEvents: 'Bugün etkinlik yok',
+    firstEvent: (time: string, title: string) => `${time} ${title}`,
+    writing: 'Bülten hazırlanıyor…',
+    hiLo: (hi: string, lo: string) => `en yüksek ${hi}, en düşük ${lo}`,
+    /** What "Dinle" says before the bulletin. */
+    say: {
+      hello: 'Günaydın.',
+      weather: (temp: string, text: string, hi: string) => `Hava ${temp}, ${text}, en yüksek ${hi}.`,
+      event: (time: string, title: string) => `İlk etkinlik saat ${time}, ${title}.`,
+      noEvents: 'Bugün etkinlik yok.',
+      reminder: (title: string) => `Bugün: ${title}.`,
+      bulletin: 'Sabah bülteni.',
+    },
+  },
+  speech: {
+    reading: 'Okunuyor',
+    short: 'Kısa',
+    all: 'Tamamı',
+    pause: 'Duraklat',
+    resume: 'Devam',
+    back: 'Önceki',
+    forward: 'Sonraki',
+    stop: 'Kapat',
+    speed: 'Okuma hızı',
+    rate: (rate: number) => `${formatNumber(rate, rate % 1 ? 1 : 0)}×`,
+    firstTouch: 'Günün ilk dokunuşunda oku',
+    voice: 'Konuşma sesi',
+    voiceOf: (name: string, lang: string, local: boolean) => `${name}, ${lang}, ${local ? 'cihazda' : 'çevrimiçi'}`,
+    turkishVoices: (n: number) => `${n} Türkçe ses`,
+    noVoice:
+      'Türkçe ses yok. Telefonda Ayarlar → Genel yönetim → Metin okuma → Google konuşma hizmetleri’ni seç ve Türkçe ses verisini indir.',
+    unsupported: 'Bu tarayıcı sesli okuyamaz.',
+    failed: (error: string) => `Okuma durdu: ${error}`,
+  },
+  reminders: {
+    today: 'Bugün',
+    save: 'Kaydet',
+    later: 'Sonra',
+    cancel: 'Vazgeç',
+    saved: 'Kaydedildi',
+    last: (text: string) => `Son: ${text}`,
+    change: (text: string) => `önceki haftaya göre ${text}`,
+  },
+  measurements: {
+    title: 'Ölçümler',
+    average: '4 haftalık ortalama',
+    empty: 'Henüz ölçüm yok.',
+    back: 'Geri',
+    open: 'Ölçümleri aç',
+  },
   info: {
     title: 'Tanılama',
     reload: 'Yenile',
@@ -490,3 +587,25 @@ export function alertText(text: string): string {
   }
   return text;
 }
+
+/**
+ * What the speech engine would say badly, written out (reading aloud, phase 6). In order: longer ones
+ * first. Numbers stay digits: the Turkish voice reads "1.234,5" well.
+ */
+export const SAYABLE: readonly [RegExp, string | ((...found: string[]) => string)][] = [
+  [/(^|[\s(])[−-](?=\d)/g, (_, before) => `${before}eksi `],
+  [/(^|[\s(])\+(?=\d)/g, (_, before) => `${before}artı `],
+  [/%\s?(\d[\d.,]*)/g, (_, n) => `yüzde ${n}`],
+  [/(\d[\d.,]*)\s?%/g, (_, n) => `yüzde ${n}`],
+  [/\$\s?(\d[\d.,]*)/g, (_, n) => `${n} dolar`],
+  [/(\d[\d.,]*)\s?\$/g, (_, n) => `${n} dolar`],
+  [/(\d[\d.,]*)\s?₺/g, (_, n) => `${n} lira`],
+  // \b doesn't know "İ".
+  [/(?<!\p{L})TSİ(?!\p{L})/gu, 'Türkiye saati'],
+  [/\bK\/Z\b/g, 'kâr zarar'],
+  [/\bF\/K\b/g, 'fiyat kazanç oranı'],
+  [/\bUSD\/TRY\b/g, 'dolar kuru'],
+  [/\bBIST\b/g, 'Borsa İstanbul'],
+  [/→/g, ', '],
+  [/·/g, ', '],
+];

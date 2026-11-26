@@ -51,6 +51,8 @@ describe('RemindersService', () => {
     expect(s.message().reminders.map((r) => r.id)).toEqual(['olcum']);
     now = new Date(2026, 11, 3, 8); // Thursday
     expect(s.message().reminders).toMatchObject([{ id: 'su', fields: [], done: false, last: null }]);
+    // Whatever the day, the measured ones.
+    expect(s.message().measured).toEqual([{ id: 'olcum', title: 'Kilo ve bel ölçümü', fields: REMINDERS[0]!.fields }]);
   });
 
   it('saves an entry, marks it done and keeps it for the next start', async () => {

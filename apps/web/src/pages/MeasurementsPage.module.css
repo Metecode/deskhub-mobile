@@ -1,0 +1,121 @@
+.page {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  min-height: 0;
+  padding: calc(10 * var(--u)) calc(18 * var(--u)) 0;
+  border-radius: calc(20 * var(--u));
+  background: var(--card);
+}
+
+.top {
+  display: flex;
+  flex: none;
+  gap: calc(10 * var(--u));
+  align-items: center;
+}
+
+.back {
+  display: grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background: var(--card-hi);
+  transform: rotate(-90deg);
+}
+
+.back:active {
+  background: var(--pressed);
+}
+
+.title {
+  flex: 1;
+  font-size: calc(18 * var(--u));
+  font-weight: 600;
+}
+
+.legend {
+  display: flex;
+  gap: calc(6 * var(--u));
+  align-items: center;
+  color: var(--dim);
+  font-size: calc(13 * var(--u));
+}
+
+.legendLine {
+  width: calc(18 * var(--u));
+  height: 2px;
+  background: var(--accent);
+}
+
+.body {
+  flex: 1;
+  min-height: 0;
+  padding-bottom: calc(10 * var(--u));
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  scrollbar-width: none;
+}
+
+.reminder {
+  margin: calc(10 * var(--u)) 0 calc(2 * var(--u));
+  color: var(--calendar-color);
+  font-size: calc(15 * var(--u));
+  font-weight: 600;
+}
+
+.field {
+  margin-top: calc(8 * var(--u));
+}
+
+.head {
+  display: flex;
+  gap: calc(10 * var(--u));
+  align-items: baseline;
+}
+
+.name {
+  color: var(--muted);
+}
+
+.value {
+  font-size: calc(20 * var(--u));
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+
+.range {
+  margin-left: auto;
+  color: var(--dim);
+  font-size: calc(13 * var(--u));
+  font-variant-numeric: tabular-nums;
+}
+
+.chart {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
+.average {
+  fill: none;
+  stroke: var(--accent);
+  stroke-width: 2.5;
+  vector-effect: non-scaling-stroke;
+}
+
+.point {
+  fill: var(--text);
+}
+
+.axis {
+  display: flex;
+  justify-content: space-between;
+  color: var(--dim);
+  font-size: calc(12.5 * var(--u));
+}
+
+.muted {
+  color: var(--dim);
+}
